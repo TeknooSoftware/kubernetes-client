@@ -149,7 +149,7 @@ abstract class Model implements Arrayable
     public function updateModel(callable $modifier): self
     {
         $that = clone $this;
-        $that->attributes = $modifier($modifier);
+        $that->attributes = $modifier($this->attributes);
 
         return $that;
     }
