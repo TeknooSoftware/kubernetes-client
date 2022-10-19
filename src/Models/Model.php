@@ -145,4 +145,12 @@ abstract class Model implements Arrayable
 	{
 		return $this->getSchema();
 	}
+
+    public function updateModel(callable $modifier): self
+    {
+        $that = clone $this;
+        $that->attributes = $modifier($modifier);
+
+        return $that;
+    }
 }
