@@ -1,6 +1,7 @@
 <?php namespace Maclof\Kubernetes;
 
 use Exception;
+use Http\Client\Exception\HttpException;
 use InvalidArgumentException;
 use BadMethodCallException;
 use Maclof\Kubernetes\Exceptions\ApiServerException;
@@ -428,7 +429,11 @@ class Client
 
 			return is_array($jsonResponse) ? $jsonResponse : $responseBody;
 		} catch (HttpTransferException $e) {
-			$response = $e->getResponse();
+            if (!$e instanceof HttpException) {
+                throw new BadRequestException($e->getMessage(), 500, $e);
+            }
+
+            $response = $e->getResponse();
 
 			$responseBody = (string) $response->getBody();
 
@@ -440,7 +445,7 @@ class Client
 				}
 			}
 
-			throw new BadRequestException($responseBody, 0, $e);
+			throw new BadRequestException($responseBody, $response->getStatusCode(), $e);
 		}
 	}
 
