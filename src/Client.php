@@ -5,6 +5,8 @@ use Http\Client\Exception\HttpException;
 use InvalidArgumentException;
 use BadMethodCallException;
 use Maclof\Kubernetes\Exceptions\ApiServerException;
+use Maclof\Kubernetes\Repositories\HorizontalPodAutoscalerRepository;
+use Maclof\Kubernetes\Repositories\IssuerRepository;
 use Maclof\Kubernetes\Repositories\RoleBindingRepository;
 use Maclof\Kubernetes\Repositories\RoleRepository;
 use Maclof\Kubernetes\Repositories\ClusterRoleBindingRepository;
@@ -67,7 +69,7 @@ use Maclof\Kubernetes\Repositories\NamespaceRepository;
  * @method NetworkPolicyRepository networkPolicies()
  * @method HorizontalPodAutoscalerRepository horizontalPodAutoscalers()
  * @method CertificateRepository certificates()
- * @method IssuersRepository issuers()
+ * @method IssuerRepository issuers()
  * @method ServiceAccountRepository serviceAccounts()
  * @method RoleRepository roles()
  * @method RoleBindingRepository roleBindings()
