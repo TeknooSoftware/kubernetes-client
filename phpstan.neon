@@ -1,0 +1,17 @@
+parameters:
+    ignoreErrors:
+        -
+            message: '#mixed#'
+            path: src/Client.php
+        -
+            message: '#does not specify its types: T#'
+            path: src/Client.php
+        -
+            message: '#getTempFilePath#'
+            path: src/Client.php
+        -
+            message: '#does not accept mixed#'
+            path: src/Model/Model.php
+        -
+            message: '#does not specify its types: T#'
+            path: src/RepositoryRegistry.php

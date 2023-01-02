@@ -1,191 +1,141 @@
+Teknoo Software - Kubernetes Client
+===================================
 
-# Kubernetes Client
+[![Latest Stable Version](https://poser.pugx.org/teknoo/kubernetes-client/v/stable)](https://packagist.org/packages/teknoo/kubernetes-client)
+[![Latest Unstable Version](https://poser.pugx.org/teknoo/kubernetes-client/v/unstable)](https://packagist.org/packages/teknoo/kubernetes-client)
+[![Total Downloads](https://poser.pugx.org/teknoo/kubernetes-client/downloads)](https://packagist.org/packages/teknoo/kubernetes-client)
+[![License](https://poser.pugx.org/teknoo/kubernetes-client/license)](https://packagist.org/packages/teknoo/kubernetes-client)
+[![PHPStan](https://img.shields.io/badge/PHPStan-enabled-brightgreen.svg?style=flat)](https://github.com/phpstan/phpstan)
 
-[![Build Status](https://app.travis-ci.com/maclof/kubernetes-client.svg?branch=master)](https://app.travis-ci.com/maclof/kubernetes-client)
+A PHP client for managing a Kubernetes cluster. 
+This is a fork and a rework from [Maclof Kuebrnetes library](https://github.com/maclof/kubernetes-client).
 
-A PHP client for managing a Kubernetes cluster.
+Supported API Features
+----------------------
 
-Last tested with v1.9.6 on a production cloud hosted cluster.
-
-
-## Installation using [Composer](http://getcomposer.org/)
-
-```bash
-$ composer require maclof/kubernetes-client
-```
-
-## Supported API Features
 ### v1
-* Nodes
-* Namespaces
-* Pods
-* Replica Sets
-* Replication Controllers
-* Services
-* Secrets
-* Events
 * Config Maps
+* Delete Options
+* EndPoints
 * Endpoints
+* Events
+* Namespaces
+* Nodes
 * Persistent Volume
 * Persistent Volume Claims
+* Pods
+* Quota
+* Replica Sets
+* Replication Controllers
+* Secrets
+* Service Account
+* Services
+
+### autoscaling/v2
+* Horizontal Pad Autoscaler
 
 ### batch/v1
+* CronJobs
 * Jobs
 
 ### batch/v1beta1
 * Cron Jobs
 
 ### apps/v1
+* Daemon Set
 * Deployments
+* ReplicaSet
 
 ### extensions/v1beta1
 * Daemon Sets
 
 ### networking.k8s.io/v1
+* Ingresses
 * Network Policies
 
-### networking.k8s.io/v1beta1
-* Ingresses
-
-### certmanager.k8s.io/v1alpha1
+### certmanager.k8s.io/v1
 * Certificates
 * Issuers
 
-## Basic Usage
+### rbac.authorization.k8s.io/v1
+* ClusterRole
+* ClusterRoleBinding
+* Role
+* RoleBinding
 
-```php
-<?php
+### hnc.x-k8s.io/v1
+* Subnamespace Anchor
 
-require __DIR__ . '/vendor/autoload.php';
+Basic Usage
+-----------
 
-use Maclof\Kubernetes\Client;
+```php;
+use Teknoo\Kubernetes\Client;
 
 $client = new Client([
 	'master' => 'http://master.mycluster.com',
 ]);
 
 // Find pods by label selector
-$pods = $client->pods()->setLabelSelector([
-	'name'    => 'test',
-	'version' => 'a',
-])->find();
+$pods = $client->pods()
+    ->setLabelSelector(
+        [
+            'name'    => 'test',
+            'version' => 'a',
+        ]
+    )->find();
 
 // Both setLabelSelector and setFieldSelector can take an optional
 // second parameter which lets you define inequality based selectors (ie using the != operator)
-$pods = $client->pods()->setLabelSelector([
-	'name'    => 'test'], 
-	['env'     =>  'staging']
-])->find();
+$pods = $client->pods()
+    ->setLabelSelector(
+        ['name' => 'test'], 
+	    ['env' => 'staging']
+    )->find();
 
 // Find pods by field selector
-$pods = $client->pods()->setFieldSelector([
-	'metadata.name' => 'test',
-])->find();
+$pods = $client->pods()->setFieldSelector(['metadata.name' => 'test'])->find();
 
 // Find first pod with label selector (same for field selector)
-$pod = $client->pods()->setLabelSelector([
-	'name' => 'test',
-])->first();
-```
-
-### Using [JSONPath](https://github.com/FlowCommunications/JSONPath)
-It allows you to query status data.
-
-```php
-$jobStartTime = $client->jobs()->find()->getJsonPath('$.status.startTime')[0];
+$pod = $client->pods()->setLabelSelector(['name' => 'test'])->first();
 ```
 
 ## Authentication Examples
 
 ### Insecure HTTP
 ```php
-use Maclof\Kubernetes\Client;
+use Teknoo\Kubernetes\Client;
 $client = new Client([
 	'master' => 'http://master.mycluster.com',
 ]);
 ```
 
-### Secure HTTPS (CA + Client Certificate Validation)
+### Connecting from a kubeconfig file
 ```php
-use Maclof\Kubernetes\Client;
-use Http\Adapter\Guzzle6\Client as Guzzle6Client;
-$httpClient = Guzzle6Client::createWithConfig([
-	'verify' => '/etc/kubernetes/ssl/ca.crt',
-	'cert' => '/etc/kubernetes/ssl/client.crt',
-	'ssl_key' => '/etc/kubernetes/ssl/client.key',
-]);
-$client = new Client([
-	'master' => 'https://master.mycluster.com',
-], null, $httpClient);
-```
-
-### Insecure HTTPS (CA Certificate Verification Disabled)
-```php
-use Maclof\Kubernetes\Client;
-use Http\Adapter\Guzzle6\Client as Guzzle6Client;
-$httpClient = Guzzle6Client::createWithConfig([
-	'verify' => false,
-]);
-$client = new Client([
-	'master' => 'https://master.mycluster.com',
-], null, $httpClient);
-```
-
-### Using Basic Auth
-```php
-use Maclof\Kubernetes\Client;
-$client = new Client([
-	'master' => 'https://master.mycluster.com',
-	'username' => 'admin',
-	'password' => 'abc123',
-]);
-```
-
-### Using a Service Account
-```php
-use Maclof\Kubernetes\Client;
-use Http\Adapter\Guzzle6\Client as Guzzle6Client;
-$httpClient = Guzzle6Client::createWithConfig([
-	'verify' => '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt',
-]);
-$client = new Client([
-	'master' => 'https://master.mycluster.com',
-	'token' => '/var/run/secrets/kubernetes.io/serviceaccount/token',
-], null, $httpClient);
-```
-
-### Parsing a kubeconfig file
-```php
-use Maclof\Kubernetes\Client;
+use Teknoo\Kubernetes\Client;
 
 // Parsing from the file data directly
-$config = Client::parseKubeConfig('kubeconfig yaml data');
+$client = Client::loadFromKubeConfig('kubeconfig yaml data');
 
 // Parsing from the file path
-$config = Client::parseKubeConfigFile('~/.kube/config.yml');
-
-// Example config that may be returned
-// You would then feed these options into the http/kubernetes client constructors.
-$config = [
-	'master' => 'https://master.mycluster.com',
-	'ca_cert' => '/temp/path/ca.crt',
-	'client_cert' => '/temp/path/client.crt',
-	'client_key' => '/temp/path/client.key',
-];
+$client = Client::loadFromKubeConfigFile('~/.kube/config.yml');
 ```
 
 ## Extending a library
 
 ### Custom repositories
 ```php
-use Maclof\Kubernetes\Client;
+use Teknoo\Kubernetes\Client;
 
 $repositories = new RepositoryRegistry();
 $repositories['things'] = MyApp\Kubernetes\Repository\ThingRepository::class;
 
-$client = new Client([
-	'master' => 'https://master.mycluster.com',
-], $repositories);
+$client = new Client(
+    [
+        'master' => 'https://master.mycluster.com',
+    ], 
+    $repositories
+);
 
 $client->things(); //ThingRepository
 ```
@@ -193,9 +143,13 @@ $client->things(); //ThingRepository
 ## Usage Examples
 
 ### Create/Update a Replication Controller
-The below example uses an array to specify the replication controller's attributes. You can specify the attributes either as an array, JSON encoded string or a YAML encoded string. The second parameter to the model constructor is the data type and defaults to array.
+
+The below example uses an array to specify the replication controller's attributes. 
+You can specify the attributes either as an array, JSON encoded string or a YAML encoded string. 
+The second parameter to the model constructor is the data type and defaults to array.
+
 ```php
-use Maclof\Kubernetes\Models\ReplicationController;
+use Teknoo\Kubernetes\Model\ReplicationController;
 
 $replicationController = new ReplicationController([
 	'metadata' => [
@@ -235,20 +189,21 @@ if ($client->replicationControllers()->exists($replicationController->getMetadat
 } else {
 	$client->replicationControllers()->create($replicationController);
 }
+$client->replicationControllers()->apply($replicationController);
+// or
+
 ```
 
 ### Delete a Replication Controller
 ```php
-$replicationController = $client->replicationControllers()->setLabelSelector([
-	'name' => 'nginx-test',
-])->first();
+$replicationController = $client->replicationControllers()->setLabelSelector(['name' => 'nginx-test'])->first();
 $client->replicationControllers()->delete($replicationController);
 ```
 
-You can also specify options when performing a deletion, eg. to perform [cascading delete]( https://kubernetes.io/docs/concepts/workloads/controllers/garbage-collection/#setting-the-cascading-deletion-policy)
+You can also specify options when performing a deletion, eg. to perform [cascading delete](https://kubernetes.io/docs/concepts/workloads/controllers/garbage-collection/#setting-the-cascading-deletion-policy)
 
 ```php
-use Maclof\Kubernetes\Models\DeleteOptions;
+use Teknoo\Kubernetes\Model\DeleteOptions;
 
 $client->replicationControllers()->delete(
 	$replicationController,
@@ -256,6 +211,44 @@ $client->replicationControllers()->delete(
 );
 ```
 
-See the API documentation for an explanation of the options:
+Support this project
+---------------------
 
-https://kubernetes.io/docs/api-reference/v1.6/#deleteoptions-v1-meta
+This project is free and will remain free, but it is developed on my personal time.
+If you like it and help me maintain it and evolve it, don't hesitate to support me on [Patreon](https://patreon.com/teknoo_software).
+Thanks :) Richard.
+
+Installation & Requirements
+---------------------------
+To install this library with composer, run this command :
+
+    composer require teknoo/kubernetes-client
+
+This library requires :
+
+    * PHP 8.1+
+    * A PHP autoloader (Composer is recommended)
+    * Symfony/Yaml.
+    * Illuminate/Collections
+
+Credits
+-------
+Richard Déloge - <richarddeloge@gmail.com> - Lead developer.
+Teknoo Software - <https://teknoo.software>
+
+About Teknoo Software
+---------------------
+**Teknoo Software** is a PHP software editor, founded by Richard Déloge.
+Teknoo Software's goals : Provide to our partners and to the community a set of high quality services or software,
+sharing knowledge and skills.
+
+License
+-------
+East PaaS is licensed under the MIT License - see the licenses folder for details
+
+Contribute :)
+-------------
+
+You are welcome to contribute to this project. [Fork it on Github](CONTRIBUTING.md)
+
+
