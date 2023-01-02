@@ -1,53 +1,111 @@
-<?php namespace Maclof\Kubernetes;
+<?php
 
-use Exception;
-use Http\Client\Exception\HttpException;
-use InvalidArgumentException;
+/*
+ * Kubernetes Client.
+ *
+ * LICENSE
+ *
+ * This source file is subject to the MIT license
+ * license that are bundled with this package in the folder licences
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to richarddeloge@gmail.com so we can send you a copy immediately.
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) Marc Lough ( https://github.com/maclof/kubernetes-client )
+ *
+ * @link        http://teknoo.software/kubernetes-client Project website
+ *
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ * @author      Marc Lough <http://maclof.com>
+ */
+
+declare(strict_types=1);
+
+namespace Teknoo\Kubernetes;
+
 use BadMethodCallException;
-use Maclof\Kubernetes\Exceptions\ApiServerException;
-use Maclof\Kubernetes\Repositories\HorizontalPodAutoscalerRepository;
-use Maclof\Kubernetes\Repositories\IssuerRepository;
-use Maclof\Kubernetes\Repositories\RoleBindingRepository;
-use Maclof\Kubernetes\Repositories\RoleRepository;
-use Maclof\Kubernetes\Repositories\ClusterRoleBindingRepository;
-use Maclof\Kubernetes\Repositories\ClusterRoleRepository;
-use Maclof\Kubernetes\Repositories\ServiceAccountRepository;
-use Maclof\Kubernetes\Repositories\SubnamespaceAnchorRepository;
-use Psr\Http\Client\ClientInterface;
-use Symfony\Component\Yaml\Yaml;
-use Symfony\Component\Yaml\Exception\ParseException as YamlParseException;
+use Exception;
 use Http\Client\Common\HttpMethodsClient;
 use Http\Client\Common\HttpMethodsClientInterface;
+use Http\Client\Exception\HttpException;
 use Http\Client\Exception\TransferException as HttpTransferException;
-use Http\Message\RequestFactory as HttpRequestFactory;
 use Http\Discovery\HttpClientDiscovery;
-use Http\Discovery\MessageFactoryDiscovery as HttpMessageFactoryDiscovery;
-use React\EventLoop\Factory as ReactFactory;
-use React\Socket\Connector as ReactSocketConnector;
-use Ratchet\Client\Connector as WebSocketConnector;
-use Maclof\Kubernetes\Repositories\CertificateRepository;
-use Maclof\Kubernetes\Exceptions\BadRequestException;
-use Maclof\Kubernetes\Repositories\ConfigMapRepository;
-use Maclof\Kubernetes\Repositories\CronJobRepository;
-use Maclof\Kubernetes\Repositories\DaemonSetRepository;
-use Maclof\Kubernetes\Repositories\DeploymentRepository;
-use Maclof\Kubernetes\Repositories\EndpointRepository;
-use Maclof\Kubernetes\Repositories\EventRepository;
-use Maclof\Kubernetes\Repositories\IngressRepository;
-use Maclof\Kubernetes\Repositories\JobRepository;
-use Maclof\Kubernetes\Repositories\NetworkPolicyRepository;
-use Maclof\Kubernetes\Repositories\NodeRepository;
-use Maclof\Kubernetes\Repositories\PersistentVolumeRepository;
-use Maclof\Kubernetes\Repositories\PersistentVolumeClaimRepository;
-use Maclof\Kubernetes\Repositories\PodRepository;
-use Maclof\Kubernetes\Repositories\QuotaRepository;
-use Maclof\Kubernetes\Repositories\ReplicaSetRepository;
-use Maclof\Kubernetes\Repositories\ReplicationControllerRepository;
-use Maclof\Kubernetes\Repositories\SecretRepository;
-use Maclof\Kubernetes\Repositories\ServiceRepository;
-use Maclof\Kubernetes\Repositories\NamespaceRepository;
+use Http\Discovery\Psr17FactoryDiscovery;
+use InvalidArgumentException;
+use JsonException;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamFactoryInterface;
+use Symfony\Component\Yaml\Exception\ParseException as YamlParseException;
+use Symfony\Component\Yaml\Yaml;
+use Teknoo\Kubernetes\Enums\FileFormat;
+use Teknoo\Kubernetes\Enums\PatchType;
+use Teknoo\Kubernetes\Enums\RequestMethod;
+use Teknoo\Kubernetes\Exceptions\ApiServerException;
+use Teknoo\Kubernetes\Exceptions\BadRequestException;
+use Teknoo\Kubernetes\Repository\CertificateRepository;
+use Teknoo\Kubernetes\Repository\ClusterRoleBindingRepository;
+use Teknoo\Kubernetes\Repository\ClusterRoleRepository;
+use Teknoo\Kubernetes\Repository\ConfigMapRepository;
+use Teknoo\Kubernetes\Repository\CronJobRepository;
+use Teknoo\Kubernetes\Repository\DaemonSetRepository;
+use Teknoo\Kubernetes\Repository\DeploymentRepository;
+use Teknoo\Kubernetes\Repository\EndpointRepository;
+use Teknoo\Kubernetes\Repository\EventRepository;
+use Teknoo\Kubernetes\Repository\HorizontalPodAutoscalerRepository;
+use Teknoo\Kubernetes\Repository\IngressRepository;
+use Teknoo\Kubernetes\Repository\IssuerRepository;
+use Teknoo\Kubernetes\Repository\JobRepository;
+use Teknoo\Kubernetes\Repository\NamespaceRepository;
+use Teknoo\Kubernetes\Repository\NetworkPolicyRepository;
+use Teknoo\Kubernetes\Repository\NodeRepository;
+use Teknoo\Kubernetes\Repository\PersistentVolumeClaimRepository;
+use Teknoo\Kubernetes\Repository\PersistentVolumeRepository;
+use Teknoo\Kubernetes\Repository\PodRepository;
+use Teknoo\Kubernetes\Repository\QuotaRepository;
+use Teknoo\Kubernetes\Repository\ReplicaSetRepository;
+use Teknoo\Kubernetes\Repository\ReplicationControllerRepository;
+use Teknoo\Kubernetes\Repository\Repository;
+use Teknoo\Kubernetes\Repository\RoleBindingRepository;
+use Teknoo\Kubernetes\Repository\RoleRepository;
+use Teknoo\Kubernetes\Repository\SecretRepository;
+use Teknoo\Kubernetes\Repository\ServiceAccountRepository;
+use Teknoo\Kubernetes\Repository\ServiceRepository;
+use Teknoo\Kubernetes\Repository\SubnamespaceAnchorRepository;
+use Throwable;
+
+use function base64_decode;
+use function file_exists;
+use function file_get_contents;
+use function file_put_contents;
+use function http_build_query;
+use function in_array;
+use function is_a;
+use function is_array;
+use function is_string;
+use function json_decode;
+use function json_encode;
+use function substr;
+use function sys_get_temp_dir;
+use function trim;
+
+use const JSON_FORCE_OBJECT;
 
 /**
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) Marc Lough ( https://github.com/maclof/kubernetes-client )
+ *
+ * @link        http://teknoo.software/kubernetes-client Project website
+ *
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ * @author      Marc Lough <http://maclof.com>
+ *
  * @method NodeRepository nodes()
  * @method QuotaRepository quotas()
  * @method PodRepository pods()
@@ -79,521 +137,532 @@ use Maclof\Kubernetes\Repositories\NamespaceRepository;
  */
 class Client
 {
-	/**
-	 * The api version.
-	 */
-	protected string $apiVersion = 'v1';
+    private const API_VERSION = 'v1';
 
-	/**
-	 * The address of the master server.
-	 */
-	protected ?string $master = null;
+    private ?string $master = null;
 
-	/**
-	 * The servide account token.
-	 */
-	protected ?string $token = null;
+    private ?string $token = null;
 
-	/**
-	 * The username for basic auth.
-	 */
-	protected ?string $username = null;
+    private string $namespace = 'default';
 
-	/**
-	 * The password for basic auth.
-	 */
-	protected ?string $password = null;
+    private HttpMethodsClientInterface $httpClient;
 
-	/**
-	 * The namespace.
-	 */
-	protected string $namespace = 'default';
+    private RepositoryRegistry $classRegistry;
 
-	/**
-	 * The http client.
-	 */
-	protected HttpMethodsClientInterface $httpClient;
+    /**
+     * @var array<string, Repository>
+     */
+    private array $classInstances = [];
 
-	/**
-	 * The exec channels for result messages.
-	 */
-	protected array $execChannels = [
-		'stdin',
-		'stdout',
-		'stderr',
-		'error',
-		'resize',
-	];
+    /**
+     * @var array<string, string>
+     */
+    private array $patchHeaders = ['Content-Type' => 'application/strategic-merge-patch+json'];
 
-	/**
-	 * The repository class registry.
-	 */
-	protected RepositoryRegistry $classRegistry;
+    /**
+     * @param array<string, string> $options
+     */
+    public function __construct(
+        array $options = [],
+        RepositoryRegistry $repositoryRegistry = null,
+        ClientInterface $httpClient = null,
+        RequestFactoryInterface $httpRequestFactory = null,
+        StreamFactoryInterface $httpStreamFactory = null,
+    ) {
+        $this->setOptions($options);
+        $this->classRegistry = $repositoryRegistry ?? new RepositoryRegistry();
 
-	/**
-	 * The class instances.
-	 */
-	protected array $classInstances = [];
+        $this->httpClient = new HttpMethodsClient(
+            $httpClient ?? HttpClientDiscovery::find(),
+            $httpRequestFactory ?? Psr17FactoryDiscovery::findRequestFactory(),
+            $httpStreamFactory ?? Psr17FactoryDiscovery::findStreamFactory(),
+        );
+    }
 
-	/**
-	 * header for patch.
-	 */
-	protected array $patchHeaders = ['Content-Type' => 'application/strategic-merge-patch+json'];
+    /**
+     * @param array<string, string> $options
+     */
+    public function setOptions(array $options, bool $reset = false): self
+    {
+        if ($reset) {
+            $this->master = null;
+            $this->token = null;
+            $this->namespace = 'default';
+        }
 
-	protected ?bool $verify = null;
+        if (isset($options['master'])) {
+            $this->master = $options['master'];
+        }
 
-	protected ?string $caCert = null;
+        if (isset($options['token'])) {
+            $this->token = $options['token'];
+        }
 
-	protected ?string $clientCert = null;
+        if (isset($options['namespace'])) {
+            $this->namespace = $options['namespace'];
+        }
 
-	protected ?string $clientKey = null;
+        return $this;
+    }
 
-	/**
-	 * The constructor.
-	 */
-	public function __construct(array $options = [], RepositoryRegistry $repositoryRegistry = null, ClientInterface $httpClient = null, HttpRequestFactory $httpRequestFactory = null)
-	{
-		$this->setOptions($options);
-		$this->classRegistry = $repositoryRegistry ?: new RepositoryRegistry();
-		$this->httpClient = new HttpMethodsClient(
-			$httpClient ?: HttpClientDiscovery::find(),
-			$httpRequestFactory ?: HttpMessageFactoryDiscovery::find()
-		);
-	}
+    /**
+     * @param string|array<string, array<string, string>|string> $content
+     * @throws JsonException
+     * @throws Exception
+     */
+    public static function loadFromKubeConfig(
+        string|array $content,
+        FileFormat $format = FileFormat::Yaml,
+        RepositoryRegistry $repositoryRegistry = null,
+        ClientInterface $httpClient = null,
+        RequestFactoryInterface $httpRequestFactory = null,
+        StreamFactoryInterface $httpStreamFactory = null,
+    ): self {
+        try {
+            $content = match (true) {
+                FileFormat::Array === $format && !is_array($content) => throw new InvalidArgumentException(
+                    'KubeConfig is not an array.'
+                ),
+                FileFormat::Array === $format && is_array($content) => $content,
+                FileFormat::Json === $format && !is_string($content) => throw new InvalidArgumentException(
+                    'JSON attributes must be provided as a JSON encoded string.'
+                ),
+                FileFormat::Json === $format && is_string($content) => json_decode(
+                    json: $content,
+                    associative: true,
+                    flags: JSON_THROW_ON_ERROR,
+                ),
+                FileFormat::Yaml === $format && !is_string($content) => throw new InvalidArgumentException(
+                    'YAML attributes must be provided as a YAML encoded string.'
+                ),
+                FileFormat::Yaml === $format && is_string($content) => Yaml::parse($content),
+            };
+        } catch (JsonException $jsonException) {
+            throw new InvalidArgumentException(
+                message: 'Failed to parse JSON encoded KubeConfig: ' . $jsonException->getMessage(),
+                previous: $jsonException,
+            );
+        } catch (YamlParseException $yamlParseException) {
+            throw new InvalidArgumentException(
+                message: 'Failed to parse YAML encoded KubeConfig: ' . $yamlParseException->getMessage(),
+                previous: $yamlParseException,
+            );
+        } catch (Throwable $error) {
+            throw $error;
+        }
 
-	/**
-	 * Set the options.
-	 */
-	public function setOptions(array $options, bool $reset = false): void
-	{
-		if ($reset) {
-			$this->master = null;
-			$this->verify = null;
-			$this->token = null;
-			$this->username = null;
-			$this->password = null;
-			$this->namespace = 'default';
-		}
+        $contexts = [];
+        if (isset($content['contexts']) && is_array($content['contexts'])) {
+            foreach ($content['contexts'] as $context) {
+                $contexts[$context['name']] = $context['context'];
+            }
+        }
 
-		if (isset($options['master'])) {
-			$this->master = $options['master'];
-		}
-		if (isset($options['token'])) {
-			$this->token = $options['token'];
-		}
-		if (isset($options['username'])) {
-			$this->username = $options['username'];
-		}
-		if (isset($options['password'])) {
-			$this->password = $options['password'];
-		}
-		if (isset($options['namespace'])) {
-			$this->namespace = $options['namespace'];
-		}
-	}
+        if ($contexts === []) {
+            throw new InvalidArgumentException('KubeConfig parse error - No contexts are defined.');
+        }
 
-	/**
-	 * Parse a kubeconfig.
-	 * 
-	 * @param  string|array $content Mixed type, based on the second input argument
-	 * @throws \InvalidArgumentException
-	 */
-	public static function parseKubeconfig($content, string $contentType = 'yaml'): array
-	{
-		if ($contentType === 'array') {
-			if (!is_array($content)) {
-				throw new InvalidArgumentException('Kubeconfig is not an array.');
-			}
-		} elseif ($contentType === 'json') {
-			if (!is_string($content)) {
-				throw new InvalidArgumentException('Kubeconfig is not a string.');
-			}
+        $clusters = [];
+        if (isset($content['clusters']) && is_array($content['clusters'])) {
+            foreach ($content['clusters'] as $cluster) {
+                $clusters[$cluster['name']] = $cluster['cluster'];
+            }
+        }
 
-			if (defined('JSON_THROW_ON_ERROR')) {
-				try {
-					$content = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
-				} catch (\JsonException $e) {
-					throw new InvalidArgumentException('Failed to parse JSON encoded Kubeconfig: ' . $e->getMessage(), 0, $e);
-				}
-			} else {
-				$content = json_decode($content, true, 512);
-				if ($content === false || $content === null) {
-					throw new InvalidArgumentException('Failed to parse JSON encoded Kubeconfig.');
-				}
-			}
-		} elseif ($contentType === 'yaml') {
-			if (!is_string($content)) {
-				throw new InvalidArgumentException('Kubeconfig is not a string.');
-			}
-			try {
-				$content = Yaml::parse($content);
-			} catch (YamlParseException $e) {
-				throw new InvalidArgumentException('Failed to parse YAML encoded Kubeconfig: ' . $e->getMessage(), 0, $e);
-			}
-		} else {
-			throw new InvalidArgumentException('Invalid Kubeconfig content type: ' . $contentType);
-		}
+        if ($clusters === []) {
+            throw new InvalidArgumentException('KubeConfig parse error - No clusters are defined.');
+        }
 
-		// TODO: support token auth?
+        $users = [];
+        if (isset($content['users']) && is_array($content['users'])) {
+            foreach ($content['users'] as $user) {
+                $users[$user['name']] = $user['user'];
+            }
+        }
 
-		$contexts = [];
-		if (isset($content['contexts']) && is_array($content['contexts'])) {
-			foreach ($content['contexts'] as $context) {
-				$contexts[$context['name']] = $context['context'];
-			}
-		}
-		if (count($contexts) === 0) {
-			throw new InvalidArgumentException('Kubeconfig parse error - No contexts are defined.');
-		}
+        if ($users === []) {
+            throw new InvalidArgumentException('KubeConfig parse error - No users are defined.');
+        }
 
-		$clusters = [];
-		if (isset($content['clusters']) && is_array($content['clusters'])) {
-			foreach ($content['clusters'] as $cluster) {
-				$clusters[$cluster['name']] = $cluster['cluster'];
-			}
-		}
-		if (count($clusters) === 0) {
-			throw new InvalidArgumentException('Kubeconfig parse error - No clusters are defined.');
-		}
+        if (!isset($content['current-context'])) {
+            throw new InvalidArgumentException('KubeConfig parse error - Missing current context attribute.');
+        }
 
-		$users = [];
-		if (isset($content['users']) && is_array($content['users'])) {
-			foreach ($content['users'] as $user) {
-				$users[$user['name']] = $user['user'];
-			}
-		}
-		if (count($users) === 0) {
-			throw new InvalidArgumentException('Kubeconfig parse error - No users are defined.');
-		}
+        if (!isset($contexts[$content['current-context']])) {
+            throw new InvalidArgumentException(
+                'KubeConfig parse error - The current context "' . $content['current-context'] . '" is undefined.'
+            );
+        }
 
-		if (!isset($content['current-context'])) {
-			throw new InvalidArgumentException('Kubeconfig parse error - Missing current context attribute.');
-		}
-		if (!isset($contexts[$content['current-context']])) {
-			throw new InvalidArgumentException('Kubeconfig parse error - The current context "' . $content['current-context'] . '" is undefined.');
-		}
-		$context = $contexts[$content['current-context']];
+        $context = $contexts[$content['current-context']];
 
-		if (!isset($context['cluster'])) {
-			throw new InvalidArgumentException('Kubeconfig parse error - The current context is missing the cluster attribute.');
-		}
-		if (!isset($clusters[$context['cluster']])) {
-			throw new InvalidArgumentException('Kubeconfig parse error - The cluster "' . $context['cluster'] . '" is undefined.');
-		}
-		$cluster = $clusters[$context['cluster']];
+        if (!isset($context['cluster'])) {
+            throw new InvalidArgumentException(
+                'KubeConfig parse error - The current context is missing the cluster attribute.'
+            );
+        }
 
-		if (!isset($context['user'])) {
-			throw new InvalidArgumentException('Kubeconfig parse error - The current context is missing the user attribute.');
-		}
-		if (!isset($users[$context['user']])) {
-			throw new InvalidArgumentException('Kubeconfig parse error - The user "' . $context['user'] . '" is undefined.');
-		}
-		$user = $users[$context['user']];
+        if (!isset($clusters[$context['cluster']])) {
+            throw new InvalidArgumentException(
+                'KubeConfig parse error - The cluster "' . $context['cluster'] . '" is undefined.'
+            );
+        }
 
-		$options = [];
+        $cluster = $clusters[$context['cluster']];
 
-		if (!isset($cluster['server'])) {
-			throw new InvalidArgumentException('Kubeconfig parse error - The cluster "' . $context['cluster'] . '" is missing the server attribute.');
-		}
-		$options['master'] = $cluster['server'];
+        if (!isset($context['user'])) {
+            throw new InvalidArgumentException(
+                'KubeConfig parse error - The current context is missing the user attribute.'
+            );
+        }
 
-		if (isset($cluster['certificate-authority-data'])) {
-			$options['ca_cert'] = self::getTempFilePath('ca-cert.pem', base64_decode($cluster['certificate-authority-data'], true));
-		} elseif (strpos($options['master'], 'https://') !== false) {
-			$options['verify'] = false;
-		}
+        if (!isset($users[$context['user']])) {
+            throw new InvalidArgumentException(
+                'KubeConfig parse error - The user "' . $context['user'] . '" is undefined.'
+            );
+        }
 
-		if (isset($user['client-certificate-data'])) {
-			$options['client_cert'] = self::getTempFilePath('client-cert.pem', base64_decode($user['client-certificate-data'], true));
-		}
+        $user = $users[$context['user']];
 
-		if (isset($user['client-key-data'])) {
-			$options['client_key'] = self::getTempFilePath('client-key.pem', base64_decode($user['client-key-data'], true));
-		}
+        $options = [];
 
-		return $options;
-	}
+        if (!isset($cluster['server'])) {
+            throw new InvalidArgumentException(
+                'KubeConfig parse error - The cluster "' . $context['cluster'] . '" is missing the server attribute.'
+            );
+        }
 
-	/**
-	 * Parse a kubeconfig file.
-	 * 
-	 * @throws \InvalidArgumentException
-	 */
-	public static function parseKubeconfigFile(string $filePath): array
-	{
-		if (!file_exists($filePath)) {
-			throw new InvalidArgumentException('Kubeconfig file does not exist at path: ' . $filePath);
-		}
+        $options['master'] = $cluster['server'];
 
-		return self::parseKubeconfig(file_get_contents($filePath));
-	}
+        if (isset($cluster['certificate-authority-data'])) {
+            $options['ca_cert'] = self::getTempFilePath(
+                'ca-cert.pem',
+                base64_decode(
+                    (string) $cluster['certificate-authority-data'],
+                    true
+                )
+            );
+        } elseif (str_contains((string) $options['master'], 'https://')) {
+            $options['verify'] = false;
+        }
 
-	/**
-	 * Get a temp file path for some content.
-	 */
-	protected static function getTempFilePath(string $fileName, string $fileContent): string
-	{
-		$fileName = 'kubernetes-client-' . $fileName;
+        if (isset($user['client-certificate-data'])) {
+            $options['client_cert'] = self::getTempFilePath(
+                'client-cert.pem',
+                base64_decode(
+                    (string) $user['client-certificate-data'],
+                    true
+                )
+            );
+        }
 
-		$tempFilePath = sys_get_temp_dir() . DIRECTORY_SEPARATOR  . $fileName;
+        if (isset($user['client-key-data'])) {
+            $options['client_key'] = self::getTempFilePath(
+                'client-key.pem',
+                base64_decode(
+                    (string) $user['client-key-data'],
+                    true
+                )
+            );
+        }
 
-		if (file_put_contents($tempFilePath, $fileContent) === false) {
-			throw new Exception('Failed to write content to temp file: ' . $tempFilePath);
-		}
+        return new self(
+            options: $options,
+            repositoryRegistry: $repositoryRegistry,
+            httpClient: $httpClient,
+            httpRequestFactory: $httpRequestFactory,
+            httpStreamFactory: $httpStreamFactory,
+        );
+    }
 
-		return $tempFilePath;
-	}
+    /**
+     * @throws JsonException
+     */
+    public static function loadFromKubeConfigFile(
+        string $filePath,
+        RepositoryRegistry $repositoryRegistry = null,
+        ClientInterface $httpClient = null,
+        RequestFactoryInterface $httpRequestFactory = null,
+        StreamFactoryInterface $httpStreamFactory = null,
+    ): self {
+        if (!file_exists($filePath)) {
+            throw new InvalidArgumentException('KubeConfig file does not exist at path: ' . $filePath);
+        }
 
-	/**
-	 * Set namespace.
-	 */
-	public function setNamespace(string $namespace): void
-	{
-		$this->namespace = $namespace;
-	}
+        return self::loadFromKubeConfig(
+            content: (string) file_get_contents($filePath),
+            format: FileFormat::Yaml,
+            repositoryRegistry: $repositoryRegistry,
+            httpClient: $httpClient,
+            httpRequestFactory: $httpRequestFactory,
+            httpStreamFactory: $httpStreamFactory,
+        );
+    }
 
-	/**
-	 * Set patch header
-	 */
-	public function setPatchType(string $patchType = "strategic"): void
-	{
-		if ($patchType === "merge") {
-			$this->patchHeaders = ['Content-Type' => 'application/merge-patch+json'];
-		} elseif ($patchType === "json") {
-			$this->patchHeaders = ['Content-Type' => 'application/json-patch+json'];
-		} else {
-			$this->patchHeaders = ['Content-Type' => 'application/strategic-merge-patch+json'];
-		}
-	}
+    /**
+     * @throws Exception
+     */
+    private static function getTempFilePath(string $fileName, string $fileContent): string
+    {
+        $fileName = 'kubernetes-client-' . $fileName;
 
-	/**
-	 * Send a request.
-	 *
-	 * @param  mixed $body
-	 * @return mixed
-	 * @throws \Maclof\Kubernetes\Exceptions\BadRequestException
-	 */
-	#[\ReturnTypeWillChange]
-	public function sendRequest(string $method, string $uri, array $query = [], $body = null, bool $namespace = true, string $apiVersion = null, array $requestOptions = [])
-	{
-		$baseUri = $apiVersion ? ('apis/' . $apiVersion) : ('api/' . $this->apiVersion);
-		if ($namespace) {
-			$baseUri .= '/namespaces/' . $this->namespace;
-		}
-		
-		if ($uri === '/healthz' || $uri === '/version') {
-			$requestUrl = $this->master . '/' . $uri;
-		} else {
-			$requestUrl = $this->master . '/' . $baseUri . $uri;
-		}
+        $tempFilePath = (string) sys_get_temp_dir() . DIRECTORY_SEPARATOR  . $fileName;
 
-		if (is_array($query) && !empty($query)) {
-			$requestUrl .= '?' . http_build_query($query);
-		}
+        if (false === file_put_contents($tempFilePath, $fileContent)) {
+            // @codeCoverageIgnoreStart
+            throw new Exception('Failed to write content to temp file: ' . $tempFilePath);
+            // @codeCoverageIgnoreEnd
+        }
 
-		try {
-			$headers = $method === 'PATCH' ? $this->patchHeaders : [];
-			if ('POST' === $method || 'PUT' === $method) {
-				$headers['Content-Type'] = 'application/json';
-			}
+        return $tempFilePath;
+    }
 
-			if ($this->token) {
-				$token = $this->token;
-				if (file_exists($token)) {
-					$token = file_get_contents($token);
-				}
-				$headers['Authorization'] = 'Bearer ' . trim($token);
-			}
+    public function setNamespace(string $namespace): self
+    {
+        $this->namespace = $namespace;
 
-			if (!is_null($body)) {
-				$body = is_array($body) ? json_encode($body, JSON_FORCE_OBJECT) : $body;
-			}
+        return $this;
+    }
 
-			$response = $this->httpClient->send($method, $requestUrl, $headers, $body);
+    public function setPatchType(PatchType $patchType = PatchType::Strategic): self
+    {
+        $this->patchHeaders = match ($patchType) {
+            PatchType::Merge => ['Content-Type' => 'application/merge-patch+json'],
+            PatchType::Json => ['Content-Type' => 'application/json-patch+json'],
+            PatchType::Strategic => ['Content-Type' => 'application/strategic-merge-patch+json'],
+        };
 
-			// Error Handling
-			if ($response->getStatusCode() >= 500) {
-				$msg = substr((string) $response->getBody(), 0, 1200); // Limit maximum chars
-				throw new ApiServerException("Server responded with 500 Error: " . $msg, 500);
-			}
+        return $this;
+    }
 
-			if (in_array($response->getStatusCode(), [401, 403], true)) {
-				$msg = substr((string) $response->getBody(), 0, 1200); // Limit maximum chars
-				throw new ApiServerException("Authentication Exception: " . $msg, $response->getStatusCode());
-			}
+    /**
+     * @param array<string, string|null> $query
+     */
+    private function makeUri(
+        string $uri,
+        array $query = [],
+        bool $namespace = true,
+        string $apiVersion = null
+    ): string {
+        if (!empty($apiVersion)) {
+            $baseUri = 'apis/' . $apiVersion;
+        } else {
+            $baseUri = 'api/' . self::API_VERSION;
+        }
 
-			if (isset($requestOptions['stream']) && $requestOptions['stream'] === true) {
-				return $response;
-			}
+        if (!empty($namespace)) {
+            $baseUri .= '/namespaces/' . $this->namespace;
+        }
 
-			$responseBody = (string) $response->getBody();
-			$jsonResponse = json_decode($responseBody, true);
+        if ('/healthz' === $uri || '/version' === $uri) {
+            $requestUri = $this->master . '/' . $uri;
+        } else {
+            $requestUri = $this->master . '/' . $baseUri . $uri;
+        }
 
-			return is_array($jsonResponse) ? $jsonResponse : $responseBody;
-		} catch (HttpTransferException $e) {
-            if (!$e instanceof HttpException) {
-                throw new BadRequestException($e->getMessage(), 500, $e);
+        if (is_array($query) && [] !== $query) {
+            $requestUri .= '?' . http_build_query($query);
+        }
+
+        return $requestUri;
+    }
+
+    /**
+     * @param array<string, string|null> $query
+     * @throws \Http\Client\Exception
+     * @throws ApiServerException
+     */
+    private function makeRequest(
+        RequestMethod $method,
+        string $uri,
+        array $query = [],
+        mixed $body = null,
+        bool $namespace = true,
+        string $apiVersion = null
+    ): ResponseInterface {
+        try {
+            $requestUri = $this->makeUri(
+                uri: $uri,
+                query: $query,
+                namespace: $namespace,
+                apiVersion: $apiVersion,
+            );
+
+            $headers = [];
+
+            if (RequestMethod::Patch === $method) {
+                $headers = $this->patchHeaders;
             }
 
-            $response = $e->getResponse();
+            if (RequestMethod::Post === $method || RequestMethod::Put === $method) {
+                $headers['Content-Type'] = 'application/json';
+            }
 
-			$responseBody = (string) $response->getBody();
+            if (!empty($this->token)) {
+                $token = $this->token;
+                if (file_exists($token)) {
+                    $token = (string) file_get_contents($token);
+                }
 
-			if (in_array('application/json', $response->getHeader('Content-Type'), true)) {
-				$jsonResponse = json_decode($responseBody, true);
+                $headers['Authorization'] = 'Bearer ' . trim($token);
+            }
 
-				if ($this->isUpgradeRequestRequired($jsonResponse)) {
-					return $this->sendUpgradeRequest($requestUrl, $query);
-				}
-			}
+            if (is_array($body)) {
+                $body = json_encode($body, JSON_FORCE_OBJECT);
+            }
 
-			throw new BadRequestException($responseBody, $response->getStatusCode(), $e);
-		}
-	}
+            $response = $this->httpClient->send(
+                method: $method->value,
+                uri: $requestUri,
+                headers: $headers,
+                body: $body
+            );
 
-	/**
-	 * Check if an upgrade request is required.
-	 */
-	protected function isUpgradeRequestRequired(array $response): bool
-	{
-		return $response['code'] == 400 && $response['status'] === 'Failure' && $response['message'] === 'Upgrade request required';
-	}
+            // Error Handling
+            if ($response->getStatusCode() >= 500) {
+                $msg = substr((string) $response->getBody(), 0, 1200); // Limit maximum chars
+                throw new ApiServerException("Server responded with 500 Error: " . $msg, 500);
+            }
 
-	/**
-	 * Send an upgrade request and return any response messages.
-	 */
-	protected function sendUpgradeRequest(string $requestUri, array $query): array
-	{
-		$fullUrl = $this->master .'/' . $requestUri . '?' . implode('&', $this->parseQueryParams($query));
-		if (parse_url($fullUrl, PHP_URL_SCHEME) === 'https') {
-			$fullUrl = str_replace('https://', 'wss://', $fullUrl);
-		} else {
-			$fullUrl = str_replace('http://', 'ws://', $fullUrl);
-		}
+            if (in_array($response->getStatusCode(), [401, 403], true)) {
+                $msg = substr((string) $response->getBody(), 0, 1200); // Limit maximum chars
+                throw new ApiServerException("Authentication Exception: " . $msg, $response->getStatusCode());
+            }
 
-		$headers = [];
-		$socketOptions = [
-			'timeout' => 20,
-			'tls' => [],
-		];
+            return $response;
+        } catch (HttpTransferException $httpTransferException) {
+            if (!$httpTransferException instanceof HttpException) {
+                throw new BadRequestException($httpTransferException->getMessage(), 500, $httpTransferException);
+            }
 
-		if ($this->token) {
-			$token = $this->token;
-			if (file_exists($token)) {
-				$token = file_get_contents($token);
-			}
+            $response = $httpTransferException->getResponse();
+            $responseBody = (string) $response->getBody();
 
-			$headers['Authorization'] = 'Bearer ' . trim($token);
-		} elseif ($this->username && $this->password) {
-			$headers['Authorization'] = 'Basic ' . base64_encode($this->username . ':' . $this->password);
-		}
+            throw new BadRequestException($responseBody, $response->getStatusCode(), $httpTransferException);
+        }
+    }
 
-		if (!is_null($this->verify)) {
-			$socketOptions['tls']['verify_peer'] = $this->verify;
-			$socketOptions['tls']['verify_peer_name'] = $this->verify;
-		} elseif ($this->caCert) {
-			$socketOptions['tls']['cafile'] = $this->caCert;
-		}
+    /**
+     * @param array<string, string|null> $query
+     * @return array<string, string|null>
+     * @throws \Http\Client\Exception
+     * @throws BadRequestException
+     * @throws ApiServerException
+     * @throws JsonException
+     */
+    public function sendRequest(
+        RequestMethod $method,
+        string $uri,
+        array $query = [],
+        mixed $body = null,
+        bool $namespace = true,
+        string $apiVersion = null
+    ): array {
+        $response = $this->makeRequest(
+            method: $method,
+            uri: $uri,
+            query: $query,
+            body: $body,
+            namespace: $namespace,
+            apiVersion: $apiVersion,
+        );
 
-		if ($this->clientCert) {
-			$socketOptions['tls']['local_cert'] = $this->clientCert;
-		}
-		if ($this->clientKey) {
-			$socketOptions['tls']['local_pk'] = $this->clientKey;
-		}
+        $responseBody = (string) $response->getBody();
+        return json_decode($responseBody, true, 512, JSON_THROW_ON_ERROR);
+    }
 
-		$loop = ReactFactory::create();
+    /**
+     * @param array<string, string|null> $query
+     * @throws \Http\Client\Exception
+     * @throws BadRequestException
+     * @throws ApiServerException
+     */
+    public function sendStringableRequest(
+        RequestMethod $method,
+        string $uri,
+        array $query = [],
+        mixed $body = null,
+        bool $namespace = true,
+        string $apiVersion = null
+    ): string {
+        $response = $this->makeRequest(
+            method: $method,
+            uri: $uri,
+            query: $query,
+            body: $body,
+            namespace: $namespace,
+            apiVersion: $apiVersion,
+        );
 
-		$socketConnector = new ReactSocketConnector($loop, $socketOptions);
+        return (string) $response->getBody();
+    }
 
-		$wsConnector = new WebSocketConnector($loop, $socketConnector);
+    /**
+     * @param array<string, string|null> $query
+     */
+    public function sendStreamableRequest(
+        RequestMethod $method,
+        string $uri,
+        array $query = [],
+        mixed $body = null,
+        bool $namespace = true,
+        string $apiVersion = null
+    ): ResponseInterface {
+        return $this->makeRequest(
+            method: $method,
+            uri: $uri,
+            query: $query,
+            body: $body,
+            namespace: $namespace,
+            apiVersion: $apiVersion,
+        );
+    }
 
-		$connPromise = $wsConnector($fullUrl, ['base64.channel.k8s.io'], $headers);
+    /**
+     * @return array<string, string|null>
+     * @throws \Http\Client\Exception
+     * @throws BadRequestException
+     * @throws ApiServerException
+     * @throws JsonException
+     */
+    public function health(): array
+    {
+        return $this->sendRequest(RequestMethod::Get, '/healthz');
+    }
 
-		$wsConnection = null;
-		$messages = [];
+    /**
+     * @return array<string, string|null>
+     * @throws \Http\Client\Exception
+     * @throws BadRequestException
+     * @throws ApiServerException
+     * @throws JsonException
+     */
+    public function version(): array
+    {
+        return $this->sendRequest(RequestMethod::Get, '/version');
+    }
 
-		$connPromise->then(function ($conn) use (&$wsConnection, &$messages) {
-			$wsConnection = $conn;
+    /**
+     * @param class-string<Repository> $name
+     * @param array<int|string, mixed> $args
+     * @return Repository
+     */
+    public function __call(string $name, array $args): Repository
+    {
+        if (isset($this->classInstances[$name])) {
+            return $this->classInstances[$name];
+        }
 
-			$conn->on('message', function ($message) use (&$messages) {
-				$data = $message->getPayload();
+        if (!isset($this->classRegistry[$name])) {
+            throw new BadMethodCallException('No client methods exist with the name: ' . $name);
+        }
 
-				$channel = $this->execChannels[substr($data, 0, 1)];
-				$message = base64_decode(substr($data, 1));
+        $class = $this->classRegistry[$name];
 
-				$messages[] = [
-					'channel' => $channel,
-					'message' => $message,
-				];
-			});
-		}, function ($e) {
-			throw new BadRequestException('Websocket Exception', 0, $e);
-		});
+        if (!is_a($class, Repository::class, true)) {
+            throw new BadMethodCallException("$class is not a valid Repository class");
+        }
 
-		$loop->run();
-
-		if ($wsConnection) {
-			$wsConnection->close();
-		}
-
-		return $messages;
-	}
-
-	/**
-	 * Parse an array of query params.
-	 */
-	protected function parseQueryParams(array $query): array
-	{
-		$parts = [];
-
-		foreach ($query as $key => $value) {
-			if (is_array($value)) {
-				foreach ($value as $val) {
-					$parts[] = $key . '=' . $val;
-				}
-
-				continue;
-			}
-
-			$parts[] = $key . '=' . $value;
-		}
-
-		return $parts;
-	}
-
-	/**
-	 * Check the health.
-	 *
-	 * @return array|string
-	 */
-	public function health()
-	{
-		return $this->sendRequest('GET', '/healthz');
-	}
-	
-	/**
-	 * Check the version.
-	 */
-	public function version(): array
-	{
-		return $this->sendRequest('GET', '/version');
-	}
-	
-	/**
-	 * Magic call method to grab a class instance.
-	 *
-	 * @return \stdClass
-	 * @throws \BadMethodCallException
-	 */
-	public function __call(string $name, array $args)
-	{
-		if (isset($this->classRegistry[$name])) {
-			$class = $this->classRegistry[$name];
-
-			return $this->classInstances[$name] ?? new $class($this);
-		}
-
-		throw new BadMethodCallException('No client methods exist with the name: ' . $name);
-	}
+        return $this->classInstances[$name] = new $class($this);
+    }
 }

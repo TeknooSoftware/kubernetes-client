@@ -1,82 +1,146 @@
-<?php namespace Maclof\Kubernetes;
+<?php
 
-class RepositoryRegistry implements \ArrayAccess, \Countable
+/*
+ * Kubernetes Client.
+ *
+ * LICENSE
+ *
+ * This source file is subject to the MIT license
+ * license that are bundled with this package in the folder licences
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to richarddeloge@gmail.com so we can send you a copy immediately.
+ *
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) Marc Lough ( https://github.com/maclof/kubernetes-client )
+ *
+ * @link        http://teknoo.software/kubernetes-client Project website
+ *
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ * @author      Marc Lough <http://maclof.com>
+ */
+
+declare(strict_types=1);
+
+namespace Teknoo\Kubernetes;
+
+use ArrayAccess;
+use Countable;
+use Teknoo\Kubernetes\Repository\CertificateRepository;
+use Teknoo\Kubernetes\Repository\ClusterRoleBindingRepository;
+use Teknoo\Kubernetes\Repository\ClusterRoleRepository;
+use Teknoo\Kubernetes\Repository\ConfigMapRepository;
+use Teknoo\Kubernetes\Repository\CronJobRepository;
+use Teknoo\Kubernetes\Repository\DaemonSetRepository;
+use Teknoo\Kubernetes\Repository\DeploymentRepository;
+use Teknoo\Kubernetes\Repository\EndpointRepository;
+use Teknoo\Kubernetes\Repository\EventRepository;
+use Teknoo\Kubernetes\Repository\HorizontalPodAutoscalerRepository;
+use Teknoo\Kubernetes\Repository\IngressRepository;
+use Teknoo\Kubernetes\Repository\IssuerRepository;
+use Teknoo\Kubernetes\Repository\JobRepository;
+use Teknoo\Kubernetes\Repository\NamespaceRepository;
+use Teknoo\Kubernetes\Repository\NetworkPolicyRepository;
+use Teknoo\Kubernetes\Repository\NodeRepository;
+use Teknoo\Kubernetes\Repository\PersistentVolumeClaimRepository;
+use Teknoo\Kubernetes\Repository\PersistentVolumeRepository;
+use Teknoo\Kubernetes\Repository\PodRepository;
+use Teknoo\Kubernetes\Repository\QuotaRepository;
+use Teknoo\Kubernetes\Repository\ReplicaSetRepository;
+use Teknoo\Kubernetes\Repository\ReplicationControllerRepository;
+use Teknoo\Kubernetes\Repository\Repository;
+use Teknoo\Kubernetes\Repository\RoleBindingRepository;
+use Teknoo\Kubernetes\Repository\RoleRepository;
+use Teknoo\Kubernetes\Repository\SecretRepository;
+use Teknoo\Kubernetes\Repository\ServiceAccountRepository;
+use Teknoo\Kubernetes\Repository\ServiceRepository;
+use Teknoo\Kubernetes\Repository\SubnamespaceAnchorRepository;
+
+/**
+ * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
+ * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
+ * @copyright   Copyright (c) Marc Lough ( https://github.com/maclof/kubernetes-client )
+ *
+ * @link        http://teknoo.software/kubernetes-client Project website
+ *
+ * @license     http://teknoo.software/license/mit         MIT License
+ * @author      Richard Déloge <richarddeloge@gmail.com>
+ * @author      Marc Lough <http://maclof.com>
+ *
+ * @implements ArrayAccess<string, class-string<Repository>>
+ */
+class RepositoryRegistry implements ArrayAccess, Countable
 {
-
     /**
-     * Initial registry class map. Contains only package builtin repositories.
+     * @var array<string, class-string<Repository>>
      */
-    protected array $map = [
-        'nodes'                  => Repositories\NodeRepository::class,
-        'quotas'                 => Repositories\QuotaRepository::class,
-        'pods'                   => Repositories\PodRepository::class,
-        'replicaSets'            => Repositories\ReplicaSetRepository::class,
-        'replicationControllers' => Repositories\ReplicationControllerRepository::class,
-        'services'               => Repositories\ServiceRepository::class,
-        'secrets'                => Repositories\SecretRepository::class,
-        'events'                 => Repositories\EventRepository::class,
-        'configMaps'             => Repositories\ConfigMapRepository::class,
-        'endpoints'              => Repositories\EndpointRepository::class,
-        'persistentVolume'       => Repositories\PersistentVolumeRepository::class,
-        'persistentVolumeClaims' => Repositories\PersistentVolumeClaimRepository::class,
-        'namespaces'             => Repositories\NamespaceRepository::class,
-		'serviceAccounts'	     => Repositories\ServiceAccountRepository::class,
+    private array $map = [
+        'nodes'                  => NodeRepository::class,
+        'quotas'                 => QuotaRepository::class,
+        'pods'                   => PodRepository::class,
+        'replicaSets'            => ReplicaSetRepository::class,
+        'replicationControllers' => ReplicationControllerRepository::class,
+        'services'               => ServiceRepository::class,
+        'secrets'                => SecretRepository::class,
+        'events'                 => EventRepository::class,
+        'configMaps'             => ConfigMapRepository::class,
+        'endpoints'              => EndpointRepository::class,
+        'persistentVolume'       => PersistentVolumeRepository::class,
+        'persistentVolumeClaims' => PersistentVolumeClaimRepository::class,
+        'namespaces'             => NamespaceRepository::class,
+        'serviceAccounts'         => ServiceAccountRepository::class,
 
         // batch/v1
-        'jobs'                   => Repositories\JobRepository::class,
+        'jobs'                   => JobRepository::class,
 
         // batch/v2
-        'cronJobs'               => Repositories\CronJobRepository::class,
+        'cronJobs'               => CronJobRepository::class,
 
         // apps/v1
-        'deployments'            => Repositories\DeploymentRepository::class,
+        'deployments'            => DeploymentRepository::class,
 
         // extensions/v1
-        'daemonSets'             => Repositories\DaemonSetRepository::class,
-        'ingresses'              => Repositories\IngressRepository::class,
+        'daemonSets'             => DaemonSetRepository::class,
+        'ingresses'              => IngressRepository::class,
 
         // autoscaling/v2
-        'horizontalPodAutoscalers'  => Repositories\HorizontalPodAutoscalerRepository::class,
+        'horizontalPodAutoscalers'  => HorizontalPodAutoscalerRepository::class,
 
         // networking.k8s.io/v1
-        'networkPolicies'        => Repositories\NetworkPolicyRepository::class,
+        'networkPolicies'        => NetworkPolicyRepository::class,
 
         // certmanager.k8s.io/v1
-        'certificates'           => Repositories\CertificateRepository::class,
-        'issuers'                => Repositories\IssuerRepository::class,
+        'certificates'           => CertificateRepository::class,
+        'issuers'                => IssuerRepository::class,
 
-		//rbac.authorization.k8s.io/v1
-		'roles' 				 => Repositories\RoleRepository::class,
-		'roleBindings' 			 => Repositories\RoleBindingRepository::class,
-		'clusterRoles' 				 => Repositories\ClusterRoleRepository::class,
-		'clusterRoleBindings' 			 => Repositories\ClusterRoleBindingRepository::class,
+        //rbac.authorization.k8s.io/v1
+        'roles'                  => RoleRepository::class,
+        'roleBindings'              => RoleBindingRepository::class,
+        'clusterRoles'              => ClusterRoleRepository::class,
+        'clusterRoleBindings'      => ClusterRoleBindingRepository::class,
 
         //hnc.x-k8s.io/v1
-		'subnamespacesAnchors'   => Repositories\SubnamespaceAnchorRepository::class,
+        'subnamespacesAnchors'   => SubnamespaceAnchorRepository::class,
     ];
 
-    public function __construct()
-    {
-
-    }
-
-    public function offsetExists($offset): bool
+    public function offsetExists(mixed $offset): bool
     {
         return isset($this->map[$offset]);
     }
 
-    #[\ReturnTypeWillChange]
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): ?string
     {
-        return $this->map[$offset];
+        return $this->map[$offset] ?? null;
     }
 
-    public function offsetSet($offset, $value): void
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->map[$offset] = $value;
     }
 
-    public function offsetUnset($offset): void
+    public function offsetUnset(mixed $offset): void
     {
         unset($this->map[$offset]);
     }
