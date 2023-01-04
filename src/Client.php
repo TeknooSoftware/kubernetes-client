@@ -40,6 +40,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use RuntimeException;
 use Symfony\Component\Yaml\Exception\ParseException as YamlParseException;
 use Symfony\Component\Yaml\Yaml;
 use Teknoo\Kubernetes\Enums\FileFormat;
@@ -200,6 +201,10 @@ class Client
 
         if (isset($options['namespace'])) {
             $this->namespace = $options['namespace'];
+        }
+
+        if (empty($this->master)) {
+            throw new RuntimeException("Error, master option is mandatory for this client");
         }
 
         return $this;
@@ -519,7 +524,7 @@ class Client
             );
 
             // Error Handling
-            if ($response->getStatusCode() >= 500) {
+            if (500 <= $response->getStatusCode()) {
                 $msg = substr((string) $response->getBody(), 0, 1200); // Limit maximum chars
                 throw new ApiServerException("Server responded with 500 Error: " . $msg, 500);
             }
@@ -529,7 +534,7 @@ class Client
                 throw new ApiServerException("Authentication Exception: " . $msg, $response->getStatusCode());
             }
 
-            if (404 === $response->getStatusCode()) {
+            if (400 <= $response->getStatusCode()) {
                 $msg = substr((string) $response->getBody(), 0, 1200); // Limit maximum chars
                 throw new ApiServerException($msg, $response->getStatusCode());
             }

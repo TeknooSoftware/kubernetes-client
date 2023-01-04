@@ -42,6 +42,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
 use ReflectionProperty;
+use RuntimeException;
 use stdClass;
 use Teknoo\Kubernetes\Client;
 use Teknoo\Kubernetes\Collection\PodCollection;
@@ -88,6 +89,33 @@ class ClientTest extends TestCase
     private string $apiVersion = 'v1';
 
     private string $namespace = 'default';
+
+    public function testConstructorMissingMasterInConstruction()
+    {
+        $this->expectException(RuntimeException::class);
+        $client = new Client([
+            'token' => 'foo',
+            'namespace' => 'bar'
+        ]);
+    }
+
+    public function testSetOptionsMissingMasterInConstruction()
+    {
+        $client = new Client([
+            'master' => 'https://api.example.com',
+            'token' => 'foo',
+            'namespace' => 'bar'
+        ]);
+
+        $this->expectException(RuntimeException::class);
+        $client->setOptions(
+            [
+                'token' => 'foo2',
+                'namespace' => 'bar2'
+            ],
+            true
+        );
+    }
 
     public function testSetOptions()
     {
@@ -639,14 +667,14 @@ class ClientTest extends TestCase
 
     public function testGetPodsFromApi(): void
     {
-        $client = new Client();
+        $client = new Client(['master' => 'https://kubernetes.io']);
 
         $this->setMockHttpResponse(
             $client,
             self::JSON_BODY,
             [
                 'GET',
-                '/api/' . $this->apiVersion . '/namespaces/' . $this->namespace . '/pods'
+                'https://kubernetes.io/api/' . $this->apiVersion . '/namespaces/' . $this->namespace . '/pods'
             ]
         );
 
@@ -691,12 +719,12 @@ class ClientTest extends TestCase
      */
     public function testExceptionIsThrownOnFailureResponse(int $respCode, string $exceptionClass, string $msgRegEx): void
     {
-        $client = new Client();
+        $client = new Client(['master' => 'https://kubernetes.io']);
 
         $this->setMockHttpResponse(
             $client,
             ['message' => 'Error hath occurred'],
-            ["GET", "/api/v1/namespaces/default/api/anything", [], null],
+            ["GET", "https://kubernetes.io/api/v1/namespaces/default/api/anything", [], null],
             $respCode
         );
 
