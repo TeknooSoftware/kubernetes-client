@@ -678,6 +678,11 @@ class ClientTest extends TestCase
                 ApiServerException::class,
                 '/Authentication Exception/',
             ],
+            [
+                404,
+                ApiServerException::class,
+                '/Error hath occurred/',
+            ],
         ];
     }
 

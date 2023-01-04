@@ -529,6 +529,11 @@ class Client
                 throw new ApiServerException("Authentication Exception: " . $msg, $response->getStatusCode());
             }
 
+            if (404 === $response->getStatusCode()) {
+                $msg = substr((string) $response->getBody(), 0, 1200); // Limit maximum chars
+                throw new ApiServerException($msg, $response->getStatusCode());
+            }
+
             return $response;
         } catch (HttpTransferException $httpTransferException) {
             if (!$httpTransferException instanceof HttpException) {
@@ -566,6 +571,8 @@ class Client
             namespace: $namespace,
             apiVersion: $apiVersion,
         );
+
+
 
         $responseBody = (string) $response->getBody();
         return json_decode($responseBody, true, 512, JSON_THROW_ON_ERROR);
