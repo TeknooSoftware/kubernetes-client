@@ -577,8 +577,6 @@ class Client
             apiVersion: $apiVersion,
         );
 
-
-
         $responseBody = (string) $response->getBody();
         return json_decode($responseBody, true, 512, JSON_THROW_ON_ERROR);
     }
