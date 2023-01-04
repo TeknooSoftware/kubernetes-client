@@ -1,5 +1,10 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [0.30.2] - 2023-01-04
+### Dev Release
+- Client::health()
+- QA
+
 ## [0.30.1] - 2023-01-04
 ### Dev Release
 - Client::setOptions (and Client's construction) require a master value to be executed

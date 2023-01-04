@@ -56,6 +56,7 @@ use Teknoo\Kubernetes\Repository\NamespaceRepository;
 use Teknoo\Kubernetes\RepositoryRegistry;
 use Teknoo\Tests\Kubernetes\Helper\HttpMethodsMockClient;
 
+use function json_encode;
 use function method_exists;
 
 /**
@@ -591,9 +592,9 @@ class ClientTest extends TestCase
         $result = $client->health();
 
         self::assertEquals(
-            [
+            json_encode([
                 'message' => 'Hello world',
-            ],
+            ]),
             $result
         );
     }

@@ -460,7 +460,7 @@ class Client
         }
 
         if ('/healthz' === $uri || '/version' === $uri) {
-            $requestUri = $this->master . '/' . $uri;
+            $requestUri = $this->master . $uri;
         } else {
             $requestUri = $this->master . '/' . $baseUri . $uri;
         }
@@ -629,15 +629,14 @@ class Client
     }
 
     /**
-     * @return array<string, string|null>
      * @throws \Http\Client\Exception
      * @throws BadRequestException
      * @throws ApiServerException
      * @throws JsonException
      */
-    public function health(): array
+    public function health(): string
     {
-        return $this->sendRequest(RequestMethod::Get, '/healthz');
+        return $this->sendStringableRequest(RequestMethod::Get, '/healthz');
     }
 
     /**
