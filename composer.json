@@ -49,7 +49,7 @@
 		"phpstan/phpstan": "^1.9.5",
 		"icanhazstring/composer-unused": "^0.8.5",
 		"nikic/php-parser": "^v4.15.2",
-		"php-coveralls/php-coveralls": "^2.0",
+		"behat/behat": "^v3.12",
 		"php-http/socket-client": "^2.0",
 		"nyholm/psr7": "^1.5"
 	},
