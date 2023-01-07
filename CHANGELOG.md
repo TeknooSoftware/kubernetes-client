@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [0.30.3] - 2023-01-07
+### Dev Release
+- QA
+
 ## [0.30.2] - 2023-01-04
 ### Dev Release
 - Client::health()
