@@ -75,7 +75,7 @@ abstract class Model implements Arrayable, Stringable
     protected array $attributes = [];
 
     /**
-     * @param string|array<string, string|array<string, mixed>> $attributes
+     * @param string|array<string, string|array<int|string, mixed>> $attributes
      * @throws InvalidArgumentException
      */
     public function __construct(array|string $attributes = [], FileFormat $format = FileFormat::Array)
