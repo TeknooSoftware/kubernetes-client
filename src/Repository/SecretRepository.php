@@ -46,5 +46,5 @@ class SecretRepository extends Repository
 {
     protected string $uri = 'secrets';
 
-    protected ?string $collectionClassName = SecretCollection::class;
+    protected static ?string $collectionClassName = SecretCollection::class;
 }

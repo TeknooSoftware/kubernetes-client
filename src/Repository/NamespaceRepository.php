@@ -48,5 +48,5 @@ class NamespaceRepository extends Repository
 
     protected bool $namespace = false;
 
-    protected ?string $collectionClassName = NamespaceCollection::class;
+    protected static ?string $collectionClassName = NamespaceCollection::class;
 }

@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\PersistentVolume;
  */
 class PersistentVolumeCollection extends Collection
 {
-    protected ?string $modelClassName = PersistentVolume::class;
+    protected static ?string $modelClassName = PersistentVolume::class;
 }

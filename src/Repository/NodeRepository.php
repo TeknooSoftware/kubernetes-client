@@ -49,7 +49,7 @@ class NodeRepository extends Repository
 
     protected bool $namespace = false;
 
-    protected ?string $collectionClassName = NodeCollection::class;
+    protected static ?string $collectionClassName = NodeCollection::class;
 
     /**
      * @param array<string, string|null> $queryParams

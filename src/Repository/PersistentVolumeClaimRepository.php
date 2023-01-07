@@ -46,5 +46,5 @@ class PersistentVolumeClaimRepository extends Repository
 {
     protected string $uri = 'persistentvolumeclaims';
 
-    protected ?string $collectionClassName = PersistentVolumeClaimCollection::class;
+    protected static ?string $collectionClassName = PersistentVolumeClaimCollection::class;
 }

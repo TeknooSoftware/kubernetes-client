@@ -46,5 +46,5 @@ class NetworkPolicyRepository extends Repository
 {
     protected string $uri = 'networkpolicies';
 
-    protected ?string $collectionClassName = NetworkPolicyCollection::class;
+    protected static ?string $collectionClassName = NetworkPolicyCollection::class;
 }

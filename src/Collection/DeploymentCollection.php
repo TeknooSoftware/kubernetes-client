@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\Deployment;
  */
 class DeploymentCollection extends Collection
 {
-    protected ?string $modelClassName = Deployment::class;
+    protected static ?string $modelClassName = Deployment::class;
 }

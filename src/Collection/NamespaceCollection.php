@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\NamespaceModel;
  */
 class NamespaceCollection extends Collection
 {
-    protected ?string $modelClassName = NamespaceModel::class;
+    protected static ?string $modelClassName = NamespaceModel::class;
 }

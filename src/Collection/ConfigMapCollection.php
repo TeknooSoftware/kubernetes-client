@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\ConfigMap;
  */
 class ConfigMapCollection extends Collection
 {
-    protected ?string $modelClassName = ConfigMap::class;
+    protected static ?string $modelClassName = ConfigMap::class;
 }

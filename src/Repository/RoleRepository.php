@@ -43,5 +43,5 @@ class RoleRepository extends Repository
 {
     protected string $uri = 'roles';
 
-    protected ?string $collectionClassName = RoleCollection::class;
+    protected static ?string $collectionClassName = RoleCollection::class;
 }

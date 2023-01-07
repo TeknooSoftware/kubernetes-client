@@ -46,5 +46,5 @@ class DeploymentRepository extends Repository
 {
     protected string $uri = 'deployments';
 
-    protected ?string $collectionClassName = DeploymentCollection::class;
+    protected static ?string $collectionClassName = DeploymentCollection::class;
 }

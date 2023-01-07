@@ -46,5 +46,5 @@ class ReplicationControllerRepository extends Repository
 {
     protected string $uri = 'replicationcontrollers';
 
-    protected ?string $collectionClassName = ReplicationControllerCollection::class;
+    protected static ?string $collectionClassName = ReplicationControllerCollection::class;
 }

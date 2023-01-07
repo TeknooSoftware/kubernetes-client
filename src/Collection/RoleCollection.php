@@ -40,5 +40,5 @@ use Teknoo\Kubernetes\Model\Role;
  */
 class RoleCollection extends Collection
 {
-    protected ?string $modelClassName = Role::class;
+    protected static ?string $modelClassName = Role::class;
 }

@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\CronJob;
  */
 class CronJobCollection extends Collection
 {
-    protected ?string $modelClassName = CronJob::class;
+    protected static ?string $modelClassName = CronJob::class;
 }

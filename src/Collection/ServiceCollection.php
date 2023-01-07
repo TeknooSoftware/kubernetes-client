@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\Service;
  */
 class ServiceCollection extends Collection
 {
-    protected ?string $modelClassName = Service::class;
+    protected static ?string $modelClassName = Service::class;
 }

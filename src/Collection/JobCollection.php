@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\Job;
  */
 class JobCollection extends Collection
 {
-    protected ?string $modelClassName = Job::class;
+    protected static ?string $modelClassName = Job::class;
 }

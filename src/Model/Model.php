@@ -60,7 +60,7 @@ use const JSON_UNESCAPED_SLASHES;
  */
 abstract class Model implements Arrayable, Stringable
 {
-    protected string $apiVersion = 'v1';
+    protected static string $apiVersion = 'v1';
 
     protected bool $pluralKind = false;
 
@@ -144,7 +144,7 @@ abstract class Model implements Arrayable, Stringable
         }
 
         if (!isset($this->schema['apiVersion'])) {
-            $this->schema['apiVersion'] = $this->apiVersion;
+            $this->schema['apiVersion'] = static::$apiVersion;
         }
 
         $schema = array_merge($this->schema, $this->attributes);
@@ -158,17 +158,9 @@ abstract class Model implements Arrayable, Stringable
         return $jsonSchema;
     }
 
-    public function getApiVersion(): string
+    public static function getApiVersion(): string
     {
-        return $this->apiVersion;
-    }
-
-    public function setApiVersion(string $apiVersion): self
-    {
-        $that = clone $this;
-        $that->apiVersion = $apiVersion;
-
-        return $that;
+        return static::$apiVersion;
     }
 
     public function updateModel(callable $modifier): self

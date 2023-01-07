@@ -38,5 +38,5 @@ namespace Teknoo\Kubernetes\Model;
  */
 class ReplicaSet extends Model
 {
-    protected string $apiVersion = 'apps/v1';
+    protected static string $apiVersion = 'apps/v1';
 }

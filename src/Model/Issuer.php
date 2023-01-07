@@ -39,5 +39,5 @@ namespace Teknoo\Kubernetes\Model;
  */
 class Issuer extends Model
 {
-    protected string $apiVersion = 'certmanager.k8s.io/v1';
+    protected static string $apiVersion = 'certmanager.k8s.io/v1';
 }

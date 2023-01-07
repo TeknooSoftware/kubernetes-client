@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\Issuer;
  */
 class IssuerCollection extends Collection
 {
-    protected ?string $modelClassName = Issuer::class;
+    protected static ?string $modelClassName = Issuer::class;
 }

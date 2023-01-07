@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\Certificate;
  */
 class CertificateCollection extends Collection
 {
-    protected ?string $modelClassName = Certificate::class;
+    protected static ?string $modelClassName = Certificate::class;
 }

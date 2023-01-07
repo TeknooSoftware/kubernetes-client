@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\Quota;
  */
 class QuotaCollection extends Collection
 {
-    protected ?string $modelClassName = Quota::class;
+    protected static ?string $modelClassName = Quota::class;
 }

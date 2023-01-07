@@ -39,5 +39,5 @@ namespace Teknoo\Kubernetes\Model;
  */
 class DaemonSet extends Model
 {
-    protected string $apiVersion = 'apps/v1';
+    protected static string $apiVersion = 'apps/v1';
 }

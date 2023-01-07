@@ -45,5 +45,5 @@ class ClusterRoleRepository extends Repository
 
     protected bool $namespace = false;
 
-    protected ?string $collectionClassName = ClusterRoleCollection::class;
+    protected static ?string $collectionClassName = ClusterRoleCollection::class;
 }

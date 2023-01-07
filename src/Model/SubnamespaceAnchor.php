@@ -36,5 +36,5 @@ namespace Teknoo\Kubernetes\Model;
  */
 class SubnamespaceAnchor extends Model
 {
-    protected string $apiVersion = 'hnc.x-k8s.io/v1';
+    protected static string $apiVersion = 'hnc.x-k8s.io/v1';
 }

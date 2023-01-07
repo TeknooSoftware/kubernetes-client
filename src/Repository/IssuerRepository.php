@@ -49,5 +49,5 @@ class IssuerRepository extends Repository
 
     protected string $uri = 'issuers';
 
-    protected ?string $collectionClassName = IssuerCollection::class;
+    protected static ?string $collectionClassName = IssuerCollection::class;
 }

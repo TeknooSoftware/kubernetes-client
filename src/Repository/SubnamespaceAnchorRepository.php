@@ -44,5 +44,5 @@ class SubnamespaceAnchorRepository extends Repository
 {
     protected string $uri = 'subnamespacesanchors';
 
-    protected ?string $collectionClassName = SubnamespaceAnchorCollection::class;
+    protected static ?string $collectionClassName = SubnamespaceAnchorCollection::class;
 }

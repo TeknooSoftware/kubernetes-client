@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\Ingress;
  */
 class IngressCollection extends Collection
 {
-    protected ?string $modelClassName = Ingress::class;
+    protected static ?string $modelClassName = Ingress::class;
 }

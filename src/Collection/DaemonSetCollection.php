@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\DaemonSet;
  */
 class DaemonSetCollection extends Collection
 {
-    protected ?string $modelClassName = DaemonSet::class;
+    protected static ?string $modelClassName = DaemonSet::class;
 }

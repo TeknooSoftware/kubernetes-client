@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\Secret;
  */
 class SecretCollection extends Collection
 {
-    protected ?string $modelClassName = Secret::class;
+    protected static ?string $modelClassName = Secret::class;
 }

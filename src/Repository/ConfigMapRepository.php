@@ -46,5 +46,5 @@ class ConfigMapRepository extends Repository
 {
     protected string $uri = 'configmaps';
 
-    protected ?string $collectionClassName = ConfigMapCollection::class;
+    protected static ?string $collectionClassName = ConfigMapCollection::class;
 }

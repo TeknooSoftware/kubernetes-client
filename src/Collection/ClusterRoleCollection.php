@@ -40,5 +40,5 @@ use Teknoo\Kubernetes\Model\ClusterRole;
  */
 class ClusterRoleCollection extends Collection
 {
-    protected ?string $modelClassName = ClusterRole::class;
+    protected static ?string $modelClassName = ClusterRole::class;
 }

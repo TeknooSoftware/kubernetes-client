@@ -46,5 +46,5 @@ class DaemonSetRepository extends Repository
 {
     protected string $uri = 'daemonsets';
 
-    protected ?string $collectionClassName = DaemonSetCollection::class;
+    protected static ?string $collectionClassName = DaemonSetCollection::class;
 }

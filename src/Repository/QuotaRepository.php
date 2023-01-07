@@ -48,5 +48,5 @@ class QuotaRepository extends Repository
 
     protected bool $namespace = false;
 
-    protected ?string $collectionClassName = QuotaCollection::class;
+    protected static ?string $collectionClassName = QuotaCollection::class;
 }

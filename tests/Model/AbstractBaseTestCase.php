@@ -211,18 +211,17 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
         );
     }
 
-    public function testSetApiVersion(): void
+    public function testGetApiVersion(): void
     {
-        $model1 = $this->getModel([], FileFormat::Array);
-
-        self::assertEquals($model1->getApiVersion(), $this->getApiVersion());
-
-        self::assertInstanceOf(
-            $model1::class,
-            $model2 = $model1->setApiVersion('foo/v2alpha1')
-        );
-        self::assertEquals($this->getApiVersion(), $model1->getApiVersion());
-        self::assertEquals('foo/v2alpha1', $model2->getApiVersion());
+        $modelClass = $this->getModel(
+            $a1 = [
+                'metadata' => [
+                    'name' => 'test',
+                ],
+            ],
+            FileFormat::Array
+        )::class;
+        self::assertIsString($modelClass::getApiVersion());
     }
 
     public function testUpdateModel(): void

@@ -47,7 +47,7 @@ class PodRepository extends Repository
 {
     protected string $uri = 'pods';
 
-    protected ?string $collectionClassName = PodCollection::class;
+    protected static ?string $collectionClassName = PodCollection::class;
 
     /**
      * @param array<string, string|null> $queryParams

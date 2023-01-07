@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\Node;
  */
 class NodeCollection extends Collection
 {
-    protected ?string $modelClassName = Node::class;
+    protected static ?string $modelClassName = Node::class;
 }

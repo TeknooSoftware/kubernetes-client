@@ -57,7 +57,7 @@ class ErrorsInCollectionsTest extends PHPUnitTestCase
 
         $this->expectException(LogicException::class);
         $collection = new class ($items) extends Collection {
-            protected ?string $modelClassName = null;
+            protected static ?string $modelClassName = null;
         };
     }
 
@@ -71,7 +71,7 @@ class ErrorsInCollectionsTest extends PHPUnitTestCase
 
         $this->expectException(LogicException::class);
         $collection = new class ($items) extends Collection {
-            protected ?string $modelClassName = \stdClass::class;
+            protected static ?string $modelClassName = \stdClass::class;
         };
     }
 }

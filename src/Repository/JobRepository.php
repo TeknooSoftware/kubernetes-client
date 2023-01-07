@@ -46,5 +46,5 @@ class JobRepository extends Repository
 {
     protected string $uri = 'jobs';
 
-    protected ?string $collectionClassName = JobCollection::class;
+    protected static ?string $collectionClassName = JobCollection::class;
 }

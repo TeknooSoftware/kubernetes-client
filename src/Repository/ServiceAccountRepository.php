@@ -44,5 +44,5 @@ class ServiceAccountRepository extends Repository
 {
     protected string $uri = 'serviceaccounts';
 
-    protected ?string $collectionClassName = ServiceAccountCollection::class;
+    protected static ?string $collectionClassName = ServiceAccountCollection::class;
 }

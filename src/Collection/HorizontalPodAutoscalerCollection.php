@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\HorizontalPodAutoscaler;
  */
 class HorizontalPodAutoscalerCollection extends Collection
 {
-    protected ?string $modelClassName = HorizontalPodAutoscaler::class;
+    protected static ?string $modelClassName = HorizontalPodAutoscaler::class;
 }

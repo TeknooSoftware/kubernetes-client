@@ -39,5 +39,5 @@ namespace Teknoo\Kubernetes\Model;
  */
 class CronJob extends Model
 {
-    protected string $apiVersion = 'batch/v1';
+    protected static string $apiVersion = 'batch/v1';
 }

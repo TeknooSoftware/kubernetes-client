@@ -98,7 +98,7 @@ class ErrorsInRepositoriesTest extends PHPUnitTestCase
     {
         $this->expectException(LogicException::class);
         $collection = new class ($this->getClientMock()) extends Repository {
-            protected ?string $collectionClassName = null;
+            protected static ?string $collectionClassName = null;
         };
         $collection->find([]);
     }
@@ -107,7 +107,7 @@ class ErrorsInRepositoriesTest extends PHPUnitTestCase
     {
         $this->expectException(LogicException::class);
         $collection = new class ($this->getClientMock()) extends Repository {
-            protected ?string $collectionClassName = \stdClass::class;
+            protected static ?string $collectionClassName = \stdClass::class;
         };
         $collection->find([]);
     }

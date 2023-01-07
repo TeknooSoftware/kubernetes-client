@@ -35,5 +35,5 @@ namespace Teknoo\Kubernetes\Model;
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */class ClusterRole extends Model
 {
-    protected string $apiVersion = 'rbac.authorization.k8s.io/v1';
+    protected static string $apiVersion = 'rbac.authorization.k8s.io/v1';
 }

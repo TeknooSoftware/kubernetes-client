@@ -58,8 +58,6 @@ abstract class Repository
 
     protected bool $namespace = true;
 
-    protected ?string $apiVersion = 'v1';
-
     /**
      * @var array<string, string|null>
      */
@@ -80,7 +78,7 @@ abstract class Repository
      */
     protected array $inequalityFieldSelector = [];
 
-    protected ?string $collectionClassName = null;
+    protected static ?string $collectionClassName = null;
 
     public function __construct(
         protected Client $client
@@ -99,7 +97,7 @@ abstract class Repository
         bool $namespace = true,
         ?PatchType $patchType = null,
     ): array {
-        $apiVersion = $this->getApiVersion();
+        $apiVersion = self::getApiVersion();
         if ('v1' === $apiVersion) {
             $apiVersion = null;
         }
@@ -118,9 +116,12 @@ abstract class Repository
         );
     }
 
-    protected function getApiVersion(): ?string
+    protected static function getApiVersion(): ?string
     {
-        return $this->apiVersion;
+        $collectionClass = self::getCollectionName();
+        $modelClass = $collectionClass::getModelClass();
+
+        return $modelClass::getApiVersion();
     }
 
     /**
@@ -339,7 +340,7 @@ abstract class Repository
 
         $this->resetParameters();
 
-        $apiVersion = $this->getApiVersion();
+        $apiVersion = self::getApiVersion();
         if ('v1' === $apiVersion) {
             $apiVersion = null;
         }
@@ -364,29 +365,37 @@ abstract class Repository
     }
 
     /**
-     * @param array<string, string|null> $response
-     * @return Collection<T>
+     * @return class-string<Collection<T>>
      */
-    protected function createCollection(array $response): Collection
+    private static function getCollectionName(): string
     {
-        if (null === $this->collectionClassName) {
+        if (null === static::$collectionClassName) {
             throw new LogicException(
                 "Error, Model class name or getItems must be defined for the collection " . static::class
             );
         }
 
-        $collectionClassName = $this->collectionClassName;
-
-        if (!is_a($collectionClassName, Collection::class, true)) {
+        if (!is_a(static::$collectionClassName, Collection::class, true)) {
             throw new LogicException(
                 sprintf(
                     "Error, Collection %s must implements %s to be use by %s",
-                    $collectionClassName,
+                    static::$collectionClassName,
                     Collection::class,
                     static::class,
                 ),
             );
         }
+
+        return static::$collectionClassName;
+    }
+
+    /**
+     * @param array<string, string|null> $response
+     * @return Collection<T>
+     */
+    protected function createCollection(array $response): Collection
+    {
+        $collectionClassName = self::getCollectionName();
 
         if (!isset($response['items'])) {
             throw new RuntimeException('Error, no items returned by the Kubernetes API');

@@ -45,5 +45,5 @@ class ClusterRoleBindingRepository extends Repository
 
     protected bool $namespace = false;
 
-    protected ?string $collectionClassName = ClusterRoleBindingCollection::class;
+    protected static ?string $collectionClassName = ClusterRoleBindingCollection::class;
 }

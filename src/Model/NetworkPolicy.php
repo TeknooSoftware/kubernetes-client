@@ -39,5 +39,5 @@ namespace Teknoo\Kubernetes\Model;
  */
 class NetworkPolicy extends Model
 {
-    protected string $apiVersion = 'networking.k8s.io/v1';
+    protected static string $apiVersion = 'networking.k8s.io/v1';
 }

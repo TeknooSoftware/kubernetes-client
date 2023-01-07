@@ -46,5 +46,5 @@ class EndpointRepository extends Repository
 {
     protected string $uri = 'endpoints';
 
-    protected ?string $collectionClassName = EndpointCollection::class;
+    protected static ?string $collectionClassName = EndpointCollection::class;
 }

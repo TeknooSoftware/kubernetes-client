@@ -49,5 +49,5 @@ class CertificateRepository extends Repository
 
     protected string $uri = 'certificates';
 
-    protected ?string $collectionClassName = CertificateCollection::class;
+    protected static ?string $collectionClassName = CertificateCollection::class;
 }

@@ -46,5 +46,5 @@ class EventRepository extends Repository
 {
     protected string $uri = 'events';
 
-    protected ?string $collectionClassName = EventCollection::class;
+    protected static ?string $collectionClassName = EventCollection::class;
 }

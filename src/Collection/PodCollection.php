@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\Pod;
  */
 class PodCollection extends Collection
 {
-    protected ?string $modelClassName = Pod::class;
+    protected static ?string $modelClassName = Pod::class;
 }

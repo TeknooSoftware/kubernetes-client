@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\ReplicaSet;
  */
 class ReplicaSetCollection extends Collection
 {
-    protected ?string $modelClassName = ReplicaSet::class;
+    protected static ?string $modelClassName = ReplicaSet::class;
 }

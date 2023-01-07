@@ -40,5 +40,5 @@ use Teknoo\Kubernetes\Model\RoleBinding;
  */
 class RoleBindingCollection extends Collection
 {
-    protected ?string $modelClassName = RoleBinding::class;
+    protected static ?string $modelClassName = RoleBinding::class;
 }

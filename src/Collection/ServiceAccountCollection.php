@@ -41,5 +41,5 @@ use Teknoo\Kubernetes\Model\ServiceAccount;
  */
 class ServiceAccountCollection extends Collection
 {
-    protected ?string $modelClassName = ServiceAccount::class;
+    protected static ?string $modelClassName = ServiceAccount::class;
 }

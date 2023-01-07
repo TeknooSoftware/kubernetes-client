@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\Event;
  */
 class EventCollection extends Collection
 {
-    protected ?string $modelClassName = Event::class;
+    protected static ?string $modelClassName = Event::class;
 }

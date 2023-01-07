@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\Endpoint;
  */
 class EndpointCollection extends Collection
 {
-    protected ?string $modelClassName = Endpoint::class;
+    protected static ?string $modelClassName = Endpoint::class;
 }

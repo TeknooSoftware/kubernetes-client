@@ -39,5 +39,5 @@ use Teknoo\Kubernetes\Model\ClusterRoleBinding;
  */
 class ClusterRoleBindingCollection extends Collection
 {
-    protected ?string $modelClassName = ClusterRoleBinding::class;
+    protected static ?string $modelClassName = ClusterRoleBinding::class;
 }

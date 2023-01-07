@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\NetworkPolicy;
  */
 class NetworkPolicyCollection extends Collection
 {
-    protected ?string $modelClassName = NetworkPolicy::class;
+    protected static ?string $modelClassName = NetworkPolicy::class;
 }

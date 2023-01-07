@@ -36,5 +36,5 @@ namespace Teknoo\Kubernetes\Model;
  */
 class ClusterRoleBinding extends Model
 {
-    protected string $apiVersion = 'rbac.authorization.k8s.io/v1';
+    protected static string $apiVersion = 'rbac.authorization.k8s.io/v1';
 }

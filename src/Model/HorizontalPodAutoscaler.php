@@ -39,5 +39,5 @@ namespace Teknoo\Kubernetes\Model;
  */
 class HorizontalPodAutoscaler extends Model
 {
-    protected string $apiVersion = 'autoscaling/v2';
+    protected static string $apiVersion = 'autoscaling/v2';
 }

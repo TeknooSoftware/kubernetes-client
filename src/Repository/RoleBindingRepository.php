@@ -43,5 +43,5 @@ class RoleBindingRepository extends Repository
 {
     protected string $uri = 'rolebindings';
 
-    protected ?string $collectionClassName = RoleBindingCollection::class;
+    protected static ?string $collectionClassName = RoleBindingCollection::class;
 }

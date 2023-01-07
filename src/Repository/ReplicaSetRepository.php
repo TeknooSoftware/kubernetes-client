@@ -46,5 +46,5 @@ class ReplicaSetRepository extends Repository
 {
     protected string $uri = 'replicasets';
 
-    protected ?string $collectionClassName = ReplicaSetCollection::class;
+    protected static ?string $collectionClassName = ReplicaSetCollection::class;
 }

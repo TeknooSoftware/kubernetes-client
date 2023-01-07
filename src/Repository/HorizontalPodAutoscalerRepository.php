@@ -46,5 +46,5 @@ class HorizontalPodAutoscalerRepository extends Repository
 {
     protected string $uri = 'horizontalpodautoscalers';
 
-    protected ?string $collectionClassName = HorizontalPodAutoscalerCollection::class;
+    protected static ?string $collectionClassName = HorizontalPodAutoscalerCollection::class;
 }

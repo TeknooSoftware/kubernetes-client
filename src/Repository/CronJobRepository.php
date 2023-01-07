@@ -46,5 +46,5 @@ class CronJobRepository extends Repository
 {
     protected string $uri = 'cronjobs';
 
-    protected ?string $collectionClassName = CronJobCollection::class;
+    protected static ?string $collectionClassName = CronJobCollection::class;
 }

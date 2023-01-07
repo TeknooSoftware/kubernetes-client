@@ -46,5 +46,5 @@ class IngressRepository extends Repository
 {
     protected string $uri = 'ingresses';
 
-    protected ?string $collectionClassName = IngressCollection::class;
+    protected static ?string $collectionClassName = IngressCollection::class;
 }

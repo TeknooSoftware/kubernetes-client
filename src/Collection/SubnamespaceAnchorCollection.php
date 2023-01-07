@@ -42,5 +42,5 @@ use Teknoo\Kubernetes\Model\SubnamespaceAnchor;
  */
 class SubnamespaceAnchorCollection extends Collection
 {
-    protected ?string $modelClassName = SubnamespaceAnchor::class;
+    protected static ?string $modelClassName = SubnamespaceAnchor::class;
 }

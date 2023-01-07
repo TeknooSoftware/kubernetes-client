@@ -52,7 +52,7 @@ abstract class Collection extends IlluminateCollection
     /**
      * @var class-string<T>
      */
-    protected ?string $modelClassName = null;
+    protected static ?string $modelClassName = null;
 
     /**
      * @param array<int, T> $items
@@ -63,29 +63,37 @@ abstract class Collection extends IlluminateCollection
     }
 
     /**
-     * @param array<int, T> $items
-     * @return array<int, T>
+     * @return class-string<T>
      */
-    protected function getItems(array &$items): array
+    public static function getModelClass(): string
     {
-        if (null === $this->modelClassName) {
+        if (null === static::$modelClassName) {
             throw new LogicException(
                 "Error, Model class name or getItems must be defined for the collection " . static::class
             );
         }
 
-        $modelClassName = $this->modelClassName;
-
-        if (!is_a($modelClassName, Model::class, true)) {
+        if (!is_a(static::$modelClassName, Model::class, true)) {
             throw new LogicException(
                 sprintf(
                     "Error, Model %s must implements %s to be use by %s",
-                    $modelClassName,
+                    static::$modelClassName,
                     Model::class,
                     static::class,
                 ),
             );
         }
+
+        return static::$modelClassName;
+    }
+
+    /**
+     * @param array<int, T> $items
+     * @return array<int, T>
+     */
+    protected function getItems(array &$items): array
+    {
+        $modelClassName = self::getModelClass();
 
         $final = [];
         foreach ($items as &$item) {

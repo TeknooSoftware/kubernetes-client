@@ -1,5 +1,14 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [0.31.0] - 2023-01-08
+### Dev Release
+- Fix API Version issue on request
+- `Model::$apiVersion` is now a static
+- `Model::getApiVersion()` is now static
+- Remove `Model::setApiVersion`
+- `Collection::$modelClassName` is now static
+- Add `Collection::getModelClass()` static method
+
 ## [0.30.3] - 2023-01-07
 ### Dev Release
 - QA

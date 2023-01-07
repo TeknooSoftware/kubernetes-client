@@ -39,5 +39,5 @@ namespace Teknoo\Kubernetes\Model;
  */
 class Certificate extends Model
 {
-    protected string $apiVersion = 'cert-manager.io/v1';
+    protected static string $apiVersion = 'cert-manager.io/v1';
 }

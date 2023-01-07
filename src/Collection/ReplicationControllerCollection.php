@@ -43,5 +43,5 @@ use Teknoo\Kubernetes\Model\ReplicationController;
  */
 class ReplicationControllerCollection extends Collection
 {
-    protected ?string $modelClassName = ReplicationController::class;
+    protected static ?string $modelClassName = ReplicationController::class;
 }
