@@ -235,6 +235,7 @@ Credits
 -------
 Richard Déloge - <richarddeloge@gmail.com> - Lead developer.
 Teknoo Software - <https://teknoo.software>
+Marc Lough - <https://github.com/maclof/kubernetes-client>
 
 About Teknoo Software
 ---------------------
@@ -244,7 +245,7 @@ sharing knowledge and skills.
 
 License
 -------
-East PaaS is licensed under the MIT License - see the licenses folder for details
+Kubernetes is licensed under the MIT License - see the licenses folder for details
 
 Contribute :)
 -------------

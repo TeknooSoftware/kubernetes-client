@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.0.0] - 2023-01-08
+### Stable Release
+- First release
+
 ## [0.31.0] - 2023-01-08
 ### Dev Release
 - Fix API Version issue on request
