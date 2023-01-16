@@ -30,7 +30,7 @@ use LogicException;
 use RuntimeException;
 use Teknoo\Kubernetes\Client;
 use Teknoo\Kubernetes\Collection\Collection;
-use Teknoo\Kubernetes\Contract\Repository\StreamingParser;
+use Teknoo\Kubernetes\Contracts\Repository\StreamingParser;
 use Teknoo\Kubernetes\Enums\PatchType;
 use Teknoo\Kubernetes\Enums\RequestMethod;
 use Teknoo\Kubernetes\Model\Model;

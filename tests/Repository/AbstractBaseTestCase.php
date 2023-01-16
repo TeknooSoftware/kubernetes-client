@@ -33,7 +33,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 use Teknoo\Kubernetes\Client;
-use Teknoo\Kubernetes\Contract\Repository\StreamingParser;
+use Teknoo\Kubernetes\Contracts\Repository\StreamingParser;
 use Teknoo\Kubernetes\Model\Model;
 use Teknoo\Kubernetes\Repository\Repository;
 

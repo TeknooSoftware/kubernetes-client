@@ -22,7 +22,7 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\Kubernetes\Contract\Repository;
+namespace Teknoo\Kubernetes\Contracts\Repository;
 
 use Psr\Http\Message\StreamInterface;
 
