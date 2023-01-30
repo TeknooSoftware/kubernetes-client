@@ -9,7 +9,7 @@
 		 stopOnFailure="false"
 		 bootstrap="tests/bootstrap.php"
 		 colors="true"
-		 xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+		 xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.5/phpunit.xsd"
 >
   <coverage>
     <include>
