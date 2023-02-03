@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.0.2] - 2023-02-03
+### Stable Release
+- Update dev libs to support PHPUnit 10 and remove unused phploc
+
 ## [1.0.1] - 2023-01-16
 ### Stable Release
 - Rename `Teknoo\Kubernetes\Contract\` to `Teknoo\Kubernetes\Contracts\`
