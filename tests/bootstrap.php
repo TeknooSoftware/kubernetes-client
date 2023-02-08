@@ -2,6 +2,7 @@
 /**
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
+
 defined('RUN_CLI_MODE')
     || define('RUN_CLI_MODE', true);
 

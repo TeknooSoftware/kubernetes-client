@@ -50,7 +50,10 @@
 		"icanhazstring/composer-unused": "^0.8.6",
 		"nikic/php-parser": "^v4.15.2",
 		"behat/behat": "^v3.12",
-		"php-http/socket-client": "^2.0",
+		"php-http/discovery": "^1.14.3",
+		"php-http/socket-client": "^2.1.1",
+		"php-http/curl-client": "^2.2.1",
+		"php-http/guzzle7-adapter": "^1",
 		"nyholm/psr7": "^1.5"
 	},
 	"autoload": {

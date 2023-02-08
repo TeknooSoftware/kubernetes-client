@@ -32,7 +32,6 @@ use Http\Client\Common\HttpMethodsClient;
 use Http\Client\Common\HttpMethodsClientInterface;
 use Http\Client\Exception\HttpException;
 use Http\Client\Exception\TransferException as HttpTransferException;
-use Http\Discovery\HttpClientDiscovery;
 use Http\Discovery\Psr17FactoryDiscovery;
 use InvalidArgumentException;
 use JsonException;
@@ -92,6 +91,7 @@ use function json_decode;
 use function json_encode;
 use function substr;
 use function sys_get_temp_dir;
+use function tempnam;
 use function trim;
 
 use const JSON_FORCE_OBJECT;
@@ -144,9 +144,15 @@ class Client
 
     private ?string $token = null;
 
+    private ?bool $verify = true;
+
+    private ?string $clientCertificate = null;
+
+    private ?string $clientKey = null;
+
     private string $namespace = 'default';
 
-    private HttpMethodsClientInterface $httpClient;
+    private ?HttpMethodsClientInterface $httpMethodsClient = null;
 
     private RepositoryRegistry $classRegistry;
 
@@ -166,17 +172,36 @@ class Client
     public function __construct(
         array $options = [],
         RepositoryRegistry $repositoryRegistry = null,
-        ClientInterface $httpClient = null,
-        RequestFactoryInterface $httpRequestFactory = null,
-        StreamFactoryInterface $httpStreamFactory = null,
+        private ?ClientInterface $httpClient = null,
+        private ?RequestFactoryInterface $httpRequestFactory = null,
+        private ?StreamFactoryInterface $httpStreamFactory = null,
     ) {
         $this->setOptions($options);
         $this->classRegistry = $repositoryRegistry ?? new RepositoryRegistry();
+    }
 
-        $this->httpClient = new HttpMethodsClient(
-            $httpClient ?? HttpClientDiscovery::find(),
-            $httpRequestFactory ?? Psr17FactoryDiscovery::findRequestFactory(),
-            $httpStreamFactory ?? Psr17FactoryDiscovery::findStreamFactory(),
+    private function getHttpMethodsClients(): HttpMethodsClientInterface
+    {
+        if (null !== $this->httpMethodsClient) {
+            return $this->httpMethodsClient;
+        }
+
+        if (null !== $this->clientCertificate && !file_exists($this->clientCertificate)) {
+            $this->clientCertificate = self::getTempFilePath('client-cert', $this->clientCertificate);
+        }
+
+        if (null !== $this->clientKey && !file_exists($this->clientKey)) {
+            $this->clientKey = self::getTempFilePath('client-cert', $this->clientKey);
+        }
+
+        return $this->httpMethodsClient = new HttpMethodsClient(
+            $this->httpClient ?? HttpClientDiscovery::find(
+                verify: true === $this->verify,
+                clientCertificate: $this->clientCertificate,
+                clientKey: $this->clientKey,
+            ),
+            $this->httpRequestFactory ?? Psr17FactoryDiscovery::findRequestFactory(),
+            $this->httpStreamFactory ?? Psr17FactoryDiscovery::findStreamFactory(),
         );
     }
 
@@ -188,7 +213,11 @@ class Client
         if ($reset) {
             $this->master = null;
             $this->token = null;
+            $this->clientKey = null;
+            $this->clientCertificate = null;
             $this->namespace = 'default';
+            $this->verify = true;
+            $this->httpMethodsClient = null;
         }
 
         if (isset($options['master'])) {
@@ -199,8 +228,20 @@ class Client
             $this->token = $options['token'];
         }
 
+        if (isset($options['client_cert'])) {
+            $this->clientCertificate = $options['client_cert'];
+        }
+
+        if (isset($options['client_key'])) {
+            $this->clientKey = $options['client_key'];
+        }
+
         if (isset($options['namespace'])) {
             $this->namespace = $options['namespace'];
+        }
+
+        if (isset($options['verify'])) {
+            $this->verify = !empty($options['verify']);
         }
 
         if (empty($this->master)) {
@@ -339,15 +380,10 @@ class Client
 
         $options['master'] = $cluster['server'];
 
-        if (isset($cluster['certificate-authority-data'])) {
-            $options['ca_cert'] = self::getTempFilePath(
-                'ca-cert.pem',
-                base64_decode(
-                    (string) $cluster['certificate-authority-data'],
-                    true
-                )
-            );
-        } elseif (str_contains((string) $options['master'], 'https://')) {
+        if (
+            !isset($cluster['certificate-authority-data'])
+            && str_contains((string) $options['master'], 'https://')
+        ) {
             $options['verify'] = false;
         }
 
@@ -516,7 +552,7 @@ class Client
                 $body = json_encode($body, JSON_FORCE_OBJECT);
             }
 
-            $response = $this->httpClient->send(
+            $response = $this->getHttpMethodsClients()->send(
                 method: $method->value,
                 uri: $requestUri,
                 headers: $headers,

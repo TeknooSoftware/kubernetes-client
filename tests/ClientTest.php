@@ -271,6 +271,44 @@ class ClientTest extends TestCase
         );
     }
 
+    public function testSendRequestWithCertificate(): void
+    {
+        $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
+        $httpClientProp->setAccessible(true);
+
+        $client = new Client([
+            'master' => 'https://api.example.com',
+            'client_cert' => 'foo',
+            'client_key' => 'bar',
+        ]);
+
+        $mockClientInterface = $this->createMock(ClientInterface::class);
+
+        $jsonBody = json_encode([
+            'message' => 'Hello world',
+        ]);
+
+        $response = new Response(200, [], $jsonBody);
+
+        $mockClientInterface->expects($this->once())
+            ->method('sendRequest')
+            ->withAnyParameters()
+            ->willReturn($response);
+
+        $httpClient = new HttpMethodsClient($mockClientInterface, new Psr17Factory());
+
+        $httpClientProp->setValue($client, $httpClient);
+
+        $result = $client->sendRequest(RequestMethod::Get, 'poddy/');
+
+        self::assertEquals(
+            [
+                'message' => 'Hello world',
+            ],
+            $result
+        );
+    }
+
     public function testSendRequestToPatch(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
@@ -649,7 +687,7 @@ class ClientTest extends TestCase
         int    $respStatusCode = 200,
         array  $respHeaders = []
     ): void {
-        $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
+        $httpClientProp = new ReflectionProperty(Client::class, 'httpMethodsClient');
         $httpClientProp->setAccessible(true);
 
         $mockHttpMethodsClient = $this->createMock(HttpMethodsMockClient::class);
@@ -746,6 +784,8 @@ class ClientTest extends TestCase
                 options: [
                     'master' => 'https://your-k8s-cluster.com',
                     'ca_cert' => '/tmp/kubernetes-client-ca-cert.pem',
+                    'client_cert' => '/tmp/kubernetes-client-client-cert.pem',
+                    'client_key' => '/tmp/kubernetes-client-client-key.pem',
                 ],
                 httpClient: $this->createMock(HttpClient::class),
                 httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
@@ -764,7 +804,9 @@ class ClientTest extends TestCase
             new Client(
                 options: [
                     'master' => 'https://your-k8s-cluster.com',
-                    'ca_cert' => '/tmp/kubernetes-client-ca-cert.pem',
+                    'client_cert' => '/tmp/kubernetes-client-client-cert.pem',
+                    'client_key' => '/tmp/kubernetes-client-client-key.pem',
+                    'verify' => false,
                 ],
                 httpClient: $this->createMock(HttpClient::class),
                 httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
@@ -783,7 +825,9 @@ class ClientTest extends TestCase
             new Client(
                 options: [
                     'master' => 'http://your-k8s-cluster.com',
-                    'ca_cert' => '/tmp/kubernetes-client-ca-cert.pem',
+                    'client_cert' => '/tmp/kubernetes-client-client-cert.pem',
+                    'client_key' => '/tmp/kubernetes-client-client-key.pem',
+                    'verify' => true,
                 ],
                 httpClient: $this->createMock(HttpClient::class),
                 httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
