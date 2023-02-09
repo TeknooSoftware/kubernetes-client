@@ -55,6 +55,10 @@ class FeatureContext implements Context
 
     private ?string $token = null;
 
+    private ?string $clientCert = null;
+
+    private ?string $clientKey = null;
+
     private ?string $namespace = null;
 
     private ?Model $model = null;
@@ -70,6 +74,8 @@ class FeatureContext implements Context
         $this->psrClient = null;
         $this->httpClient = null;
         $this->token = null;
+        $this->clientCert = null;
+        $this->clientKey = null;
         $this->namespace = null;
         $this->kubeClient = null;
         $this->model = null;
@@ -128,6 +134,15 @@ class FeatureContext implements Context
     }
 
     /**
+     * @Given an account identified by a certificate client
+     */
+    public function anAccountIdentifiedByAclientCert()
+    {
+        $this->clientCert = 'fooo';
+        $this->clientKey = 'baaar';
+    }
+
+    /**
      * @Given a namespace :value
      */
     public function aNamespace(string $value)
@@ -144,6 +159,8 @@ class FeatureContext implements Context
             options: [
                 'master' => 'https://api.example.com',
                 'token' => $this->token,
+                'client_cert' => $this->clientCert,
+                'client_key' => $this->clientKey,
                 'namespace' => $this->namespace,
             ],
             httpClient: $this->httpClient,

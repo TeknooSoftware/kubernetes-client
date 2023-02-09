@@ -57,11 +57,11 @@ class Curl implements InstantiatorInterface
             CURLOPT_SSL_VERIFYHOST => $verify,
         ];
 
-        if ($clientCertificate) {
+        if (!empty($clientCertificate)) {
             $options[CURLOPT_SSLCERT] = $clientCertificate;
         }
 
-        if ($clientKey) {
+        if (!empty($clientKey)) {
             $options[CURLOPT_SSLKEY] = $clientKey;
         }
 

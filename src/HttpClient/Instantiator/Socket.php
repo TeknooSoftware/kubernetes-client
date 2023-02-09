@@ -55,11 +55,11 @@ class Socket implements InstantiatorInterface
             ]
         ];
 
-        if ($clientCertificate) {
+        if (!empty($clientCertificate)) {
             $options['stream_context_options']['ssl']['local_cert'] = $clientCertificate;
         }
 
-        if ($clientKey) {
+        if (!empty($clientKey)) {
             $options['stream_context_options']['ssl']['local_pk'] = $clientKey;
         }
 

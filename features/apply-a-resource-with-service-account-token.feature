@@ -1,8 +1,8 @@
-Feature: Apply a resource
+Feature: Apply a resource with a service account token
   After apply a model instance, developper can be apply it as resource
   on a Kubernetes cluster : apply or update if it already exists
 
-  Scenario: Apply a new valid resource
+  Scenario: Apply a new valid resource with a service account token
     Given a Kubernetes cluster
     And a service account identified by a token "super token"
     And a namespace "behat-test"
@@ -14,7 +14,7 @@ Feature: Apply a resource
     Then the server must return an array as response
     And without error
 
-  Scenario: Apply a new not valid resource
+  Scenario: Apply a new not valid resource with a service account token
     Given a Kubernetes cluster
     And a service account identified by a token "super token"
     And a namespace "behat-test"
@@ -25,7 +25,7 @@ Feature: Apply a resource
     When the user apply the resource on the server
     Then the server must return an error "400"
 
-  Scenario: Apply an existent valid resource
+  Scenario: Apply an existent valid resource with a service account token
     Given a Kubernetes cluster
     And a service account identified by a token "super token"
     And a namespace "behat-test"
@@ -37,7 +37,7 @@ Feature: Apply a resource
     Then the server must return an array as response
     And without error
 
-  Scenario: Apply an existent new not valid resource
+  Scenario: Apply an existent new not valid resource with a service account token
     Given a Kubernetes cluster
     And a service account identified by a token "super token"
     And a namespace "behat-test"

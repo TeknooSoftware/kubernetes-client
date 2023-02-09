@@ -1,7 +1,7 @@
-Feature: Fetch a resource
+Feature: Fetch a resource with a service account token
   Fetch as model instance a Kubernetes resource from its name
 
-  Scenario: Fetch an existent ressource
+  Scenario: Fetch an existent ressource with a service account token
     Given a Kubernetes cluster
     And a service account identified by a token "super token"
     And a namespace "behat-test"
@@ -11,7 +11,7 @@ Feature: Fetch a resource
     Then the server must return a pod model
     And without error
 
-  Scenario: Fetch a missing ressource
+  Scenario: Fetch a missing ressource with a service account token
     Given a Kubernetes cluster
     And a service account identified by a token "super token"
     And a namespace "behat-test"
@@ -21,7 +21,7 @@ Feature: Fetch a resource
     Then the server must return a null response
     And without error
 
-  Scenario: Fetch a collection
+  Scenario: Fetch a collection with a service account token
     Given a Kubernetes cluster
     And a service account identified by a token "super token"
     And a namespace "behat-test"
@@ -31,7 +31,7 @@ Feature: Fetch a resource
     Then the server must return a collection of pods
     And without error
 
-  Scenario: Fetch a collection with label filter
+  Scenario: Fetch a collection with label filter with a service account token
     Given a Kubernetes cluster
     And a service account identified by a token "super token"
     And a namespace "behat-test"
@@ -41,7 +41,7 @@ Feature: Fetch a resource
     Then the server must return a collection of pods
     And without error
 
-  Scenario: Fetch an empty collection
+  Scenario: Fetch an empty collection with a service account token
     Given a Kubernetes cluster
     And a service account identified by a token "super token"
     And a namespace "behat-test"

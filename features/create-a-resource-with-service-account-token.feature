@@ -1,7 +1,7 @@
-Feature: Create a resource
+Feature: Create a resource with a service account token
   Create a new kubernetes resource from a model instance
 
-  Scenario: Create a new valid resource
+  Scenario: Create a new valid resource with a service account token
     Given a Kubernetes cluster
     And a service account identified by a token "super token"
     And a namespace "behat-test"
@@ -12,7 +12,7 @@ Feature: Create a resource
     Then the server must return an array as response
     And without error
 
-  Scenario: Create a new not valid resource
+  Scenario: Create a new not valid resource with a service account token
     Given a Kubernetes cluster
     And a service account identified by a token "super token"
     And a namespace "behat-test"

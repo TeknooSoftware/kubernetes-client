@@ -1,6 +1,6 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
-## [1.1.0] - 2023-02-xx
+## [1.1.0] - 2023-02-09
 ### Stable Release
 - Add `HttpClientDiscovery` to manage client certificate and disable ssl verification. 
 - Support authentification with client certificate.

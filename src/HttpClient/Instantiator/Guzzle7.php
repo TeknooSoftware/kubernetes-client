@@ -52,11 +52,11 @@ class Guzzle7 implements InstantiatorInterface
             RequestOptions::VERIFY => $verify,
         ];
 
-        if ($clientCertificate) {
+        if (!empty($clientCertificate)) {
             $options[RequestOptions::CERT] = $clientCertificate;
         }
 
-        if ($clientKey) {
+        if (!empty($clientKey)) {
             $options[RequestOptions::SSL_KEY] = $clientKey;
         }
 

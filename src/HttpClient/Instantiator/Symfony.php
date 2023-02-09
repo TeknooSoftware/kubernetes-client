@@ -52,11 +52,11 @@ class Symfony implements InstantiatorInterface
             'verify_host' => $verify,
         ];
 
-        if ($clientCertificate) {
+        if (!empty($clientCertificate)) {
             $options['local_cert'] = $clientCertificate;
         }
 
-        if ($clientKey) {
+        if (!empty($clientKey)) {
             $options['local_pk'] = $clientKey;
         }
 
