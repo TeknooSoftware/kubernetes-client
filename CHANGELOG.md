@@ -1,5 +1,11 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.1.0] - 2023-02-xx
+### Stable Release
+- Add `HttpClientDiscovery` to manage client certificate and disable ssl verification. 
+- Support authentification with client certificate.
+- Support disabling ssl verification.
+
 ## [1.0.2] - 2023-02-03
 ### Stable Release
 - Update dev libs to support PHPUnit 10 and remove unused phploc

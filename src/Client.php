@@ -167,7 +167,7 @@ class Client
     private array $patchHeaders = ['Content-Type' => 'application/strategic-merge-patch+json'];
 
     /**
-     * @param array<string, string> $options
+     * @param array<string, string|bool> $options
      */
     public function __construct(
         array $options = [],
@@ -206,7 +206,7 @@ class Client
     }
 
     /**
-     * @param array<string, string> $options
+     * @param array<string, string|bool> $options
      */
     public function setOptions(array $options, bool $reset = false): self
     {
@@ -221,23 +221,23 @@ class Client
         }
 
         if (isset($options['master'])) {
-            $this->master = $options['master'];
+            $this->master = (string) $options['master'];
         }
 
         if (isset($options['token'])) {
-            $this->token = $options['token'];
+            $this->token = (string) $options['token'];
         }
 
         if (isset($options['client_cert'])) {
-            $this->clientCertificate = $options['client_cert'];
+            $this->clientCertificate = (string) $options['client_cert'];
         }
 
         if (isset($options['client_key'])) {
-            $this->clientKey = $options['client_key'];
+            $this->clientKey = (string) $options['client_key'];
         }
 
         if (isset($options['namespace'])) {
-            $this->namespace = $options['namespace'];
+            $this->namespace = (string) $options['namespace'];
         }
 
         if (isset($options['verify'])) {

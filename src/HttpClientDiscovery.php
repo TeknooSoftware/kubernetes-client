@@ -34,9 +34,11 @@ use Http\Discovery\ClassDiscovery;
 use Http\Discovery\Exception\ClassInstantiationFailedException;
 use Http\Discovery\Exception\DiscoveryFailedException;
 use Http\Discovery\Exception\NotFoundException;
+use Symfony\Component\HttpClient\HttplugClient as SymfonyHttplug;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Curl;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Guzzle7;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Socket;
+use Teknoo\Kubernetes\HttpClient\Instantiator\Symfony;
 use Teknoo\Kubernetes\HttpClient\InstantiatorInterface;
 
 use function is_string;
@@ -59,6 +61,7 @@ class HttpClientDiscovery extends ClassDiscovery
         CurlClient::class => Curl::class,
         Guzzle7Client::class => Guzzle7::class,
         SocketClient::class => Socket::class,
+        SymfonyHttplug::class => Symfony::class,
     ];
 
     /**
