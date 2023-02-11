@@ -16,3 +16,4 @@ composer.lock
 /.phpunit.result.cache
 /tests/var/cache/*
 /tests/var/logs/*
+/.phpunit.cache/

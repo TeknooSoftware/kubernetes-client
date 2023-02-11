@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.1.1] - 2023-02-11
+### Stable Release
+- Remove phpcpd and upgrade phpunit.xml
+
 ## [1.1.0] - 2023-02-09
 ### Stable Release
 - Add `HttpClientDiscovery` to manage client certificate and disable ssl verification. 

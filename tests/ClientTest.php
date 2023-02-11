@@ -32,6 +32,7 @@ use Http\Client\Exception\HttpException;
 use Http\Client\Exception\TransferException as HttpTransferException;
 use Http\Client\HttpClient;
 use Http\Discovery\Psr17FactoryDiscovery;
+use Http\Discovery\StreamFactoryDiscovery;
 use InvalidArgumentException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
@@ -257,7 +258,11 @@ class ClientTest extends TestCase
             ->withAnyParameters()
             ->willReturn($response);
 
-        $httpClient = new HttpMethodsClient($mockClientInterface, new Psr17Factory());
+        $httpClient = new HttpMethodsClient(
+            $mockClientInterface,
+            Psr17FactoryDiscovery::findRequestFactory(),
+            Psr17FactoryDiscovery::findStreamFactory(),
+        );
 
         $httpClientProp->setValue($client, $httpClient);
 
@@ -295,7 +300,11 @@ class ClientTest extends TestCase
             ->withAnyParameters()
             ->willReturn($response);
 
-        $httpClient = new HttpMethodsClient($mockClientInterface, new Psr17Factory());
+        $httpClient = new HttpMethodsClient(
+            $mockClientInterface,
+            Psr17FactoryDiscovery::findRequestFactory(),
+            Psr17FactoryDiscovery::findStreamFactory(),
+        );
 
         $httpClientProp->setValue($client, $httpClient);
 
@@ -460,7 +469,11 @@ class ClientTest extends TestCase
             ->withAnyParameters()
             ->willReturn($response);
 
-        $httpClient = new HttpMethodsClient($mockClientInterface, new Psr17Factory());
+        $httpClient = new HttpMethodsClient(
+            $mockClientInterface,
+            Psr17FactoryDiscovery::findRequestFactory(),
+            Psr17FactoryDiscovery::findStreamFactory(),
+        );
 
         $httpClientProp->setValue($client, $httpClient);
 
@@ -496,7 +509,11 @@ class ClientTest extends TestCase
             ->withAnyParameters()
             ->willThrowException(new HttpTransferException());
 
-        $httpClient = new HttpMethodsClient($mockClientInterface, new Psr17Factory());
+        $httpClient = new HttpMethodsClient(
+            $mockClientInterface,
+            Psr17FactoryDiscovery::findRequestFactory(),
+            Psr17FactoryDiscovery::findStreamFactory(),
+        );
 
         $httpClientProp->setValue($client, $httpClient);
 
@@ -527,7 +544,11 @@ class ClientTest extends TestCase
             ->withAnyParameters()
             ->willThrowException(new HttpException('foo', $this->createMock(RequestInterface::class), $response));
 
-        $httpClient = new HttpMethodsClient($mockClientInterface, new Psr17Factory());
+        $httpClient = new HttpMethodsClient(
+            $mockClientInterface,
+            Psr17FactoryDiscovery::findRequestFactory(),
+            Psr17FactoryDiscovery::findStreamFactory(),
+        );
 
         $httpClientProp->setValue($client, $httpClient);
 
@@ -558,7 +579,11 @@ class ClientTest extends TestCase
             ->withAnyParameters()
             ->willReturn($response);
 
-        $httpClient = new HttpMethodsClient($mockClientInterface, new Psr17Factory());
+        $httpClient = new HttpMethodsClient(
+            $mockClientInterface,
+            Psr17FactoryDiscovery::findRequestFactory(),
+            Psr17FactoryDiscovery::findStreamFactory(),
+        );
 
         $httpClientProp->setValue($client, $httpClient);
 
@@ -589,7 +614,11 @@ class ClientTest extends TestCase
             ->withAnyParameters()
             ->willReturn($response);
 
-        $httpClient = new HttpMethodsClient($mockClientInterface, new Psr17Factory());
+        $httpClient = new HttpMethodsClient(
+            $mockClientInterface,
+            Psr17FactoryDiscovery::findRequestFactory(),
+            Psr17FactoryDiscovery::findStreamFactory(),
+        );
 
         $httpClientProp->setValue($client, $httpClient);
 
@@ -623,7 +652,11 @@ class ClientTest extends TestCase
             ->withAnyParameters()
             ->willReturn($response);
 
-        $httpClient = new HttpMethodsClient($mockClientInterface, new Psr17Factory());
+        $httpClient = new HttpMethodsClient(
+            $mockClientInterface,
+            Psr17FactoryDiscovery::findRequestFactory(),
+            Psr17FactoryDiscovery::findStreamFactory(),
+        );
 
         $httpClientProp->setValue($client, $httpClient);
 
@@ -659,7 +692,11 @@ class ClientTest extends TestCase
             ->withAnyParameters()
             ->willReturn($response);
 
-        $httpClient = new HttpMethodsClient($mockClientInterface, new Psr17Factory());
+        $httpClient = new HttpMethodsClient(
+            $mockClientInterface,
+            Psr17FactoryDiscovery::findRequestFactory(),
+            Psr17FactoryDiscovery::findStreamFactory(),
+        );
 
         $httpClientProp->setValue($client, $httpClient);
 
@@ -727,7 +764,7 @@ class ClientTest extends TestCase
         self::assertInstanceOf(Pod::class, $pod1);
     }
 
-    public function providerForFailedResponses(): array
+    public static function providerForFailedResponses(): array
     {
         return [
             [
