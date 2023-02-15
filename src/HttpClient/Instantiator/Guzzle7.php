@@ -45,12 +45,17 @@ class Guzzle7 implements InstantiatorInterface
 {
     public function build(
         bool $verify,
+        ?string $caCertificate,
         ?string $clientCertificate,
         ?string $clientKey,
     ): HttpClient {
         $options = [
             RequestOptions::VERIFY => $verify,
         ];
+
+        if (!empty($caCertificate)) {
+            $options[RequestOptions::VERIFY] = $caCertificate;
+        }
 
         if (!empty($clientCertificate)) {
             $options[RequestOptions::CERT] = $clientCertificate;

@@ -48,7 +48,7 @@ class SymfonyTest extends TestCase
         $instantiator = new Symfony();
         self::assertInstanceOf(
             SymfonyHttplug::class,
-            $instantiator->build(true, 'foo', 'bar'),
+            $instantiator->build(true, 'barca', 'foo', 'bar'),
         );
     }
 }

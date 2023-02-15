@@ -283,6 +283,7 @@ class ClientTest extends TestCase
 
         $client = new Client([
             'master' => 'https://api.example.com',
+            'ca_cert' => 'barca',
             'client_cert' => 'foo',
             'client_key' => 'bar',
         ]);

@@ -48,7 +48,7 @@ class CurlTest extends TestCase
         $instantiator = new Curl();
         self::assertInstanceOf(
             Client::class,
-            $instantiator->build(true, 'foo', 'bar'),
+            $instantiator->build(true, 'barca', 'foo', 'bar'),
         );
     }
 }

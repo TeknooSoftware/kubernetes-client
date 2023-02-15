@@ -30,6 +30,7 @@ use Http\Client\Curl\Client;
 use Http\Client\HttpClient;
 use Teknoo\Kubernetes\HttpClient\InstantiatorInterface;
 
+use const CURLOPT_CAINFO;
 use const CURLOPT_SSL_VERIFYHOST;
 use const CURLOPT_SSL_VERIFYPEER;
 use const CURLOPT_SSLCERT;
@@ -49,6 +50,7 @@ class Curl implements InstantiatorInterface
 {
     public function build(
         bool $verify,
+        ?string $caCertificate,
         ?string $clientCertificate,
         ?string $clientKey,
     ): HttpClient {
@@ -56,6 +58,10 @@ class Curl implements InstantiatorInterface
             CURLOPT_SSL_VERIFYPEER => $verify,
             CURLOPT_SSL_VERIFYHOST => $verify,
         ];
+
+        if (!empty($caCertificate)) {
+            $options[CURLOPT_CAINFO] = $caCertificate;
+        }
 
         if (!empty($clientCertificate)) {
             $options[CURLOPT_SSLCERT] = $clientCertificate;

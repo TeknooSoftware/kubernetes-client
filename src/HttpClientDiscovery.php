@@ -80,6 +80,7 @@ class HttpClientDiscovery extends ClassDiscovery
      */
     public static function find(
         bool $verify = true,
+        ?string $caCertificate = null,
         ?string $clientCertificate = null,
         ?string $clientKey = null,
     ): HttpClient {
@@ -99,6 +100,7 @@ class HttpClientDiscovery extends ClassDiscovery
         return static::instantiateClass(
             class: $clientClass,
             verify: $verify,
+            caCertificate: $caCertificate,
             clientCertificate: $clientCertificate,
             clientKey: $clientKey,
         );
@@ -111,6 +113,7 @@ class HttpClientDiscovery extends ClassDiscovery
     protected static function instantiateClass(
         $class,
         bool $verify = true,
+        ?string $caCertificate = null,
         ?string $clientCertificate = null,
         ?string $clientKey = null,
     ): HttpClient {
@@ -118,6 +121,7 @@ class HttpClientDiscovery extends ClassDiscovery
             $instantiator = self::$instantiatorsList[$class];
             return (new $instantiator())->build(
                 verify: $verify,
+                caCertificate: $caCertificate,
                 clientCertificate: $clientCertificate,
                 clientKey: $clientKey,
             );

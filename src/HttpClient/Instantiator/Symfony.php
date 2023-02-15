@@ -44,6 +44,7 @@ class Symfony implements InstantiatorInterface
 {
     public function build(
         bool $verify,
+        ?string $caCertificate,
         ?string $clientCertificate,
         ?string $clientKey,
     ): HttpClient {
@@ -51,6 +52,10 @@ class Symfony implements InstantiatorInterface
             'verify_peer' => $verify,
             'verify_host' => $verify,
         ];
+
+        if (!empty($caCertificate)) {
+            $options['cafile'] = $caCertificate;
+        }
 
         if (!empty($clientCertificate)) {
             $options['local_cert'] = $clientCertificate;

@@ -42,6 +42,7 @@ interface InstantiatorInterface
 {
     public function build(
         bool $verify,
+        ?string $caCertificate,
         ?string $clientCertificate,
         ?string $clientKey,
     ): HttpClient;

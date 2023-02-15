@@ -146,6 +146,8 @@ class Client
 
     private ?bool $verify = true;
 
+    private ?string $caCertificate = null;
+
     private ?string $clientCertificate = null;
 
     private ?string $clientKey = null;
@@ -186,6 +188,10 @@ class Client
             return $this->httpMethodsClient;
         }
 
+        if (null !== $this->caCertificate && !file_exists($this->caCertificate)) {
+            $this->caCertificate = self::getTempFilePath('ca-cert', $this->caCertificate);
+        }
+
         if (null !== $this->clientCertificate && !file_exists($this->clientCertificate)) {
             $this->clientCertificate = self::getTempFilePath('client-cert', $this->clientCertificate);
         }
@@ -197,6 +203,7 @@ class Client
         return $this->httpMethodsClient = new HttpMethodsClient(
             $this->httpClient ?? HttpClientDiscovery::find(
                 verify: true === $this->verify,
+                caCertificate: $this->caCertificate,
                 clientCertificate: $this->clientCertificate,
                 clientKey: $this->clientKey,
             ),
@@ -213,8 +220,9 @@ class Client
         if ($reset) {
             $this->master = null;
             $this->token = null;
-            $this->clientKey = null;
+            $this->caCertificate = null;
             $this->clientCertificate = null;
+            $this->clientKey = null;
             $this->namespace = 'default';
             $this->verify = true;
             $this->httpMethodsClient = null;
@@ -226,6 +234,10 @@ class Client
 
         if (isset($options['token'])) {
             $this->token = (string) $options['token'];
+        }
+
+        if (isset($options['ca_cert'])) {
+            $this->caCertificate = (string) $options['ca_cert'];
         }
 
         if (isset($options['client_cert'])) {
@@ -380,6 +392,16 @@ class Client
 
         $options['master'] = $cluster['server'];
 
+        if (isset($cluster['certificate-authority-data'])) {
+            $options['ca_cert'] = self::getTempFilePath(
+                'ca-cert.pem',
+                base64_decode(
+                    (string) $cluster['certificate-authority-data'],
+                    true,
+                )
+            );
+        }
+
         if (
             !isset($cluster['certificate-authority-data'])
             && str_contains((string) $options['master'], 'https://')
@@ -392,7 +414,7 @@ class Client
                 'client-cert.pem',
                 base64_decode(
                     (string) $user['client-certificate-data'],
-                    true
+                    true,
                 )
             );
         }
@@ -402,7 +424,7 @@ class Client
                 'client-key.pem',
                 base64_decode(
                     (string) $user['client-key-data'],
-                    true
+                    true,
                 )
             );
         }

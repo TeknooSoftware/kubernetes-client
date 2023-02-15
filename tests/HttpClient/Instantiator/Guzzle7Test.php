@@ -48,7 +48,7 @@ class Guzzle7Test extends TestCase
         $instantiator = new Guzzle7();
         self::assertInstanceOf(
             Client::class,
-            $instantiator->build(true, 'foo', 'bar'),
+            $instantiator->build(true, 'barca', 'foo', 'bar'),
         );
     }
 }

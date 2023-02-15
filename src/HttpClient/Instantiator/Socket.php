@@ -44,6 +44,7 @@ class Socket implements InstantiatorInterface
 {
     public function build(
         bool $verify,
+        ?string $caCertificate,
         ?string $clientCertificate,
         ?string $clientKey,
     ): HttpClient {
@@ -54,6 +55,10 @@ class Socket implements InstantiatorInterface
                 ],
             ]
         ];
+
+        if (!empty($caCertificate)) {
+            $options['stream_context_options']['ssl']['cafile'] = $caCertificate;
+        }
 
         if (!empty($clientCertificate)) {
             $options['stream_context_options']['ssl']['local_cert'] = $clientCertificate;
