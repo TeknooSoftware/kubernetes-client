@@ -92,6 +92,13 @@ class ClientTest extends TestCase
 
     private string $namespace = 'default';
 
+    protected function tearDown(): void
+    {
+        Client::setTmpNameFunction(null);
+        Client::setTmpDir(null);
+        parent::tearDown();
+    }
+
     public function testConstructorMissingMasterInConstruction()
     {
         $this->expectException(RuntimeException::class);
@@ -817,6 +824,10 @@ class ClientTest extends TestCase
 
     public function testLoadFromKubeConfigFile()
     {
+        Client::setTmpNameFunction(
+            fn (string $dir, string $file) => $dir . '/' . $file
+        );
+        Client::setTmpDir('/tmp');
         self::assertEquals(
             new Client(
                 options: [
@@ -838,6 +849,10 @@ class ClientTest extends TestCase
 
     public function testLoadFromKubeConfigFileWithoutServerCertificate()
     {
+        Client::setTmpNameFunction(
+            fn (string $dir, string $file) => $dir . '/' . $file
+        );
+        Client::setTmpDir('/tmp');
         self::assertEquals(
             new Client(
                 options: [
@@ -859,6 +874,10 @@ class ClientTest extends TestCase
 
     public function testLoadFromKubeConfigFileWithUnsecureAPI()
     {
+        Client::setTmpNameFunction(
+            fn (string $dir, string $file) => $dir . '/' . $file
+        );
+        Client::setTmpDir('/tmp');
         self::assertEquals(
             new Client(
                 options: [
@@ -1017,5 +1036,11 @@ class ClientTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfig('@', FileFormat::Yaml);
+    }
+
+    public function testSetTmpDir()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        Client::setTmpDir('foo/bar');
     }
 }

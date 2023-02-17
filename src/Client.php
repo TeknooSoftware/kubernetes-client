@@ -86,11 +86,11 @@ use function http_build_query;
 use function in_array;
 use function is_a;
 use function is_array;
+use function is_dir;
 use function is_string;
 use function json_decode;
 use function json_encode;
 use function substr;
-use function sys_get_temp_dir;
 use function tempnam;
 use function trim;
 
@@ -167,6 +167,13 @@ class Client
      * @var array<string, string>
      */
     private array $patchHeaders = ['Content-Type' => 'application/strategic-merge-patch+json'];
+
+    /**
+     * @var callable
+     */
+    private static $tmpNameFunction = null;
+
+    private static ?string $tmpDir = null;
 
     /**
      * @param array<string, string|bool> $options
@@ -462,14 +469,34 @@ class Client
         );
     }
 
+    public static function setTmpNameFunction(?callable $tmpNameFunction): void
+    {
+        self::$tmpNameFunction = $tmpNameFunction;
+    }
+
+    public static function setTmpDir(?string $tmpDir): void
+    {
+        if (null !== $tmpDir && !is_dir($tmpDir)) {
+            throw new InvalidArgumentException("$tmpDir is not a valid directory");
+        }
+
+        self::$tmpDir = $tmpDir;
+    }
+
     /**
      * @throws Exception
      */
     private static function getTempFilePath(string $fileName, string $fileContent): string
     {
-        $fileName = 'kubernetes-client-' . $fileName;
+        if (null === self::$tmpNameFunction) {
+            self::$tmpNameFunction = tempnam(...);
+        }
 
-        $tempFilePath = (string) sys_get_temp_dir() . DIRECTORY_SEPARATOR  . $fileName;
+        if (null === self::$tmpDir) {
+            self::$tmpDir = sys_get_temp_dir();
+        }
+
+        $tempFilePath = (string) (self::$tmpNameFunction)(self::$tmpDir, 'kubernetes-client-' . $fileName);
 
         if (false === file_put_contents($tempFilePath, $fileContent)) {
             // @codeCoverageIgnoreStart
