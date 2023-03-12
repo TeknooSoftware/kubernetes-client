@@ -101,7 +101,7 @@ class ClientTest extends TestCase
 
     public function testConstructorMissingMasterInConstruction()
     {
-        $this->expectException(RuntimeException::class);
+        $this->expectException(InvalidArgumentException::class);
         $client = new Client([
             'token' => 'foo',
             'namespace' => 'bar'
@@ -116,7 +116,7 @@ class ClientTest extends TestCase
             'namespace' => 'bar'
         ]);
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(InvalidArgumentException::class);
         $client->setOptions(
             [
                 'token' => 'foo2',

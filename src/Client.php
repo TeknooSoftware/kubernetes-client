@@ -39,12 +39,13 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use RuntimeException;
 use Symfony\Component\Yaml\Exception\ParseException as YamlParseException;
 use Symfony\Component\Yaml\Yaml;
 use Teknoo\Kubernetes\Enums\FileFormat;
 use Teknoo\Kubernetes\Enums\PatchType;
 use Teknoo\Kubernetes\Enums\RequestMethod;
+use Teknoo\Kubernetes\Exception\MissingMasterOptionException;
+use Teknoo\Kubernetes\Exception\WriteErrorException;
 use Teknoo\Kubernetes\Exceptions\ApiServerException;
 use Teknoo\Kubernetes\Exceptions\BadRequestException;
 use Teknoo\Kubernetes\Repository\CertificateRepository;
@@ -264,27 +265,23 @@ class Client
         }
 
         if (empty($this->master)) {
-            throw new RuntimeException("Error, master option is mandatory for this client");
+            throw new MissingMasterOptionException("Error, master option is mandatory for this client");
         }
 
         return $this;
     }
 
     /**
-     * @param string|array<string, array<string, string>|string> $content
+     * @param string|array<string, mixed> $content
+     * @return array<string, mixed>
      * @throws JsonException
-     * @throws Exception
      */
-    public static function loadFromKubeConfig(
+    protected static function parseContent(
         string|array $content,
         FileFormat $format = FileFormat::Yaml,
-        RepositoryRegistry $repositoryRegistry = null,
-        ClientInterface $httpClient = null,
-        RequestFactoryInterface $httpRequestFactory = null,
-        StreamFactoryInterface $httpStreamFactory = null,
-    ): self {
+    ): array {
         try {
-            $content = match (true) {
+            return match (true) {
                 FileFormat::Array === $format && !is_array($content) => throw new InvalidArgumentException(
                     'KubeConfig is not an array.'
                 ),
@@ -315,11 +312,20 @@ class Client
         } catch (Throwable $error) {
             throw $error;
         }
+    }
 
+    /**
+     * @param array<string, mixed> $content
+     * @return array<string, array<string, string>>
+     */
+    protected static function extractContexts(array $content): array
+    {
         $contexts = [];
         if (isset($content['contexts']) && is_array($content['contexts'])) {
             foreach ($content['contexts'] as $context) {
-                $contexts[$context['name']] = $context['context'];
+                if (is_string($context['name'])) {
+                    $contexts[$context['name']] = $context['context'];
+                }
             }
         }
 
@@ -327,6 +333,16 @@ class Client
             throw new InvalidArgumentException('KubeConfig parse error - No contexts are defined.');
         }
 
+        return $contexts;
+    }
+
+    /**
+     * @param array<string, mixed> $content
+     * @param array<string, string> $context
+     * @return array<string, bool|string>
+     */
+    protected static function extractCluster(array $content, array &$context): array
+    {
         $clusters = [];
         if (isset($content['clusters']) && is_array($content['clusters'])) {
             foreach ($content['clusters'] as $cluster) {
@@ -336,6 +352,28 @@ class Client
 
         if ($clusters === []) {
             throw new InvalidArgumentException('KubeConfig parse error - No clusters are defined.');
+        }
+
+        if (!isset($clusters[$context['cluster']])) {
+            throw new InvalidArgumentException(
+                'KubeConfig parse error - The cluster "' . $context['cluster'] . '" is undefined.'
+            );
+        }
+
+        return $clusters[$context['cluster']];
+    }
+
+    /**
+     * @param array<string, mixed> $content
+     * @param array<string, string> $context
+     * @return array<string, bool|string>
+     */
+    protected static function extractUser(array $content, array &$context): array
+    {
+        if (!isset($context['user'])) {
+            throw new InvalidArgumentException(
+                'KubeConfig parse error - The current context is missing the user attribute.'
+            );
         }
 
         $users = [];
@@ -349,6 +387,31 @@ class Client
             throw new InvalidArgumentException('KubeConfig parse error - No users are defined.');
         }
 
+        if (!isset($users[$context['user']])) {
+            throw new InvalidArgumentException(
+                'KubeConfig parse error - The user "' . $context['user'] . '" is undefined.'
+            );
+        }
+
+        return $users[$context['user']];
+    }
+
+    /**
+     * @param string|array<string, mixed> $content
+     * @throws JsonException
+     * @throws Exception
+     */
+    public static function loadFromKubeConfig(
+        string|array $content,
+        FileFormat $format = FileFormat::Yaml,
+        RepositoryRegistry $repositoryRegistry = null,
+        ClientInterface $httpClient = null,
+        RequestFactoryInterface $httpRequestFactory = null,
+        StreamFactoryInterface $httpStreamFactory = null,
+    ): self {
+        $content = self::parseContent($content, $format);
+
+        $contexts = self::extractContexts($content);
         if (!isset($content['current-context'])) {
             throw new InvalidArgumentException('KubeConfig parse error - Missing current context attribute.');
         }
@@ -367,27 +430,8 @@ class Client
             );
         }
 
-        if (!isset($clusters[$context['cluster']])) {
-            throw new InvalidArgumentException(
-                'KubeConfig parse error - The cluster "' . $context['cluster'] . '" is undefined.'
-            );
-        }
-
-        $cluster = $clusters[$context['cluster']];
-
-        if (!isset($context['user'])) {
-            throw new InvalidArgumentException(
-                'KubeConfig parse error - The current context is missing the user attribute.'
-            );
-        }
-
-        if (!isset($users[$context['user']])) {
-            throw new InvalidArgumentException(
-                'KubeConfig parse error - The user "' . $context['user'] . '" is undefined.'
-            );
-        }
-
-        $user = $users[$context['user']];
+        $cluster = self::extractCluster($content, $context);
+        $user = self::extractUser($content, $context);
 
         $options = [];
 
@@ -500,7 +544,7 @@ class Client
 
         if (false === file_put_contents($tempFilePath, $fileContent)) {
             // @codeCoverageIgnoreStart
-            throw new Exception('Failed to write content to temp file: ' . $tempFilePath);
+            throw new WriteErrorException('Failed to write content to temp file: ' . $tempFilePath);
             // @codeCoverageIgnoreEnd
         }
 

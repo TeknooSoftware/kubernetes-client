@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.2.2] - 2023-03-12
+### Stable Release
+- QA
+
 ## [1.2.1] - 2023-02-17
 ### Stable Release
 - Add `Client::setTmpNameFunction()` and `Client::setTmpDir()` to allow developpers to custom the client about

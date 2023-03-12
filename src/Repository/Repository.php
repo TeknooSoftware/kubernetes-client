@@ -27,7 +27,6 @@ declare(strict_types=1);
 namespace Teknoo\Kubernetes\Repository;
 
 use LogicException;
-use RuntimeException;
 use Teknoo\Kubernetes\Client;
 use Teknoo\Kubernetes\Collection\Collection;
 use Teknoo\Kubernetes\Contracts\Repository\StreamingParser;
@@ -35,6 +34,7 @@ use Teknoo\Kubernetes\Enums\PatchType;
 use Teknoo\Kubernetes\Enums\RequestMethod;
 use Teknoo\Kubernetes\Model\Model;
 use Teknoo\Kubernetes\Model\DeleteOptions;
+use Teknoo\Kubernetes\Repository\Exception\NoItemsException;
 
 use function implode;
 use function json_encode;
@@ -398,7 +398,7 @@ abstract class Repository
         $collectionClassName = self::getCollectionName();
 
         if (!isset($response['items'])) {
-            throw new RuntimeException('Error, no items returned by the Kubernetes API');
+            throw new NoItemsException('Error, no items returned by the Kubernetes API');
         }
 
         return new $collectionClassName($response['items']);
