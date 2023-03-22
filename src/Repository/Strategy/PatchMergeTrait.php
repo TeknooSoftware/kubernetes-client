@@ -33,9 +33,6 @@ use Teknoo\Kubernetes\Model\Model;
  * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
  * @copyright   Copyright (c) Marc Lough ( https://github.com/maclof/kubernetes-client )
- *
- * @link        http://teknoo.software/kubernetes-client Project website
- *
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  * @author      Marc Lough <http://maclof.com>
