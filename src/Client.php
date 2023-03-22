@@ -176,7 +176,7 @@ class Client
     private static ?string $tmpDir = null;
 
     /**
-     * @param array<string, string|bool> $options
+     * @param array<string, string|bool|int> $options
      */
     public function __construct(
         array $options = [],
@@ -221,7 +221,7 @@ class Client
     }
 
     /**
-     * @param array<string, string|bool> $options
+     * @param array<string, string|bool|int> $options
      */
     public function setOptions(array $options, bool $reset = false): self
     {
