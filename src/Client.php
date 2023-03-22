@@ -150,6 +150,8 @@ class Client
 
     private ?string $clientKey = null;
 
+    private ?int $timeout = null;
+
     private string $namespace = 'default';
 
     private ?HttpMethodsClientInterface $httpMethodsClient = null;
@@ -211,6 +213,7 @@ class Client
                 caCertificate: $this->caCertificate,
                 clientCertificate: $this->clientCertificate,
                 clientKey: $this->clientKey,
+                timeout: $this->timeout,
             ),
             $this->httpRequestFactory ?? Psr17FactoryDiscovery::findRequestFactory(),
             $this->httpStreamFactory ?? Psr17FactoryDiscovery::findStreamFactory(),
@@ -228,6 +231,7 @@ class Client
             $this->caCertificate = null;
             $this->clientCertificate = null;
             $this->clientKey = null;
+            $this->timeout = null;
             $this->namespace = 'default';
             $this->verify = true;
             $this->httpMethodsClient = null;
@@ -251,6 +255,10 @@ class Client
 
         if (isset($options['client_key'])) {
             $this->clientKey = (string) $options['client_key'];
+        }
+
+        if (isset($options['timeout'])) {
+            $this->timeout = (int) $options['timeout'];
         }
 
         if (isset($options['namespace'])) {

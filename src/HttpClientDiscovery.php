@@ -80,6 +80,7 @@ class HttpClientDiscovery extends ClassDiscovery
         ?string $caCertificate = null,
         ?string $clientCertificate = null,
         ?string $clientKey = null,
+        ?int $timeout = null,
     ): HttpClient {
         try {
             $clientClass = static::findOneByType(HttpClient::class);
@@ -100,6 +101,7 @@ class HttpClientDiscovery extends ClassDiscovery
             caCertificate: $caCertificate,
             clientCertificate: $clientCertificate,
             clientKey: $clientKey,
+            timeout: $timeout,
         );
     }
 
@@ -113,6 +115,7 @@ class HttpClientDiscovery extends ClassDiscovery
         ?string $caCertificate = null,
         ?string $clientCertificate = null,
         ?string $clientKey = null,
+        ?int $timeout = null,
     ): HttpClient {
         if (is_string($class) && isset(self::$instantiatorsList[$class])) {
             $instantiator = self::$instantiatorsList[$class];
@@ -121,6 +124,7 @@ class HttpClientDiscovery extends ClassDiscovery
                 caCertificate: $caCertificate,
                 clientCertificate: $clientCertificate,
                 clientKey: $clientKey,
+                timeout: $timeout,
             );
         }
 

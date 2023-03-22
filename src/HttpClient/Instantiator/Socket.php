@@ -44,6 +44,7 @@ class Socket implements InstantiatorInterface
         ?string $caCertificate,
         ?string $clientCertificate,
         ?string $clientKey,
+        ?int $timeout,
     ): HttpClient {
         $options = [
             'stream_context_options' => [
@@ -63,6 +64,10 @@ class Socket implements InstantiatorInterface
 
         if (!empty($clientKey)) {
             $options['stream_context_options']['ssl']['local_pk'] = $clientKey;
+        }
+
+        if (!empty($timeout)) {
+            $options['stream_context_options']['http']['timeout'] = (int) $timeout;
         }
 
         return new Client($options);

@@ -44,6 +44,7 @@ class Symfony implements InstantiatorInterface
         ?string $caCertificate,
         ?string $clientCertificate,
         ?string $clientKey,
+        ?int $timeout,
     ): HttpClient {
         $options = [
             'verify_peer' => $verify,
@@ -60,6 +61,10 @@ class Symfony implements InstantiatorInterface
 
         if (!empty($clientKey)) {
             $options['local_pk'] = $clientKey;
+        }
+
+        if (!empty($timeout)) {
+            $options['timeout'] = (int) $timeout;
         }
 
         return (new SymfonyHttplug())->withOptions($options);

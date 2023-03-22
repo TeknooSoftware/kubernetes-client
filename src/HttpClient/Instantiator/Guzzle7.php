@@ -45,6 +45,7 @@ class Guzzle7 implements InstantiatorInterface
         ?string $caCertificate,
         ?string $clientCertificate,
         ?string $clientKey,
+        ?int $timeout,
     ): HttpClient {
         $options = [
             RequestOptions::VERIFY => $verify,
@@ -60,6 +61,10 @@ class Guzzle7 implements InstantiatorInterface
 
         if (!empty($clientKey)) {
             $options[RequestOptions::SSL_KEY] = $clientKey;
+        }
+
+        if (!empty($timeout)) {
+            $options[RequestOptions::TIMEOUT] = (int) $timeout;
         }
 
         return Client::createWithConfig($options);

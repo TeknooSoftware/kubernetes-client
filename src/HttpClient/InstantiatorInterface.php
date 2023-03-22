@@ -42,5 +42,6 @@ interface InstantiatorInterface
         ?string $caCertificate,
         ?string $clientCertificate,
         ?string $clientKey,
+        ?int $timeout,
     ): HttpClient;
 }

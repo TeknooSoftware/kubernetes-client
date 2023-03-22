@@ -128,7 +128,7 @@ class ClientTest extends TestCase
         $client = new Client([
             'master' => 'https://api.example.com',
             'token' => 'foo',
-            'namespace' => 'bar'
+            'namespace' => 'bar',
         ]);
 
         self::assertInstanceOf(
@@ -138,6 +138,29 @@ class ClientTest extends TestCase
                     'master' => 'https://api2.example.com',
                     'token' => 'foo2',
                     'namespace' => 'bar2'
+                ],
+                true
+            )
+        );
+    }
+
+    public function testSetOptionsWithTimeout()
+    {
+        $client = new Client([
+            'master' => 'https://api.example.com',
+            'token' => 'foo',
+            'namespace' => 'bar',
+            'timeout' => 30,
+        ]);
+
+        self::assertInstanceOf(
+            Client::class,
+            $client->setOptions(
+                [
+                    'master' => 'https://api2.example.com',
+                    'token' => 'foo2',
+                    'namespace' => 'bar2',
+                    'timeout' => 30,
                 ],
                 true
             )

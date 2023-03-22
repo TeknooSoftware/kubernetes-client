@@ -35,6 +35,7 @@ use const CURLOPT_SSL_VERIFYHOST;
 use const CURLOPT_SSL_VERIFYPEER;
 use const CURLOPT_SSLCERT;
 use const CURLOPT_SSLKEY;
+use const CURLOPT_TIMEOUT;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -50,6 +51,7 @@ class Curl implements InstantiatorInterface
         ?string $caCertificate,
         ?string $clientCertificate,
         ?string $clientKey,
+        ?int $timeout,
     ): HttpClient {
         $options = [
             CURLOPT_SSL_VERIFYPEER => $verify,
@@ -66,6 +68,10 @@ class Curl implements InstantiatorInterface
 
         if (!empty($clientKey)) {
             $options[CURLOPT_SSLKEY] = $clientKey;
+        }
+
+        if (!empty($timeout)) {
+            $options[CURLOPT_TIMEOUT] = $timeout;
         }
 
         return new Client(

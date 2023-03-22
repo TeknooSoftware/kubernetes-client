@@ -45,7 +45,7 @@ class SocketTest extends TestCase
         $instantiator = new Socket();
         self::assertInstanceOf(
             Client::class,
-            $instantiator->build(true, 'barca', 'foo', 'bar'),
+            $instantiator->build(true, 'barca', 'foo', 'bar', 20),
         );
     }
 }
