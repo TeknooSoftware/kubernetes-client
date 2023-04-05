@@ -233,7 +233,7 @@ This library requires :
 
 Credits
 -------
-Richard Déloge - <richarddeloge@gmail.com> - Lead developer.
+Richard Déloge - <richard@teknoo.software> - Lead developer.
 Teknoo Software - <https://teknoo.software>
 Marc Lough - <https://github.com/maclof/kubernetes-client>
 

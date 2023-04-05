@@ -1,6 +1,6 @@
 <?php
 /**
- * @author      Richard Déloge <richarddeloge@gmail.com>
+ * @author      Richard Déloge <richard@teknoo.software>
  */
 
 defined('RUN_CLI_MODE')
