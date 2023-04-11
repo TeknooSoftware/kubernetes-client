@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.3.1] - 2023-04-11
+### Stable Release
+- Allow psr/http-message 2
+
 ## [1.3.0] - 2023-03-22
 ### Stable Release
 - Add `timeout` option
