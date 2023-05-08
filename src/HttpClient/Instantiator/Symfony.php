@@ -26,8 +26,8 @@ declare(strict_types=1);
 
 namespace Teknoo\Kubernetes\HttpClient\Instantiator;
 
+use Psr\Http\Client\ClientInterface;
 use Symfony\Component\HttpClient\HttplugClient as SymfonyHttplug;
-use Http\Client\HttpClient;
 use Teknoo\Kubernetes\HttpClient\InstantiatorInterface;
 
 /**
@@ -45,7 +45,7 @@ class Symfony implements InstantiatorInterface
         ?string $clientCertificate,
         ?string $clientKey,
         ?int $timeout,
-    ): HttpClient {
+    ): ClientInterface {
         $options = [
             'verify_peer' => $verify,
             'verify_host' => $verify,

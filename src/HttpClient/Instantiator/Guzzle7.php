@@ -28,7 +28,7 @@ namespace Teknoo\Kubernetes\HttpClient\Instantiator;
 
 use GuzzleHttp\RequestOptions;
 use Http\Adapter\Guzzle7\Client;
-use Http\Client\HttpClient;
+use Psr\Http\Client\ClientInterface;
 use Teknoo\Kubernetes\HttpClient\InstantiatorInterface;
 
 /**
@@ -46,7 +46,7 @@ class Guzzle7 implements InstantiatorInterface
         ?string $clientCertificate,
         ?string $clientKey,
         ?int $timeout,
-    ): HttpClient {
+    ): ClientInterface {
         $options = [
             RequestOptions::VERIFY => $verify,
         ];

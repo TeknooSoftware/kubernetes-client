@@ -27,7 +27,7 @@ declare(strict_types=1);
 namespace Teknoo\Kubernetes\HttpClient\Instantiator;
 
 use Http\Client\Curl\Client;
-use Http\Client\HttpClient;
+use Psr\Http\Client\ClientInterface;
 use Teknoo\Kubernetes\HttpClient\InstantiatorInterface;
 
 use const CURLOPT_CAINFO;
@@ -52,7 +52,7 @@ class Curl implements InstantiatorInterface
         ?string $clientCertificate,
         ?string $clientKey,
         ?int $timeout,
-    ): HttpClient {
+    ): ClientInterface {
         $options = [
             CURLOPT_SSL_VERIFYPEER => $verify,
             CURLOPT_SSL_VERIFYHOST => $verify,

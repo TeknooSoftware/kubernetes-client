@@ -26,7 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Kubernetes\HttpClient;
 
-use Http\Client\HttpClient;
+use Psr\Http\Client\ClientInterface;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (richard@teknoo.software)
@@ -43,5 +43,5 @@ interface InstantiatorInterface
         ?string $clientCertificate,
         ?string $clientKey,
         ?int $timeout,
-    ): HttpClient;
+    ): ClientInterface;
 }

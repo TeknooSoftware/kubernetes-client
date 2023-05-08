@@ -26,8 +26,8 @@ declare(strict_types=1);
 
 namespace Teknoo\Kubernetes\HttpClient\Instantiator;
 
-use Http\Client\HttpClient;
 use Http\Client\Socket\Client;
+use Psr\Http\Client\ClientInterface;
 use Teknoo\Kubernetes\HttpClient\InstantiatorInterface;
 
 /**
@@ -45,7 +45,7 @@ class Socket implements InstantiatorInterface
         ?string $clientCertificate,
         ?string $clientKey,
         ?int $timeout,
-    ): HttpClient {
+    ): ClientInterface {
         $options = [
             'stream_context_options' => [
                 'ssl' => [
