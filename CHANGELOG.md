@@ -1,5 +1,10 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.3.4] - 2023-05-15
+### Stable Release
+- Update dev lib requirements
+- Update copyrights
+
 ## [1.3.3] - 2023-05-08
 ### Stable Release
 - Remove deprecated in HttpClientDiscover
