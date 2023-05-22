@@ -56,6 +56,7 @@ use Teknoo\Kubernetes\Repository\RoleRepository;
 use Teknoo\Kubernetes\Repository\SecretRepository;
 use Teknoo\Kubernetes\Repository\ServiceAccountRepository;
 use Teknoo\Kubernetes\Repository\ServiceRepository;
+use Teknoo\Kubernetes\Repository\StatefulSetRepository;
 use Teknoo\Kubernetes\Repository\SubnamespaceAnchorRepository;
 
 /**
@@ -97,6 +98,7 @@ class RepositoryRegistry implements ArrayAccess, Countable
 
         // apps/v1
         'deployments'            => DeploymentRepository::class,
+        'statefulsets'           => StatefulSetRepository::class,
 
         // extensions/v1
         'daemonSets'             => DaemonSetRepository::class,

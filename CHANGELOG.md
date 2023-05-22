@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.4.0] - 2023-05-22
+### Stable Release
+- Add Stateful sets support
+
 ## [1.3.4] - 2023-05-15
 ### Stable Release
 - Update dev lib requirements

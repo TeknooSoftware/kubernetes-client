@@ -24,10 +24,11 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\Tests\Kubernetes;
+namespace Teknoo\Tests\Kubernetes\Model;
 
-use PHPUnit\Framework\TestCase;
-use Teknoo\Kubernetes\RepositoryRegistry;
+use Teknoo\Kubernetes\Enums\FileFormat;
+use Teknoo\Kubernetes\Model\StatefulSet;
+use Teknoo\Kubernetes\Model\Model;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -37,37 +38,24 @@ use Teknoo\Kubernetes\RepositoryRegistry;
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  *
- * @covers      \Teknoo\Kubernetes\RepositoryRegistry
+ * @covers      \Teknoo\Kubernetes\Model\StatefulSet
+ * @covers      \Teknoo\Kubernetes\Model\Model
+ * @covers      \Teknoo\Kubernetes\Enums\FileFormat
  */
-class RepositoryRegistryTest extends TestCase
+class StatefulSetTest extends AbstractBaseTestCase
 {
-    private const TEST_CLASS = '\Example\Class';
-
-    public function testBuiltinRepositories(): void
+    protected function getEmptyFixtureFileName(): string
     {
-        $registry = new RepositoryRegistry();
-
-        self::assertCount(29, $registry);
+        return 'statefulsets/empty.json';
     }
 
-    public function testAddRepository(): void
+    protected function getModel(array|string $attributes, FileFormat $format): Model
     {
-        $registry = new RepositoryRegistry();
-
-        self::assertFalse(isset($registry['test']));
-
-        $registry['test'] = self::TEST_CLASS;
-
-        self::assertTrue(isset($registry['test']));
-        self::assertEquals(self::TEST_CLASS, $registry['test']);
+        return new StatefulSet($attributes, $format);
     }
 
-    public function testRemoveRepository(): void
+    protected function getApiVersion(): string
     {
-        $registry = new RepositoryRegistry();
-
-        unset($registry['roles']);
-        self::assertFalse(isset($registry['roles']));
-        self::assertNull($registry['roles']);
+        return 'apps/v1';
     }
 }

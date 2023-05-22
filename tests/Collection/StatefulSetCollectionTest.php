@@ -24,10 +24,11 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\Tests\Kubernetes;
+namespace Teknoo\Tests\Kubernetes\Collection;
 
-use PHPUnit\Framework\TestCase;
-use Teknoo\Kubernetes\RepositoryRegistry;
+use Teknoo\Kubernetes\Collection\Collection;
+use Teknoo\Kubernetes\Collection\StatefulSetCollection;
+use Teknoo\Kubernetes\Model\StatefulSet;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -37,37 +38,24 @@ use Teknoo\Kubernetes\RepositoryRegistry;
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  *
- * @covers      \Teknoo\Kubernetes\RepositoryRegistry
+ * @covers      \Teknoo\Kubernetes\Collection\StatefulSetCollection
+ * @covers      \Teknoo\Kubernetes\Collection\Collection
  */
-class RepositoryRegistryTest extends TestCase
+class StatefulSetCollectionTest extends AbstractBaseTestCase
 {
-    private const TEST_CLASS = '\Example\Class';
-
-    public function testBuiltinRepositories(): void
+    protected function getCollection(): Collection
     {
-        $registry = new RepositoryRegistry();
-
-        self::assertCount(29, $registry);
+        return new StatefulSetCollection(
+            [
+                [],
+                new StatefulSet(),
+                [],
+            ]
+        );
     }
 
-    public function testAddRepository(): void
+    protected function getModelClassName(): string
     {
-        $registry = new RepositoryRegistry();
-
-        self::assertFalse(isset($registry['test']));
-
-        $registry['test'] = self::TEST_CLASS;
-
-        self::assertTrue(isset($registry['test']));
-        self::assertEquals(self::TEST_CLASS, $registry['test']);
-    }
-
-    public function testRemoveRepository(): void
-    {
-        $registry = new RepositoryRegistry();
-
-        unset($registry['roles']);
-        self::assertFalse(isset($registry['roles']));
-        self::assertNull($registry['roles']);
+        return StatefulSet::class;
     }
 }

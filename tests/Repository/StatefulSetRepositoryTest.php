@@ -24,10 +24,13 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\Tests\Kubernetes;
+namespace Teknoo\Tests\Kubernetes\Repository;
 
-use PHPUnit\Framework\TestCase;
-use Teknoo\Kubernetes\RepositoryRegistry;
+use Teknoo\Kubernetes\Collection\StatefulSetCollection;
+use Teknoo\Kubernetes\Model\StatefulSet;
+use Teknoo\Kubernetes\Model\Model;
+use Teknoo\Kubernetes\Repository\StatefulSetRepository;
+use Teknoo\Kubernetes\Repository\Repository;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -37,37 +40,33 @@ use Teknoo\Kubernetes\RepositoryRegistry;
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  *
- * @covers      \Teknoo\Kubernetes\RepositoryRegistry
+ * @covers      \Teknoo\Kubernetes\Repository\StatefulSetRepository
+ * @covers      \Teknoo\Kubernetes\Repository\Repository
+ * @covers      \Teknoo\Kubernetes\Enums\RequestMethod
+ * @covers      \Teknoo\Kubernetes\Enums\PatchType
  */
-class RepositoryRegistryTest extends TestCase
+class StatefulSetRepositoryTest extends AbstractBaseTestCase
 {
-    private const TEST_CLASS = '\Example\Class';
-
-    public function testBuiltinRepositories(): void
+    protected function getRepository(): Repository
     {
-        $registry = new RepositoryRegistry();
-
-        self::assertCount(29, $registry);
+        return new StatefulSetRepository(
+            $this->getClientMock(),
+        );
     }
 
-    public function testAddRepository(): void
+    protected function getCollectionClassName(): string
     {
-        $registry = new RepositoryRegistry();
-
-        self::assertFalse(isset($registry['test']));
-
-        $registry['test'] = self::TEST_CLASS;
-
-        self::assertTrue(isset($registry['test']));
-        self::assertEquals(self::TEST_CLASS, $registry['test']);
+        return StatefulSetCollection::class;
     }
 
-    public function testRemoveRepository(): void
+    protected function getModel(): Model
     {
-        $registry = new RepositoryRegistry();
-
-        unset($registry['roles']);
-        self::assertFalse(isset($registry['roles']));
-        self::assertNull($registry['roles']);
+        return new StatefulSet(
+            [
+                'metadata' => [
+                    'name' => 'foo',
+                ]
+            ]
+        );
     }
 }

@@ -76,6 +76,7 @@ use Teknoo\Kubernetes\Repository\RoleRepository;
 use Teknoo\Kubernetes\Repository\SecretRepository;
 use Teknoo\Kubernetes\Repository\ServiceAccountRepository;
 use Teknoo\Kubernetes\Repository\ServiceRepository;
+use Teknoo\Kubernetes\Repository\StatefulSetRepository;
 use Teknoo\Kubernetes\Repository\SubnamespaceAnchorRepository;
 use Throwable;
 
@@ -105,33 +106,34 @@ use const JSON_FORCE_OBJECT;
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  *
- * @method NodeRepository nodes()
- * @method QuotaRepository quotas()
- * @method PodRepository pods()
- * @method ReplicaSetRepository replicaSets()
- * @method ReplicationControllerRepository replicationControllers()
- * @method ServiceRepository services()
- * @method SecretRepository secrets()
- * @method EventRepository events()
+ * @method CertificateRepository certificates()
+ * @method ClusterRoleBindingRepository clusterRoleBindings()
+ * @method ClusterRoleRepository clusterRoles()
  * @method ConfigMapRepository configMaps()
- * @method EndpointRepository endpoints()
- * @method PersistentVolumeClaimRepository persistentVolumeClaims()
- * @method PersistentVolumeRepository persistentVolume()
- * @method JobRepository jobs()
  * @method CronJobRepository cronJobs()
  * @method DaemonSetRepository daemonSets()
  * @method DeploymentRepository deployments()
+ * @method EndpointRepository endpoints()
+ * @method EventRepository events()
+ * @method HorizontalPodAutoscalerRepository horizontalPodAutoscalers()
  * @method IngressRepository ingresses()
+ * @method IssuerRepository issuers()
+ * @method JobRepository jobs()
  * @method NamespaceRepository namespaces()
  * @method NetworkPolicyRepository networkPolicies()
- * @method HorizontalPodAutoscalerRepository horizontalPodAutoscalers()
- * @method CertificateRepository certificates()
- * @method IssuerRepository issuers()
- * @method ServiceAccountRepository serviceAccounts()
- * @method RoleRepository roles()
+ * @method NodeRepository nodes()
+ * @method PersistentVolumeClaimRepository persistentVolumeClaims()
+ * @method PersistentVolumeRepository persistentVolume()
+ * @method PodRepository pods()
+ * @method QuotaRepository quotas()
+ * @method ReplicaSetRepository replicaSets()
+ * @method ReplicationControllerRepository replicationControllers()
  * @method RoleBindingRepository roleBindings()
- * @method ClusterRoleRepository clusterRoles()
- * @method ClusterRoleBindingRepository clusterRoleBindings()
+ * @method RoleRepository roles()
+ * @method SecretRepository secrets()
+ * @method ServiceAccountRepository serviceAccounts()
+ * @method ServiceRepository services()
+ * @method StatefulSetRepository statefulsets()
  * @method SubnamespaceAnchorRepository subnamespacesAnchors()
  */
 class Client

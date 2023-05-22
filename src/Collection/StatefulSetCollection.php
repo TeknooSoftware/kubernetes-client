@@ -24,10 +24,9 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\Tests\Kubernetes;
+namespace Teknoo\Kubernetes\Collection;
 
-use PHPUnit\Framework\TestCase;
-use Teknoo\Kubernetes\RepositoryRegistry;
+use Teknoo\Kubernetes\Model\StatefulSet;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -37,37 +36,9 @@ use Teknoo\Kubernetes\RepositoryRegistry;
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  *
- * @covers      \Teknoo\Kubernetes\RepositoryRegistry
+ * @extends Collection<StatefulSet>
  */
-class RepositoryRegistryTest extends TestCase
+class StatefulSetCollection extends Collection
 {
-    private const TEST_CLASS = '\Example\Class';
-
-    public function testBuiltinRepositories(): void
-    {
-        $registry = new RepositoryRegistry();
-
-        self::assertCount(29, $registry);
-    }
-
-    public function testAddRepository(): void
-    {
-        $registry = new RepositoryRegistry();
-
-        self::assertFalse(isset($registry['test']));
-
-        $registry['test'] = self::TEST_CLASS;
-
-        self::assertTrue(isset($registry['test']));
-        self::assertEquals(self::TEST_CLASS, $registry['test']);
-    }
-
-    public function testRemoveRepository(): void
-    {
-        $registry = new RepositoryRegistry();
-
-        unset($registry['roles']);
-        self::assertFalse(isset($registry['roles']));
-        self::assertNull($registry['roles']);
-    }
+    protected static ?string $modelClassName = StatefulSet::class;
 }
