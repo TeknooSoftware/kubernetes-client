@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.4.1] - 2023-06-07
+### Stable Release
+- Drop support of Symfony Client 6.2, require 6.3 or newer
+
 ## [1.4.0] - 2023-05-22
 ### Stable Release
 - Add Stateful sets support
