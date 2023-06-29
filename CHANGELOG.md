@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.4.2] - 2023-06-29
+### Stable Release
+- Upgrade lib, requires illuminate/contracts 1.10+
+
 ## [1.4.1] - 2023-06-07
 ### Stable Release
 - Drop support of Symfony Client 6.2, require 6.3 or newer
