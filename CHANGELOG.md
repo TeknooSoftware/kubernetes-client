@@ -1,5 +1,11 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.4.3] - 2023-10-19
+### Stable Release
+- Prevent HTTP Header injection via the master's token passed to the client. 
+    (Forbid all End of Line in the token)
+- Forbid URL as token's path in client configuration.
+
 ## [1.4.2] - 2023-06-29
 ### Stable Release
 - Upgrade lib, requires illuminate/contracts 1.10+

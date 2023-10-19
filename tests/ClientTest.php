@@ -59,6 +59,7 @@ use Teknoo\Tests\Kubernetes\Helper\HttpMethodsMockClient;
 
 use function json_encode;
 use function method_exists;
+use const PHP_EOL;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -280,7 +281,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects($this->once())
+        $mockClientInterface->expects(self::once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -303,6 +304,39 @@ class ClientTest extends TestCase
         );
     }
 
+    public function testSendRequestWithAuthTokenWithEolAtMiddle(): void
+    {
+        $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
+        $httpClientProp->setAccessible(true);
+
+        $client = new Client([
+            'master' => 'https://api.example.com',
+            'token' => 'foo' . PHP_EOL . 'bar',
+        ]);
+
+        $mockClientInterface = $this->createMock(ClientInterface::class);
+
+        $jsonBody = json_encode([
+            'message' => 'Hello world',
+        ]);
+
+        $response = new Response(200, [], $jsonBody);
+
+        $mockClientInterface->expects(self::never())
+            ->method('sendRequest');
+
+        $httpClient = new HttpMethodsClient(
+            $mockClientInterface,
+            Psr17FactoryDiscovery::findRequestFactory(),
+            Psr17FactoryDiscovery::findStreamFactory(),
+        );
+
+        $httpClientProp->setValue($client, $httpClient);
+
+        $this->expectException(InvalidArgumentException::class);
+        $client->sendRequest(RequestMethod::Get, 'poddy/');
+    }
+
     public function testSendRequestWithCertificate(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
@@ -323,7 +357,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects($this->once())
+        $mockClientInterface->expects(self::once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -366,7 +400,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects($this->once())
+        $mockClientInterface->expects(self::once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -409,7 +443,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects($this->once())
+        $mockClientInterface->expects(self::once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -432,7 +466,7 @@ class ClientTest extends TestCase
         );
     }
 
-    public function testSendRequestAuthVIaFileToken(): void
+    public function testSendRequestAuthViaFileToken(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
         $httpClientProp->setAccessible(true);
@@ -452,7 +486,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects($this->once())
+        $mockClientInterface->expects(self::once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -475,6 +509,119 @@ class ClientTest extends TestCase
         );
     }
 
+    public function testSendRequestAuthViaFileTokenWithEolAtEnd(): void
+    {
+        $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
+        $httpClientProp->setAccessible(true);
+
+        $client = new Client([
+            'master' => 'https://api.example.com',
+            'token' => __DIR__ . '/fixtures/tokens/auth_with_eol_at_end',
+        ]);
+
+        $client->setPatchType(PatchType::Json);
+
+        $mockClientInterface = $this->createMock(ClientInterface::class);
+
+        $jsonBody = json_encode([
+            'message' => 'Hello world',
+        ]);
+
+        $response = new Response(200, [], $jsonBody);
+
+        $mockClientInterface->expects(self::once())
+            ->method('sendRequest')
+            ->withAnyParameters()
+            ->willReturn($response);
+
+        $httpClient = new HttpMethodsClient(
+            $mockClientInterface,
+            Psr17FactoryDiscovery::findRequestFactory(),
+            Psr17FactoryDiscovery::findStreamFactory(),
+        );
+
+        $httpClientProp->setValue($client, $httpClient);
+
+        $result = $client->sendRequest(RequestMethod::Get, 'poddy/', [], ['foo' => "bar"]);
+
+        self::assertEquals(
+            [
+                'message' => 'Hello world',
+            ],
+            $result
+        );
+    }
+
+    public function testSendRequestAuthViaFileTokenWithEolInMiddle(): void
+    {
+        $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
+        $httpClientProp->setAccessible(true);
+
+        $client = new Client([
+            'master' => 'https://api.example.com',
+            'token' => __DIR__ . '/fixtures/tokens/auth_with_eol_in_middle',
+        ]);
+
+        $client->setPatchType(PatchType::Json);
+
+        $mockClientInterface = $this->createMock(ClientInterface::class);
+
+        $jsonBody = json_encode([
+            'message' => 'Hello world',
+        ]);
+
+        $response = new Response(200, [], $jsonBody);
+
+        $mockClientInterface->expects(self::never())
+            ->method('sendRequest');
+
+        $httpClient = new HttpMethodsClient(
+            $mockClientInterface,
+            Psr17FactoryDiscovery::findRequestFactory(),
+            Psr17FactoryDiscovery::findStreamFactory(),
+        );
+
+        $httpClientProp->setValue($client, $httpClient);
+
+        $this->expectException(InvalidArgumentException::class);
+        $client->sendRequest(RequestMethod::Get, 'poddy/', [], ['foo' => "bar"]);
+    }
+
+    public function testSendRequestAuthViaUrl(): void
+    {
+        $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
+        $httpClientProp->setAccessible(true);
+
+        $client = new Client([
+            'master' => 'https://api.example.com',
+            'token' => 'http://foo.bar',
+        ]);
+
+        $client->setPatchType(PatchType::Json);
+
+        $mockClientInterface = $this->createMock(ClientInterface::class);
+
+        $jsonBody = json_encode([
+            'message' => 'Hello world',
+        ]);
+
+        $response = new Response(200, [], $jsonBody);
+
+        $mockClientInterface->expects(self::never())
+            ->method('sendRequest');
+
+        $httpClient = new HttpMethodsClient(
+            $mockClientInterface,
+            Psr17FactoryDiscovery::findRequestFactory(),
+            Psr17FactoryDiscovery::findStreamFactory(),
+        );
+
+        $httpClientProp->setValue($client, $httpClient);
+
+        $this->expectException(InvalidArgumentException::class);
+        $client->sendRequest(RequestMethod::Get, 'poddy/', [], ['foo' => "bar"]);
+    }
+
     public function testSendRequestJsonParsesResponse(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
@@ -492,7 +639,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects($this->once())
+        $mockClientInterface->expects(self::once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -532,7 +679,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects($this->once())
+        $mockClientInterface->expects(self::once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willThrowException(new HttpTransferException());
@@ -567,7 +714,7 @@ class ClientTest extends TestCase
 
         $response = new Response(404, [], $jsonBody);
 
-        $mockClientInterface->expects($this->once())
+        $mockClientInterface->expects(self::once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willThrowException(new HttpException('foo', $this->createMock(RequestInterface::class), $response));
@@ -602,7 +749,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects($this->once())
+        $mockClientInterface->expects(self::once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -637,7 +784,7 @@ class ClientTest extends TestCase
         $body = $this->createMock(StreamInterface::class);
         $response = new Response(200, [], $body);
 
-        $mockClientInterface->expects($this->once())
+        $mockClientInterface->expects(self::once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -675,7 +822,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects($this->once())
+        $mockClientInterface->expects(self::once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -715,7 +862,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects($this->once())
+        $mockClientInterface->expects(self::once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -761,7 +908,7 @@ class ClientTest extends TestCase
 
         $response = new Response($respStatusCode, $respHeaders, $jsonBody);
 
-        $mockHttpMethodsClient->expects($this->once())
+        $mockHttpMethodsClient->expects(self::once())
             ->method('send')
             ->with(...$expectedSendArgs)
             ->willReturn($response);

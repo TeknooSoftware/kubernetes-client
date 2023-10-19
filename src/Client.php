@@ -92,11 +92,14 @@ use function is_dir;
 use function is_string;
 use function json_decode;
 use function json_encode;
+use function parse_url;
+use function str_contains;
 use function substr;
 use function tempnam;
 use function trim;
 
 use const JSON_FORCE_OBJECT;
+use const PHP_EOL;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -641,8 +644,17 @@ class Client
 
             if (!empty($this->token)) {
                 $token = $this->token;
+
+                if (!empty(parse_url($token)['scheme'])) {
+                    throw new InvalidArgumentException("Error, Url are not allowed in token path for `{$this->token}`");
+                }
+
                 if (file_exists($token)) {
-                    $token = (string) file_get_contents($token);
+                    $token = trim((string) file_get_contents($token));
+                }
+
+                if (str_contains($token, PHP_EOL)) {
+                    throw new InvalidArgumentException("Error, the token in `{$this->token}` is multiline");
                 }
 
                 $headers['Authorization'] = 'Bearer ' . trim($token);
