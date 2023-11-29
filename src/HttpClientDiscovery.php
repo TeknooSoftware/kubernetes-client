@@ -34,6 +34,7 @@ use Http\Discovery\ClassDiscovery;
 use Http\Discovery\Exception\ClassInstantiationFailedException;
 use Http\Discovery\Exception\DiscoveryFailedException;
 use Http\Discovery\Exception\NotFoundException;
+use Psr\Http\Client\ClientInterface;
 use Symfony\Component\HttpClient\HttplugClient as SymfonyHttplug;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Curl;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Guzzle7;
@@ -81,7 +82,7 @@ class HttpClientDiscovery extends ClassDiscovery
         ?string $clientCertificate = null,
         ?string $clientKey = null,
         ?int $timeout = null,
-    ): HttpClient {
+    ): HttpClient|ClientInterface {
         try {
             $clientClass = static::findOneByType(HttpClient::class);
             // @codeCoverageIgnoreStart
@@ -116,7 +117,7 @@ class HttpClientDiscovery extends ClassDiscovery
         ?string $clientCertificate = null,
         ?string $clientKey = null,
         ?int $timeout = null,
-    ): HttpClient {
+    ): HttpClient|ClientInterface {
         if (is_string($class) && isset(self::$instantiatorsList[$class])) {
             $instantiator = self::$instantiatorsList[$class];
             return (new $instantiator())->build(

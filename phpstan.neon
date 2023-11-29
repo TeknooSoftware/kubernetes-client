@@ -21,3 +21,6 @@ parameters:
         -
             message: '#instantiateClass\(\) expects#'
             path: src/HttpClientDiscovery.php
+        -
+            message: '#does not accept default value of type array<string, string>#'
+            path: src/HttpClientDiscovery.php

@@ -1,5 +1,10 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.4.4] - 2023-11-29
+### Stable Release
+- Update dev lib requirements
+- Support Symfony 7.0+
+
 ## [1.4.3] - 2023-10-19
 ### Stable Release
 - Prevent HTTP Header injection via the master's token passed to the client. 

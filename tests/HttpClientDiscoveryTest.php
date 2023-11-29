@@ -28,6 +28,7 @@ namespace Teknoo\Tests\Kubernetes;
 
 use Http\Client\HttpClient;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Client\ClientInterface;
 use Teknoo\Kubernetes\HttpClientDiscovery;
 
 /**
@@ -45,7 +46,7 @@ class HttpClientDiscoveryTest extends TestCase
         HttpClientDiscovery::registerInstantiator('foo', 'bar');
 
         self::assertInstanceOf(
-            HttpClient::class,
+            ClientInterface::class,
             HttpClientDiscovery::find(),
         );
     }
