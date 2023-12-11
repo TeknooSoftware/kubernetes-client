@@ -7,7 +7,9 @@ Teknoo Software - Kubernetes Client
 [![License](https://poser.pugx.org/teknoo/kubernetes-client/license)](https://packagist.org/packages/teknoo/kubernetes-client)
 [![PHPStan](https://img.shields.io/badge/PHPStan-enabled-brightgreen.svg?style=flat)](https://github.com/phpstan/phpstan)
 
-A PHP client for managing a Kubernetes cluster. 
+A PHP client for managing a Kubernetes cluster. Control your Kubernetes resources by manipulating manifests, as PHP 
+array, through the Kubernetes HTTP API. The client supports all Kubernetes API V1.28 resources, but it's  possible to 
+define new resource usable with the client.
 This is a fork and a rework from [Maclof Kuebrnetes library](https://github.com/maclof/kubernetes-client).
 
 Supported API Features
