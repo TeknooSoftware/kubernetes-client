@@ -24,7 +24,10 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\Kubernetes\Model;
+namespace Teknoo\Kubernetes\Repository;
+
+use Teknoo\Kubernetes\Model\LimitRange;
+use Teknoo\Kubernetes\Collection\LimitRangeCollection;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -33,7 +36,12 @@ namespace Teknoo\Kubernetes\Model;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
+ *
+ * @extends     Repository<LimitRange>
  */
-class Quota extends Model
+class LimitRangeRepository extends Repository
 {
+    protected string $uri = 'limitranges';
+
+    protected static ?string $collectionClassName = LimitRangeCollection::class;
 }

@@ -41,13 +41,14 @@ use Teknoo\Kubernetes\Repository\HorizontalPodAutoscalerRepository;
 use Teknoo\Kubernetes\Repository\IngressRepository;
 use Teknoo\Kubernetes\Repository\IssuerRepository;
 use Teknoo\Kubernetes\Repository\JobRepository;
+use Teknoo\Kubernetes\Repository\LimitRangeRepository;
 use Teknoo\Kubernetes\Repository\NamespaceRepository;
 use Teknoo\Kubernetes\Repository\NetworkPolicyRepository;
 use Teknoo\Kubernetes\Repository\NodeRepository;
 use Teknoo\Kubernetes\Repository\PersistentVolumeClaimRepository;
 use Teknoo\Kubernetes\Repository\PersistentVolumeRepository;
 use Teknoo\Kubernetes\Repository\PodRepository;
-use Teknoo\Kubernetes\Repository\QuotaRepository;
+use Teknoo\Kubernetes\Repository\ResourceQuotaRepository;
 use Teknoo\Kubernetes\Repository\ReplicaSetRepository;
 use Teknoo\Kubernetes\Repository\ReplicationControllerRepository;
 use Teknoo\Kubernetes\Repository\Repository;
@@ -75,20 +76,21 @@ class RepositoryRegistry implements ArrayAccess, Countable
      * @var array<string, class-string<Repository>>
      */
     private array $map = [
+        'configMaps'             => ConfigMapRepository::class,
+        'endpoints'              => EndpointRepository::class,
+        'events'                 => EventRepository::class,
+        'limitRanges'            => LimitRangeRepository::class,
+        'namespaces'             => NamespaceRepository::class,
         'nodes'                  => NodeRepository::class,
-        'quotas'                 => QuotaRepository::class,
+        'persistentVolume'       => PersistentVolumeRepository::class,
+        'persistentVolumeClaims' => PersistentVolumeClaimRepository::class,
         'pods'                   => PodRepository::class,
         'replicaSets'            => ReplicaSetRepository::class,
         'replicationControllers' => ReplicationControllerRepository::class,
-        'services'               => ServiceRepository::class,
+        'resourceQuotas'         => ResourceQuotaRepository::class,
         'secrets'                => SecretRepository::class,
-        'events'                 => EventRepository::class,
-        'configMaps'             => ConfigMapRepository::class,
-        'endpoints'              => EndpointRepository::class,
-        'persistentVolume'       => PersistentVolumeRepository::class,
-        'persistentVolumeClaims' => PersistentVolumeClaimRepository::class,
-        'namespaces'             => NamespaceRepository::class,
-        'serviceAccounts'         => ServiceAccountRepository::class,
+        'serviceAccounts'        => ServiceAccountRepository::class,
+        'services'               => ServiceRepository::class,
 
         // batch/v1
         'jobs'                   => JobRepository::class,

@@ -24,10 +24,7 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\Kubernetes\Repository;
-
-use Teknoo\Kubernetes\Model\Quota;
-use Teknoo\Kubernetes\Collection\QuotaCollection;
+namespace Teknoo\Kubernetes\Model;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -36,14 +33,7 @@ use Teknoo\Kubernetes\Collection\QuotaCollection;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
- *
- * @extends     Repository<Quota>
  */
-class QuotaRepository extends Repository
+class LimitRange extends Model
 {
-    protected string $uri = 'resourcequotas';
-
-    protected bool $namespace = false;
-
-    protected static ?string $collectionClassName = QuotaCollection::class;
 }

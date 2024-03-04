@@ -26,7 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Kubernetes\Collection;
 
-use Teknoo\Kubernetes\Model\Quota;
+use Teknoo\Kubernetes\Model\LimitRange;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -36,9 +36,9 @@ use Teknoo\Kubernetes\Model\Quota;
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  *
- * @extends Collection<Quota>
+ * @extends Collection<LimitRange>
  */
-class QuotaCollection extends Collection
+class LimitRangeCollection extends Collection
 {
-    protected static ?string $modelClassName = Quota::class;
+    protected static ?string $modelClassName = LimitRange::class;
 }

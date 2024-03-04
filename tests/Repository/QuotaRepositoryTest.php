@@ -26,10 +26,10 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes\Repository;
 
-use Teknoo\Kubernetes\Collection\QuotaCollection;
-use Teknoo\Kubernetes\Model\Quota;
+use Teknoo\Kubernetes\Collection\ResourceQuotaCollection;
+use Teknoo\Kubernetes\Model\ResourceQuota;
 use Teknoo\Kubernetes\Model\Model;
-use Teknoo\Kubernetes\Repository\QuotaRepository;
+use Teknoo\Kubernetes\Repository\ResourceQuotaRepository;
 use Teknoo\Kubernetes\Repository\Repository;
 
 /**
@@ -40,7 +40,7 @@ use Teknoo\Kubernetes\Repository\Repository;
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  *
- * @covers      \Teknoo\Kubernetes\Repository\QuotaRepository
+ * @covers      \Teknoo\Kubernetes\Repository\ResourceQuotaRepository
  * @covers      \Teknoo\Kubernetes\Repository\Repository
  * @covers      \Teknoo\Kubernetes\Enums\RequestMethod
  * @covers      \Teknoo\Kubernetes\Enums\PatchType
@@ -49,19 +49,19 @@ class QuotaRepositoryTest extends AbstractBaseTestCase
 {
     protected function getRepository(): Repository
     {
-        return new QuotaRepository(
+        return new ResourceQuotaRepository(
             $this->getClientMock(),
         );
     }
 
     protected function getCollectionClassName(): string
     {
-        return QuotaCollection::class;
+        return ResourceQuotaCollection::class;
     }
 
     protected function getModel(): Model
     {
-        return new Quota(
+        return new ResourceQuota(
             [
                 'metadata' => [
                     'name' => 'foo',

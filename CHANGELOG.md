@@ -1,5 +1,10 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.5.0] - 2024-03-04
+### Stable Release
+- Rename and fix `Quota` to `ResourceQuota`.
+- Add `LimiteRange`.
+
 ## [1.4.4] - 2023-11-29
 ### Stable Release
 - Update dev lib requirements

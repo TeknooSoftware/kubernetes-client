@@ -61,13 +61,14 @@ use Teknoo\Kubernetes\Repository\HorizontalPodAutoscalerRepository;
 use Teknoo\Kubernetes\Repository\IngressRepository;
 use Teknoo\Kubernetes\Repository\IssuerRepository;
 use Teknoo\Kubernetes\Repository\JobRepository;
+use Teknoo\Kubernetes\Repository\LimitRangeRepository;
 use Teknoo\Kubernetes\Repository\NamespaceRepository;
 use Teknoo\Kubernetes\Repository\NetworkPolicyRepository;
 use Teknoo\Kubernetes\Repository\NodeRepository;
 use Teknoo\Kubernetes\Repository\PersistentVolumeClaimRepository;
 use Teknoo\Kubernetes\Repository\PersistentVolumeRepository;
 use Teknoo\Kubernetes\Repository\PodRepository;
-use Teknoo\Kubernetes\Repository\QuotaRepository;
+use Teknoo\Kubernetes\Repository\ResourceQuotaRepository;
 use Teknoo\Kubernetes\Repository\ReplicaSetRepository;
 use Teknoo\Kubernetes\Repository\ReplicationControllerRepository;
 use Teknoo\Kubernetes\Repository\Repository;
@@ -122,15 +123,16 @@ use const PHP_EOL;
  * @method IngressRepository ingresses()
  * @method IssuerRepository issuers()
  * @method JobRepository jobs()
+ * @method LimitRangeRepository limitRanges()
  * @method NamespaceRepository namespaces()
  * @method NetworkPolicyRepository networkPolicies()
  * @method NodeRepository nodes()
  * @method PersistentVolumeClaimRepository persistentVolumeClaims()
  * @method PersistentVolumeRepository persistentVolume()
  * @method PodRepository pods()
- * @method QuotaRepository quotas()
  * @method ReplicaSetRepository replicaSets()
  * @method ReplicationControllerRepository replicationControllers()
+ * @method ResourceQuotaRepository resourceQuotas()
  * @method RoleBindingRepository roleBindings()
  * @method RoleRepository roles()
  * @method SecretRepository secrets()
