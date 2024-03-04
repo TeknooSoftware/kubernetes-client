@@ -1,7 +1,7 @@
 Feature: Fetch a resource with a certificate
   Fetch as model instance a Kubernetes resource from its name
 
-  Scenario: Fetch an existent ressource with a certificate
+  Scenario: Fetch an existent resource with a certificate
     Given a Kubernetes cluster
     And an account identified by a certificate client
     And a namespace "behat-test"
@@ -11,7 +11,7 @@ Feature: Fetch a resource with a certificate
     Then the server must return a pod model
     And without error
 
-  Scenario: Fetch a missing ressource with a certificate
+  Scenario: Fetch a missing resource with a certificate
     Given a Kubernetes cluster
     And an account identified by a certificate client
     And a namespace "behat-test"
