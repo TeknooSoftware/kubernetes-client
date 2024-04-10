@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.5.1] - 2024-04-10
+### Stable Release
+- Support `illuminate/collections` and `illuminate/contracts` 11+
+
 ## [1.5.0] - 2024-03-04
 ### Stable Release
 - Rename and fix `Quota` to `ResourceQuota`.
