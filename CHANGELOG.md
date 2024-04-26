@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.5.2] - 2024-04-26
+### Stable Release
+- Add flag `JSON_THROW_ON_ERROR` on all `json_encode`/`json_decode`
+
 ## [1.5.1] - 2024-04-10
 ### Stable Release
 - Support `illuminate/collections` and `illuminate/contracts` 11+

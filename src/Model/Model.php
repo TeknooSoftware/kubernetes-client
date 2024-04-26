@@ -43,6 +43,7 @@ use function json_encode;
 use function str_replace;
 
 use const JSON_PRETTY_PRINT;
+use const JSON_THROW_ON_ERROR;
 use const JSON_UNESCAPED_SLASHES;
 
 /**
@@ -146,7 +147,7 @@ abstract class Model implements Arrayable, Stringable
 
         $schema = array_merge($this->schema, $this->attributes);
 
-        $jsonSchema = (string) json_encode($schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $jsonSchema = (string) json_encode($schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
 
         // Fix for issue #37, can't use JSON_FORCE_OBJECT as the encoding breaks arrays of objects,
         // for example port mappings.

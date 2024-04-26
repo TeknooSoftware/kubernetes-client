@@ -100,6 +100,7 @@ use function tempnam;
 use function trim;
 
 use const JSON_FORCE_OBJECT;
+use const JSON_THROW_ON_ERROR;
 use const PHP_EOL;
 
 /**
@@ -663,7 +664,7 @@ class Client
             }
 
             if (is_array($body)) {
-                $body = json_encode($body, JSON_FORCE_OBJECT);
+                $body = json_encode($body, JSON_FORCE_OBJECT | JSON_THROW_ON_ERROR);
             }
 
             $response = $this->getHttpMethodsClients()->send(
