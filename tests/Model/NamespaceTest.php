@@ -26,6 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes\Model;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\Kubernetes\Enums\FileFormat;
 use Teknoo\Kubernetes\Model\Model;
 use Teknoo\Kubernetes\Model\NamespaceModel;
@@ -37,11 +38,10 @@ use Teknoo\Kubernetes\Model\NamespaceModel;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
- *
- * @covers      \Teknoo\Kubernetes\Model\NamespaceModel
- * @covers      \Teknoo\Kubernetes\Model\Model
- * @covers      \Teknoo\Kubernetes\Enums\FileFormat
  */
+#[CoversClass(NamespaceModel::class)]
+#[CoversClass(FileFormat::class)]
+#[CoversClass(Model::class)]
 class NamespaceTest extends AbstractBaseTestCase
 {
     protected function getEmptyFixtureFileName(): string

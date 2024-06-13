@@ -26,7 +26,10 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes\Repository;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\Kubernetes\Collection\DeploymentCollection;
+use Teknoo\Kubernetes\Enums\PatchType;
+use Teknoo\Kubernetes\Enums\RequestMethod;
 use Teknoo\Kubernetes\Model\Deployment;
 use Teknoo\Kubernetes\Model\Model;
 use Teknoo\Kubernetes\Repository\DeploymentRepository;
@@ -39,12 +42,11 @@ use Teknoo\Kubernetes\Repository\Repository;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
- *
- * @covers      \Teknoo\Kubernetes\Repository\DeploymentRepository
- * @covers      \Teknoo\Kubernetes\Repository\Repository
- * @covers      \Teknoo\Kubernetes\Enums\RequestMethod
- * @covers      \Teknoo\Kubernetes\Enums\PatchType
  */
+#[CoversClass(DeploymentRepository::class)]
+#[CoversClass(PatchType::class)]
+#[CoversClass(RequestMethod::class)]
+#[CoversClass(Repository::class)]
 class DeploymentRepositoryTest extends AbstractBaseTestCase
 {
     protected function getRepository(): Repository

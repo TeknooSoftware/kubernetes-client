@@ -27,6 +27,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\Kubernetes\HttpClient\Instantiator;
 
 use Http\Client\Socket\Client;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Socket;
 
@@ -35,9 +36,8 @@ use Teknoo\Kubernetes\HttpClient\Instantiator\Socket;
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- *
- * @covers      \Teknoo\Kubernetes\HttpClient\Instantiator\Socket
  */
+#[CoversClass(Socket::class)]
 class SocketTest extends TestCase
 {
     public function testBuild()

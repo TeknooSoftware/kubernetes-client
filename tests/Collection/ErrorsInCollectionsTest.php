@@ -27,6 +27,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\Kubernetes\Collection;
 
 use LogicException;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
 use Teknoo\Kubernetes\Collection\Collection;
@@ -39,9 +40,8 @@ use Teknoo\Kubernetes\Collection\Collection;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
- *
- * @covers      \Teknoo\Kubernetes\Collection\Collection
  */
+#[CoversClass(Collection::class)]
 class ErrorsInCollectionsTest extends PHPUnitTestCase
 {
     public function testGetItemsWithoutModelName(): void

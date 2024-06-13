@@ -26,6 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes\Model;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\Kubernetes\Enums\FileFormat;
 use Teknoo\Kubernetes\Model\Model;
 use Teknoo\Kubernetes\Model\RoleBinding;
@@ -37,11 +38,10 @@ use Teknoo\Kubernetes\Model\RoleBinding;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
- *
- * @covers      \Teknoo\Kubernetes\Model\RoleBinding
- * @covers      \Teknoo\Kubernetes\Model\Model
- * @covers      \Teknoo\Kubernetes\Enums\FileFormat
  */
+#[CoversClass(RoleBinding::class)]
+#[CoversClass(FileFormat::class)]
+#[CoversClass(Model::class)]
 class RoleBindingTest extends AbstractBaseTestCase
 {
     protected function getEmptyFixtureFileName(): string

@@ -26,7 +26,10 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes\Repository;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\Kubernetes\Collection\ClusterRoleCollection;
+use Teknoo\Kubernetes\Enums\PatchType;
+use Teknoo\Kubernetes\Enums\RequestMethod;
 use Teknoo\Kubernetes\Model\ClusterRole;
 use Teknoo\Kubernetes\Model\Model;
 use Teknoo\Kubernetes\Repository\ClusterRoleRepository;
@@ -39,12 +42,11 @@ use Teknoo\Kubernetes\Repository\Repository;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
- *
- * @covers      \Teknoo\Kubernetes\Repository\ClusterRoleRepository
- * @covers      \Teknoo\Kubernetes\Repository\Repository
- * @covers      \Teknoo\Kubernetes\Enums\RequestMethod
- * @covers      \Teknoo\Kubernetes\Enums\PatchType
  */
+#[CoversClass(ClusterRoleRepository::class)]
+#[CoversClass(PatchType::class)]
+#[CoversClass(RequestMethod::class)]
+#[CoversClass(Repository::class)]
 class ClusterRoleRepositoryTest extends AbstractBaseTestCase
 {
     protected function getRepository(): Repository

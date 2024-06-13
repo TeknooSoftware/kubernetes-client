@@ -36,6 +36,8 @@ use Http\Discovery\StreamFactoryDiscovery;
 use InvalidArgumentException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
@@ -68,14 +70,13 @@ use const PHP_EOL;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
- *
- * @covers      \Teknoo\Kubernetes\Client
- * @covers      \Teknoo\Kubernetes\Exceptions\ApiServerException
- * @covers      \Teknoo\Kubernetes\Exceptions\BadRequestException
- * @covers      \Teknoo\Kubernetes\Enums\FileFormat
- * @covers      \Teknoo\Kubernetes\Enums\PatchType
- * @covers      \Teknoo\Kubernetes\Enums\RequestMethod
  */
+#[CoversClass(RequestMethod::class)]
+#[CoversClass(PatchType::class)]
+#[CoversClass(FileFormat::class)]
+#[CoversClass(BadRequestException::class)]
+#[CoversClass(ApiServerException::class)]
+#[CoversClass(Client::class)]
 class ClientTest extends TestCase
 {
     private const JSON_BODY = [
@@ -242,11 +243,11 @@ class ClientTest extends TestCase
     public function testGetInvalidRepository()
     {
         $registry = $this->createMock(RepositoryRegistry::class);
-        $registry->expects(self::any())
+        $registry->expects($this->any())
             ->method('offsetGet')
             ->willReturn(stdClass::class);
 
-        $registry->expects(self::any())
+        $registry->expects($this->any())
             ->method('offsetExists')
             ->willReturn(true);
 
@@ -281,7 +282,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects(self::once())
+        $mockClientInterface->expects($this->once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -322,7 +323,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects(self::never())
+        $mockClientInterface->expects($this->never())
             ->method('sendRequest');
 
         $httpClient = new HttpMethodsClient(
@@ -357,7 +358,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects(self::once())
+        $mockClientInterface->expects($this->once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -400,7 +401,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects(self::once())
+        $mockClientInterface->expects($this->once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -443,7 +444,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects(self::once())
+        $mockClientInterface->expects($this->once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -486,7 +487,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects(self::once())
+        $mockClientInterface->expects($this->once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -529,7 +530,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects(self::once())
+        $mockClientInterface->expects($this->once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -572,7 +573,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects(self::never())
+        $mockClientInterface->expects($this->never())
             ->method('sendRequest');
 
         $httpClient = new HttpMethodsClient(
@@ -607,7 +608,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects(self::never())
+        $mockClientInterface->expects($this->never())
             ->method('sendRequest');
 
         $httpClient = new HttpMethodsClient(
@@ -639,7 +640,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects(self::once())
+        $mockClientInterface->expects($this->once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -679,7 +680,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects(self::once())
+        $mockClientInterface->expects($this->once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willThrowException(new HttpTransferException());
@@ -714,7 +715,7 @@ class ClientTest extends TestCase
 
         $response = new Response(404, [], $jsonBody);
 
-        $mockClientInterface->expects(self::once())
+        $mockClientInterface->expects($this->once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willThrowException(new HttpException('foo', $this->createMock(RequestInterface::class), $response));
@@ -749,7 +750,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects(self::once())
+        $mockClientInterface->expects($this->once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -784,7 +785,7 @@ class ClientTest extends TestCase
         $body = $this->createMock(StreamInterface::class);
         $response = new Response(200, [], $body);
 
-        $mockClientInterface->expects(self::once())
+        $mockClientInterface->expects($this->once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -822,7 +823,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects(self::once())
+        $mockClientInterface->expects($this->once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -862,7 +863,7 @@ class ClientTest extends TestCase
 
         $response = new Response(200, [], $jsonBody);
 
-        $mockClientInterface->expects(self::once())
+        $mockClientInterface->expects($this->once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
@@ -908,7 +909,7 @@ class ClientTest extends TestCase
 
         $response = new Response($respStatusCode, $respHeaders, $jsonBody);
 
-        $mockHttpMethodsClient->expects(self::once())
+        $mockHttpMethodsClient->expects($this->once())
             ->method('send')
             ->with(...$expectedSendArgs)
             ->willReturn($response);
@@ -965,9 +966,7 @@ class ClientTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider providerForFailedResponses
-     */
+    #[DataProvider('providerForFailedResponses')]
     public function testExceptionIsThrownOnFailureResponse(int $respCode, string $exceptionClass, string $msgRegEx): void
     {
         $client = new Client(['master' => 'https://kubernetes.io']);

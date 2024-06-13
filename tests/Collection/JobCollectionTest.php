@@ -26,6 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes\Collection;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\Kubernetes\Collection\Collection;
 use Teknoo\Kubernetes\Collection\JobCollection;
 use Teknoo\Kubernetes\Model\Job;
@@ -37,10 +38,9 @@ use Teknoo\Kubernetes\Model\Job;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
- *
- * @covers      \Teknoo\Kubernetes\Collection\JobCollection
- * @covers      \Teknoo\Kubernetes\Collection\Collection
  */
+#[CoversClass(Collection::class)]
+#[CoversClass(JobCollection::class)]
 class JobCollectionTest extends AbstractBaseTestCase
 {
     protected function getCollection(): Collection

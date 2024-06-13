@@ -27,6 +27,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\Kubernetes;
 
 use Http\Client\HttpClient;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface;
 use Teknoo\Kubernetes\HttpClientDiscovery;
@@ -36,9 +37,8 @@ use Teknoo\Kubernetes\HttpClientDiscovery;
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
- *
- * @covers      \Teknoo\Kubernetes\HttpClientDiscovery
  */
+#[CoversClass(HttpClientDiscovery::class)]
 class HttpClientDiscoveryTest extends TestCase
 {
     public function testFind()

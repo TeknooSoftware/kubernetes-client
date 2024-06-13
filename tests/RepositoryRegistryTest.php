@@ -26,6 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\Kubernetes\RepositoryRegistry;
 
@@ -36,9 +37,8 @@ use Teknoo\Kubernetes\RepositoryRegistry;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
- *
- * @covers      \Teknoo\Kubernetes\RepositoryRegistry
  */
+#[CoversClass(RepositoryRegistry::class)]
 class RepositoryRegistryTest extends TestCase
 {
     private const TEST_CLASS = '\Example\Class';

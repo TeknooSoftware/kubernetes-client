@@ -27,6 +27,7 @@ declare(strict_types=1);
 namespace Teknoo\Tests\Kubernetes\Repository;
 
 use LogicException;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -42,9 +43,8 @@ use Teknoo\Kubernetes\Repository\Repository;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
- *
- * @covers      \Teknoo\Kubernetes\Repository\Repository
  */
+#[CoversClass(Repository::class)]
 class ErrorsInRepositoriesTest extends PHPUnitTestCase
 {
     private ?Client $client = null;
@@ -68,22 +68,22 @@ class ErrorsInRepositoriesTest extends PHPUnitTestCase
                 $result = [];
             }
 
-            $this->client->expects(self::any())
+            $this->client->expects($this->any())
                 ->method('sendRequest')
                 ->willReturn($result);
 
             $stream = $this->createMock(StreamInterface::class);
             $response = $this->createMock(ResponseInterface::class);
 
-            $response->expects(self::any())
+            $response->expects($this->any())
                 ->method('getBody')
                 ->willReturn($stream);
 
-            $this->client->expects(self::any())
+            $this->client->expects($this->any())
                 ->method('sendStreamableRequest')
                 ->willReturn($response);
 
-            $this->client->expects(self::any())
+            $this->client->expects($this->any())
                 ->method('sendStringableRequest')
                 ->willReturn('foo');
         }

@@ -26,6 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes\Collection;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\Kubernetes\Collection\Collection;
 use Teknoo\Kubernetes\Collection\NodeCollection;
 use Teknoo\Kubernetes\Model\Node;
@@ -37,10 +38,9 @@ use Teknoo\Kubernetes\Model\Node;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
- *
- * @covers      \Teknoo\Kubernetes\Collection\NodeCollection
- * @covers      \Teknoo\Kubernetes\Collection\Collection
  */
+#[CoversClass(Collection::class)]
+#[CoversClass(NodeCollection::class)]
 class NodeCollectionTest extends AbstractBaseTestCase
 {
     protected function getCollection(): Collection

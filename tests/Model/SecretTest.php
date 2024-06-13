@@ -26,6 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes\Model;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\Kubernetes\Enums\FileFormat;
 use Teknoo\Kubernetes\Model\Model;
 use Teknoo\Kubernetes\Model\Secret;
@@ -37,11 +38,10 @@ use Teknoo\Kubernetes\Model\Secret;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
- *
- * @covers      \Teknoo\Kubernetes\Model\Secret
- * @covers      \Teknoo\Kubernetes\Model\Model
- * @covers      \Teknoo\Kubernetes\Enums\FileFormat
  */
+#[CoversClass(Secret::class)]
+#[CoversClass(FileFormat::class)]
+#[CoversClass(Model::class)]
 class SecretTest extends AbstractBaseTestCase
 {
     protected function getEmptyFixtureFileName(): string

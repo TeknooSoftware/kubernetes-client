@@ -26,11 +26,16 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes\Repository;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 use Teknoo\Kubernetes\Collection\CertificateCollection;
+use Teknoo\Kubernetes\Enums\PatchType;
+use Teknoo\Kubernetes\Enums\RequestMethod;
 use Teknoo\Kubernetes\Model\Certificate;
 use Teknoo\Kubernetes\Model\Model;
 use Teknoo\Kubernetes\Repository\CertificateRepository;
 use Teknoo\Kubernetes\Repository\Repository;
+use Teknoo\Kubernetes\Repository\Strategy\PatchMergeTrait;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -39,13 +44,12 @@ use Teknoo\Kubernetes\Repository\Repository;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
- *
- * @covers      \Teknoo\Kubernetes\Repository\CertificateRepository
- * @covers      \Teknoo\Kubernetes\Repository\Strategy\PatchMergeTrait
- * @covers      \Teknoo\Kubernetes\Repository\Repository
- * @covers      \Teknoo\Kubernetes\Enums\RequestMethod
- * @covers      \Teknoo\Kubernetes\Enums\PatchType
  */
+#[CoversTrait(PatchMergeTrait::class)]
+#[CoversClass(CertificateRepository::class)]
+#[CoversClass(PatchType::class)]
+#[CoversClass(RequestMethod::class)]
+#[CoversClass(Repository::class)]
 class CertificateRepositoryTest extends AbstractBaseTestCase
 {
     protected function getRepository(): Repository

@@ -26,6 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes\Model;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\Kubernetes\Enums\FileFormat;
 use Teknoo\Kubernetes\Model\Model;
 use Teknoo\Kubernetes\Model\NetworkPolicy;
@@ -37,11 +38,10 @@ use Teknoo\Kubernetes\Model\NetworkPolicy;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
- *
- * @covers      \Teknoo\Kubernetes\Model\NetworkPolicy
- * @covers      \Teknoo\Kubernetes\Model\Model
- * @covers      \Teknoo\Kubernetes\Enums\FileFormat
  */
+#[CoversClass(NetworkPolicy::class)]
+#[CoversClass(FileFormat::class)]
+#[CoversClass(Model::class)]
 class NetworkPolicyTest extends AbstractBaseTestCase
 {
     protected function getEmptyFixtureFileName(): string

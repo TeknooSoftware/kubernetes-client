@@ -26,6 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes\Collection;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\Kubernetes\Collection\Collection;
 use Teknoo\Kubernetes\Collection\StatefulSetCollection;
 use Teknoo\Kubernetes\Model\StatefulSet;
@@ -37,10 +38,9 @@ use Teknoo\Kubernetes\Model\StatefulSet;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
- *
- * @covers      \Teknoo\Kubernetes\Collection\StatefulSetCollection
- * @covers      \Teknoo\Kubernetes\Collection\Collection
  */
+#[CoversClass(Collection::class)]
+#[CoversClass(StatefulSetCollection::class)]
 class StatefulSetCollectionTest extends AbstractBaseTestCase
 {
     protected function getCollection(): Collection

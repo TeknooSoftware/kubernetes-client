@@ -74,22 +74,22 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
                 $result = [];
             }
 
-            $this->client->expects(self::any())
+            $this->client->expects($this->any())
                 ->method('sendRequest')
                 ->willReturn($result);
 
             $stream = $this->createMock(StreamInterface::class);
             $response = $this->createMock(ResponseInterface::class);
 
-            $response->expects(self::any())
+            $response->expects($this->any())
                 ->method('getBody')
                 ->willReturn($stream);
 
-            $this->client->expects(self::any())
+            $this->client->expects($this->any())
                 ->method('sendStreamableRequest')
                 ->willReturn($response);
 
-            $this->client->expects(self::any())
+            $this->client->expects($this->any())
                 ->method('sendStringableRequest')
                 ->willReturn('foo');
         }
@@ -227,7 +227,7 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
     public function testStream(): void
     {
         $streamer = $this->createMock(StreamingParser::class);
-        $streamer->expects(self::once())->method('parse');
+        $streamer->expects($this->once())->method('parse');
 
         $repository = $this->getRepository();
         self::assertInstanceOf(
