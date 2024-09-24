@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.5.3] - 2024-09-24
+### Stable Release
+- Remove deprecations about PHP 8.4
+
 ## [1.5.2] - 2024-04-26
 ### Stable Release
 - Add flag `JSON_THROW_ON_ERROR` on all `json_encode`/`json_decode`

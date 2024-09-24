@@ -188,7 +188,7 @@ class Client
      */
     public function __construct(
         array $options = [],
-        RepositoryRegistry $repositoryRegistry = null,
+        ?RepositoryRegistry $repositoryRegistry = null,
         private ?ClientInterface $httpClient = null,
         private ?RequestFactoryInterface $httpRequestFactory = null,
         private ?StreamFactoryInterface $httpStreamFactory = null,
@@ -417,10 +417,10 @@ class Client
     public static function loadFromKubeConfig(
         string|array $content,
         FileFormat $format = FileFormat::Yaml,
-        RepositoryRegistry $repositoryRegistry = null,
-        ClientInterface $httpClient = null,
-        RequestFactoryInterface $httpRequestFactory = null,
-        StreamFactoryInterface $httpStreamFactory = null,
+        ?RepositoryRegistry $repositoryRegistry = null,
+        ?ClientInterface $httpClient = null,
+        ?RequestFactoryInterface $httpRequestFactory = null,
+        ?StreamFactoryInterface $httpStreamFactory = null,
     ): self {
         $content = self::parseContent($content, $format);
 
@@ -507,10 +507,10 @@ class Client
      */
     public static function loadFromKubeConfigFile(
         string $filePath,
-        RepositoryRegistry $repositoryRegistry = null,
-        ClientInterface $httpClient = null,
-        RequestFactoryInterface $httpRequestFactory = null,
-        StreamFactoryInterface $httpStreamFactory = null,
+        ?RepositoryRegistry $repositoryRegistry = null,
+        ?ClientInterface $httpClient = null,
+        ?RequestFactoryInterface $httpRequestFactory = null,
+        ?StreamFactoryInterface $httpStreamFactory = null,
     ): self {
         if (!file_exists($filePath)) {
             throw new InvalidArgumentException('KubeConfig file does not exist at path: ' . $filePath);
@@ -589,7 +589,7 @@ class Client
         string $uri,
         array $query = [],
         bool $namespace = true,
-        string $apiVersion = null
+        ?string $apiVersion = null
     ): string {
         if (!empty($apiVersion)) {
             $baseUri = 'apis/' . $apiVersion;
@@ -625,7 +625,7 @@ class Client
         array $query = [],
         mixed $body = null,
         bool $namespace = true,
-        string $apiVersion = null
+        ?string $apiVersion = null
     ): ResponseInterface {
         try {
             $requestUri = $this->makeUri(
@@ -717,7 +717,7 @@ class Client
         array $query = [],
         mixed $body = null,
         bool $namespace = true,
-        string $apiVersion = null
+        ?string $apiVersion = null
     ): array {
         $response = $this->makeRequest(
             method: $method,
@@ -744,7 +744,7 @@ class Client
         array $query = [],
         mixed $body = null,
         bool $namespace = true,
-        string $apiVersion = null
+        ?string $apiVersion = null
     ): string {
         $response = $this->makeRequest(
             method: $method,
@@ -767,7 +767,7 @@ class Client
         array $query = [],
         mixed $body = null,
         bool $namespace = true,
-        string $apiVersion = null
+        ?string $apiVersion = null
     ): ResponseInterface {
         return $this->makeRequest(
             method: $method,

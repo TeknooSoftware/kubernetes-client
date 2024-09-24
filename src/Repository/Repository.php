@@ -192,7 +192,7 @@ abstract class Repository
     /**
      * @return array<string, string|null>
      */
-    public function delete(Model $model, DeleteOptions $options = null): array
+    public function delete(Model $model, ?DeleteOptions $options = null): array
     {
         return $this->deleteByName((string) $model->getMetadata('name'), $options);
     }
@@ -200,7 +200,7 @@ abstract class Repository
     /**
      * @return array<string, string|null>
      */
-    public function deleteByName(string $name, DeleteOptions $options = null): array
+    public function deleteByName(string $name, ?DeleteOptions $options = null): array
     {
         return $this->sendRequest(
             method: RequestMethod::Delete,
