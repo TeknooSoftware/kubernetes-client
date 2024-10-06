@@ -27,7 +27,6 @@ declare(strict_types=1);
 namespace Teknoo\Tests\Kubernetes\Repository;
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\CoversTrait;
 use Teknoo\Kubernetes\Collection\CertificateCollection;
 use Teknoo\Kubernetes\Enums\PatchType;
 use Teknoo\Kubernetes\Enums\RequestMethod;
@@ -35,7 +34,6 @@ use Teknoo\Kubernetes\Model\Certificate;
 use Teknoo\Kubernetes\Model\Model;
 use Teknoo\Kubernetes\Repository\CertificateRepository;
 use Teknoo\Kubernetes\Repository\Repository;
-use Teknoo\Kubernetes\Repository\Strategy\PatchMergeTrait;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -45,7 +43,6 @@ use Teknoo\Kubernetes\Repository\Strategy\PatchMergeTrait;
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  */
-#[CoversTrait(PatchMergeTrait::class)]
 #[CoversClass(CertificateRepository::class)]
 #[CoversClass(PatchType::class)]
 #[CoversClass(RequestMethod::class)]

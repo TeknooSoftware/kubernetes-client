@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.5.4] - 2024-10-06
+### Stable Release
+- Update dev lib requirements
+
 ## [1.5.3] - 2024-09-24
 ### Stable Release
 - Remove deprecations about PHP 8.4
