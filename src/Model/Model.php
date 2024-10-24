@@ -33,6 +33,7 @@ use Stringable;
 use Symfony\Component\Yaml\Exception\ParseException as YamlParseException;
 use Symfony\Component\Yaml\Yaml;
 use Teknoo\Kubernetes\Enums\FileFormat;
+use Teknoo\Kubernetes\Model\Attribute\Explorer;
 use Throwable;
 
 use function array_merge;
@@ -130,6 +131,14 @@ abstract class Model implements Arrayable, Stringable
         }
 
         return null;
+    }
+
+    public function explore(): Explorer
+    {
+        return new Explorer(
+            model: $this,
+            attributes: $this->attributes,
+        );
     }
 
     public function getSchema(): string

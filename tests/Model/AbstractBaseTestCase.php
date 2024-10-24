@@ -31,6 +31,7 @@ use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use Symfony\Component\Yaml\Exception\ParseException as YamlParseException;
 use Symfony\Component\Yaml\Yaml;
 use Teknoo\Kubernetes\Enums\FileFormat;
+use Teknoo\Kubernetes\Model\Attribute\Explorer;
 use Teknoo\Kubernetes\Model\Model;
 
 use function dirname;
@@ -135,6 +136,24 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
         self::assertEquals(
             $a,
             $model->toArray()
+        );
+    }
+
+    public function testExplore(): void
+    {
+        self::assertInstanceOf(
+            Explorer::class,
+            $this->getModel(
+                $a = [
+                    'metadata' => [
+                        'name' => 'test',
+                    ],
+                    'spec' => [
+                        'foo' => 'bar'
+                    ]
+                ],
+                FileFormat::Array
+            )->explore()
         );
     }
 

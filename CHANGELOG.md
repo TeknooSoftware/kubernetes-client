@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.6.0] - 2024-10-24
+### Stable Release
+- Add `Explorer` to explore model's attributes as object with object chaining
+
 ## [1.5.4] - 2024-10-06
 ### Stable Release
 - Update dev lib requirements
