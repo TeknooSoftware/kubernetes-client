@@ -66,7 +66,7 @@ class Explorer
             );
         }
 
-        return $this->attributes[$name];
+        return (string) $this->attributes[$name];
     }
 
     /**
