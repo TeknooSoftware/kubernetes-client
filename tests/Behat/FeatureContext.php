@@ -92,23 +92,27 @@ class FeatureContext implements Context
         $this->psrClient = new class implements ClientInterface {
             private ?ResponseInterface $response = null;
             
-            private ?ResponseInterface $firstResponse = null;
+            private array $responses = [];
 
             public function setResponse(?ResponseInterface $response): void
             {
                 $this->response = $response;
             }
 
+            public function setResponses(array $responses): void
+            {
+                $this->responses = $responses;
+            }
+
             public function setFirstResponse(?ResponseInterface $firstResponse): void
             {
-                $this->firstResponse = $firstResponse;
+                $this->setResponses([$firstResponse]);
             }
 
             public function sendRequest(RequestInterface $request): ResponseInterface
             {
-                if (null !== $this->firstResponse) {
-                    $response = $this->firstResponse;
-                    $this->firstResponse = null;
+                if (!empty($this->responses)) {
+                    $response = \array_shift($this->responses);
 
                     return $response;
                 }
@@ -316,6 +320,81 @@ class FeatureContext implements Context
     }
 
     /**
+     * @Given the cluster has several registered pods will be fetched in limited
+     */
+    public function theClusterHasSeveralRegisteredPodsWillBeFetchedInLimited()
+    {
+        $this->kubeCollections = 'pods';
+        $this->psrClient->setResponses([
+            new Response(
+                status: 200,
+                body: Stream::create(
+                    json_encode(
+                        [
+                            'metadata' => [
+                                'continue' => 'foo',
+                            ],
+                            'items' => [
+                                [
+                                    'metadata' => [
+                                        'name' => 'pod1'
+                                    ],
+                                    'spec' => [
+                                        'foo' => 'bar'
+                                    ]
+                                ],
+                            ],
+                        ]
+                    ),
+                ),
+            ),
+            new Response(
+                status: 200,
+                body: Stream::create(
+                    json_encode(
+                        [
+                            'metadata' => [
+                                'continue' => 'foo',
+                            ],
+                            'items' => [
+                                [
+                                    'metadata' => [
+                                        'name' => 'pod2'
+                                    ],
+                                    'spec' => [
+                                        'foo' => 'bar'
+                                    ]
+                                ],
+                            ],
+                        ]
+                    ),
+                ),
+            ),
+            new Response(
+                status: 200,
+                body: Stream::create(
+                    json_encode(
+                        [
+                            'metadata' => [
+                            ],
+                            'items' => [
+                                [
+                                    'metadata' => [
+                                        'name' => 'pod3'
+                                    ],
+                                    'spec' => [
+                                        'foo' => 'bar'
+                                    ]
+                                ],
+                            ],
+                        ]
+                    ),
+                ),
+            ),
+        ]);
+    }
+
+    /**
      * @When the user create the resource on the server
      */
     public function theUserCreateTheResourceOnTheServer()
@@ -486,6 +565,87 @@ class FeatureContext implements Context
         } catch (Throwable $error) {
             $this->error = $error;
         }
+    }
+
+    /**
+     * @When the user fetch a limited collection on the server
+     */
+    public function theUserFetchALimitedCollectionOnTheServer()
+    {
+        Assert::assertNotNull($this->kubeCollections);
+
+        try {
+            $this->result = $this->kubeClient
+                ->{$this->kubeCollections}()
+                ->find(limit: 1);
+        } catch (Throwable $error) {
+            $this->error = $error;
+        }
+    }
+
+    /**
+     * @Then the server must return a limited collection of pods
+     */
+    public function theServerMustReturnALimitedCollectionOfPods()
+    {
+        Assert::assertInstanceOf(
+            Collection::class,
+            $this->result,
+        );
+
+        Assert::assertTrue($this->result->hasNext());
+
+        $count = 0;
+        foreach ($this->result as $model) {
+            $count++;
+            Assert::assertInstanceOf(
+                Pod::class,
+                $model,
+            );
+        }
+
+        Assert::assertEquals(1, $count);
+    }
+
+    /**
+     * @When the user fetch the next collection on the server
+     */
+    public function theUserFetchTheNextCollectionOnTheServer()
+    {
+        Assert::assertInstanceOf(
+            Collection::class,
+            $this->result,
+        );
+
+        try {
+            $this->result = $this->result->continue();
+        } catch (Throwable $error) {
+            $this->error = $error;
+        }
+    }
+
+    /**
+     * @When the server must return a final collection of pods
+     */
+    public function theServerMustReturnAFinalCollectionOfPods()
+    {
+        Assert::assertInstanceOf(
+            Collection::class,
+            $this->result,
+        );
+
+        Assert::assertFalse($this->result->hasNext());
+
+        $count = 0;
+        foreach ($this->result as $model) {
+            $count++;
+            Assert::assertInstanceOf(
+                Pod::class,
+                $model,
+            );
+        }
+
+        Assert::assertEquals(1, $count);
     }
 
     /**

@@ -30,6 +30,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\Kubernetes\Collection\CertificateCollection;
 use Teknoo\Kubernetes\Collection\Collection;
 use Teknoo\Kubernetes\Model\Certificate;
+use Teknoo\Kubernetes\Repository\Repository;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -43,14 +44,17 @@ use Teknoo\Kubernetes\Model\Certificate;
 #[CoversClass(CertificateCollection::class)]
 class CertificateCollectionTest extends AbstractBaseTestCase
 {
-    protected function getCollection(): Collection
+    protected function getCollection(?array $query = null, ?string $continue = null): Collection
     {
         return new CertificateCollection(
             [
                 [],
                 new Certificate(),
                 [],
-            ]
+            ],
+            $this->createMock(Repository::class),
+            $query,
+            $continue,
         );
     }
 

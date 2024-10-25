@@ -30,6 +30,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\Kubernetes\Collection\Collection;
 use Teknoo\Kubernetes\Collection\RoleBindingCollection;
 use Teknoo\Kubernetes\Model\RoleBinding;
+use Teknoo\Kubernetes\Repository\Repository;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -43,14 +44,17 @@ use Teknoo\Kubernetes\Model\RoleBinding;
 #[CoversClass(RoleBindingCollection::class)]
 class RoleBindingCollectionTest extends AbstractBaseTestCase
 {
-    protected function getCollection(): Collection
+    protected function getCollection(?array $query = null, ?string $continue = null): Collection
     {
         return new RoleBindingCollection(
             [
                 [],
                 new RoleBinding(),
                 [],
-            ]
+            ],
+            $this->createMock(Repository::class),
+            $query,
+            $continue,
         );
     }
 

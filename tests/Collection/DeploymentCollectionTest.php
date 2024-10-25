@@ -30,6 +30,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\Kubernetes\Collection\Collection;
 use Teknoo\Kubernetes\Collection\DeploymentCollection;
 use Teknoo\Kubernetes\Model\Deployment;
+use Teknoo\Kubernetes\Repository\Repository;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -43,14 +44,17 @@ use Teknoo\Kubernetes\Model\Deployment;
 #[CoversClass(DeploymentCollection::class)]
 class DeploymentCollectionTest extends AbstractBaseTestCase
 {
-    protected function getCollection(): Collection
+    protected function getCollection(?array $query = null, ?string $continue = null): Collection
     {
         return new DeploymentCollection(
             [
                 [],
                 new Deployment(),
                 [],
-            ]
+            ],
+            $this->createMock(Repository::class),
+            $query,
+            $continue,
         );
     }
 

@@ -30,6 +30,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\Kubernetes\Collection\Collection;
 use Teknoo\Kubernetes\Collection\ServiceCollection;
 use Teknoo\Kubernetes\Model\Service;
+use Teknoo\Kubernetes\Repository\Repository;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -43,14 +44,17 @@ use Teknoo\Kubernetes\Model\Service;
 #[CoversClass(ServiceCollection::class)]
 class ServiceCollectionTest extends AbstractBaseTestCase
 {
-    protected function getCollection(): Collection
+    protected function getCollection(?array $query = null, ?string $continue = null): Collection
     {
         return new ServiceCollection(
             [
                 [],
                 new Service(),
                 [],
-            ]
+            ],
+            $this->createMock(Repository::class),
+            $query,
+            $continue,
         );
     }
 

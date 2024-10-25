@@ -30,6 +30,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\Kubernetes\Collection\Collection;
 use Teknoo\Kubernetes\Collection\NetworkPolicyCollection;
 use Teknoo\Kubernetes\Model\NetworkPolicy;
+use Teknoo\Kubernetes\Repository\Repository;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -43,14 +44,17 @@ use Teknoo\Kubernetes\Model\NetworkPolicy;
 #[CoversClass(NetworkPolicyCollection::class)]
 class NetworkPolicyCollectionTest extends AbstractBaseTestCase
 {
-    protected function getCollection(): Collection
+    protected function getCollection(?array $query = null, ?string $continue = null): Collection
     {
         return new NetworkPolicyCollection(
             [
                 [],
                 new NetworkPolicy(),
                 [],
-            ]
+            ],
+            $this->createMock(Repository::class),
+            $query,
+            $continue,
         );
     }
 

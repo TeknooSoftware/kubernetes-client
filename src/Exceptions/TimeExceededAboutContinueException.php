@@ -24,13 +24,9 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\Tests\Kubernetes\Collection;
+namespace Teknoo\Kubernetes\Exceptions;
 
-use PHPUnit\Framework\Attributes\CoversClass;
-use Teknoo\Kubernetes\Collection\Collection;
-use Teknoo\Kubernetes\Collection\IngressCollection;
-use Teknoo\Kubernetes\Model\Ingress;
-use Teknoo\Kubernetes\Repository\Repository;
+use Exception;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -40,26 +36,6 @@ use Teknoo\Kubernetes\Repository\Repository;
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  */
-#[CoversClass(Collection::class)]
-#[CoversClass(IngressCollection::class)]
-class IngressCollectionTest extends AbstractBaseTestCase
+class TimeExceededAboutContinueException extends ApiServerException
 {
-    protected function getCollection(?array $query = null, ?string $continue = null): Collection
-    {
-        return new IngressCollection(
-            [
-                [],
-                new Ingress(),
-                [],
-            ],
-            $this->createMock(Repository::class),
-            $query,
-            $continue,
-        );
-    }
-
-    protected function getModelClassName(): string
-    {
-        return Ingress::class;
-    }
 }

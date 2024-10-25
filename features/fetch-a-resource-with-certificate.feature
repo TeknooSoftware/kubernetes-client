@@ -41,6 +41,22 @@ Feature: Fetch a resource with a certificate
     Then the server must return a collection of pods
     And without error
 
+  Scenario: Fetch a collection limited and with a certificate
+    Given a Kubernetes cluster
+    And an account identified by a certificate client
+    And a namespace "behat-test"
+    And an instance of this client
+    And the cluster has several registered pods will be fetched in limited
+    When the user fetch a limited collection on the server
+    Then the server must return a limited collection of pods
+    And without error
+    When the user fetch the next collection on the server
+    And the server must return a limited collection of pods
+    And without error
+    When the user fetch the next collection on the server
+    And the server must return a final collection of pods
+    And without error
+
   Scenario: Fetch an empty collection with a certificate
     Given a Kubernetes cluster
     And an account identified by a certificate client

@@ -1,5 +1,15 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.7.0] - 2024-10-25
+### Stable Release
+- Fix `Explorer` from model, to not alter the model's attribute from the model. A clone will be eturned, 
+  to get the same behavior of alter.
+- Add and Support of the parameter `limit` for collections when the method `find` is passed.
+  Collections have new method to known if others results are available, to get the query's value, the continue token 
+  and directly get the next collection by calling its method `continue`. 
+  ** Warning, if you use map from the `illuminate/collection`, these token will be lost. **
+- Add a method `continue` in Repostiories to get the next dataset. 
+
 ## [1.6.0] - 2024-10-24
 ### Stable Release
 - Add `Explorer` to explore model's attributes as object with object chaining

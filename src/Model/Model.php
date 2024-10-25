@@ -135,9 +135,10 @@ abstract class Model implements Arrayable, Stringable
 
     public function explore(): Explorer
     {
+        $that = clone $this;
         return new Explorer(
-            model: $this,
-            attributes: $this->attributes,
+            model: $that,
+            attributes: $that->attributes,
         );
     }
 

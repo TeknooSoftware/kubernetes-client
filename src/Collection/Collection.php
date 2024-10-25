@@ -29,6 +29,7 @@ namespace Teknoo\Kubernetes\Collection;
 use Illuminate\Support\Collection as IlluminateCollection;
 use LogicException;
 use Teknoo\Kubernetes\Model\Model;
+use Teknoo\Kubernetes\Repository\Repository;
 
 use function is_a;
 use function sprintf;
@@ -53,9 +54,15 @@ abstract class Collection extends IlluminateCollection
 
     /**
      * @param array<int, T> $items
+     * @param Repository<T> $repository
+     * @param array<string, int|string|null> $query
      */
-    public function __construct(array $items)
-    {
+    public function __construct(
+        array $items,
+        private readonly ?Repository $repository = null,
+        private readonly ?array $query = null,
+        private readonly ?string $continueToken = null,
+    ) {
         parent::__construct($this->getItems($items));
     }
 
@@ -104,5 +111,42 @@ abstract class Collection extends IlluminateCollection
         }
 
         return $final;
+    }
+
+    public function hasNext(): bool
+    {
+        return null !== $this->continueToken;
+    }
+
+    /**
+     * @return array<string, int|string|null>
+     */
+    public function getQuery(): ?array
+    {
+        return $this->query;
+    }
+
+    public function getContinueToken(): ?string
+    {
+        return $this->continueToken;
+    }
+
+    /**
+     * @return Collection<T>
+     */
+    public function continue(): ?self
+    {
+        if (
+            $this->repository instanceof Repository
+            && null !== $this->continueToken
+            && null !== $this->query
+        ) {
+            return $this->repository->continue(
+                query: $this->query,
+                continue: $this->continueToken,
+            );
+        }
+
+        return null;
     }
 }

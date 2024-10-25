@@ -141,19 +141,39 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
 
     public function testExplore(): void
     {
+        $model = $this->getModel(
+            $a = [
+                'metadata' => [
+                    'name' => 'test',
+                ],
+                'spec' => [
+                    'foo' => 'bar'
+                ]
+            ],
+            FileFormat::Array
+        );
+
         self::assertInstanceOf(
             Explorer::class,
-            $this->getModel(
-                $a = [
-                    'metadata' => [
-                        'name' => 'test',
-                    ],
-                    'spec' => [
-                        'foo' => 'bar'
-                    ]
+            $explorer = $model->explore()
+        );
+
+        $explorer->metadata->name = 'test2';
+        self::assertEquals(
+            $a,
+            $model->toArray(),
+        );
+
+        self::assertEquals(
+            [
+                'metadata' => [
+                    'name' => 'test2',
                 ],
-                FileFormat::Array
-            )->explore()
+                'spec' => [
+                    'foo' => 'bar'
+                ]
+            ],
+            $explorer->getModel()->toArray()
         );
     }
 

@@ -32,6 +32,8 @@ use Teknoo\Kubernetes\Collection\Collection;
 use Teknoo\Kubernetes\Contracts\Repository\StreamingParser;
 use Teknoo\Kubernetes\Enums\PatchType;
 use Teknoo\Kubernetes\Enums\RequestMethod;
+use Teknoo\Kubernetes\Exceptions\ApiServerException;
+use Teknoo\Kubernetes\Exceptions\TimeExceededAboutContinueException;
 use Teknoo\Kubernetes\Model\Model;
 use Teknoo\Kubernetes\Model\DeleteOptions;
 use Teknoo\Kubernetes\Repository\Exception\NoItemsException;
@@ -83,7 +85,7 @@ abstract class Repository
     }
 
     /**
-     * @param array<string, string|null> $query
+     * @param array<string, int|string|null> $query
      * @return array<string, string|null>
      */
     protected function sendRequest(
@@ -285,7 +287,7 @@ abstract class Repository
      * @param array<string, string|null> $query
      * @return Collection<T>
      */
-    public function find(array $query = []): Collection
+    public function find(array $query = [], ?int $limit = null): Collection
     {
         $query = array_filter(
             array_merge(
@@ -298,11 +300,54 @@ abstract class Repository
             static fn($value): bool => !empty($value)
         );
 
+        if (null !== $limit) {
+            $query['limit'] = $limit;
+        }
+
         $this->resetParameters();
 
-        $response = $this->sendRequest(RequestMethod::Get, '/' . $this->uri, $query, null, $this->namespace);
+        $response = $this->sendRequest(
+            RequestMethod::Get,
+            '/' . $this->uri,
+            $query,
+            null,
+            $this->namespace,
+        );
 
-        return $this->createCollection($response);
+        return $this->createCollection($response, $query);
+    }
+
+    /**
+     * @param array<string, string|int|null> $query
+     * @return Collection<T>
+     */
+    public function continue(array $query, string $continue): Collection
+    {
+        $query['continue'] = $continue;
+
+        $this->resetParameters();
+
+        try {
+            $response = $this->sendRequest(
+                RequestMethod::Get,
+                '/' . $this->uri,
+                $query,
+                null,
+                $this->namespace,
+            );
+        } catch (ApiServerException $error) {
+            if (410 === $error->getCode()) {
+                throw new TimeExceededAboutContinueException(
+                    message: $error->getMessage(),
+                    code: $error->getCode(),
+                    previous: $error,
+                );
+            }
+
+            throw $error;
+        }
+
+        return $this->createCollection($response, $query);
     }
 
     public function first(): ?Model
@@ -387,10 +432,11 @@ abstract class Repository
     }
 
     /**
-     * @param array<string, string|null> $response
+     * @param array<string, string|null|array<string|string>> $response
+     * @param array<string, int|string|null> $query
      * @return Collection<T>
      */
-    protected function createCollection(array $response): Collection
+    protected function createCollection(array $response, array &$query): Collection
     {
         $collectionClassName = self::getCollectionName();
 
@@ -398,6 +444,11 @@ abstract class Repository
             throw new NoItemsException('Error, no items returned by the Kubernetes API');
         }
 
-        return new $collectionClassName($response['items']);
+        return new $collectionClassName(
+            items: $response['items'],
+            repository: $this,
+            query: $query,
+            continueToken: $response['metadata']['continue'] ?? null,
+        );
     }
 }

@@ -40,7 +40,7 @@ use Teknoo\Kubernetes\Collection\Collection;
  */
 abstract class AbstractBaseTestCase extends PHPUnitTestCase
 {
-    abstract protected function getCollection(): Collection;
+    abstract protected function getCollection(?array $query = null, ?string $continue = null): Collection;
 
     abstract protected function getModelClassName(): string;
 
@@ -57,5 +57,32 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
                 $item,
             );
         }
+    }
+
+    public function testHasNext()
+    {
+        self::assertFalse($this->getCollection()->hasNext());
+        self::assertTrue($this->getCollection(['foo' => 'bar'], 'foo')->hasNext());
+    }
+
+    public function testGetQuery()
+    {
+        self::assertEmpty($this->getCollection()->getQuery());
+        self::assertEquals(['foo' => 'bar'], $this->getCollection(['foo' => 'bar'], 'foo')->getQuery());
+    }
+
+    public function testGetContinueToken()
+    {
+        self::assertEmpty($this->getCollection()->getContinueToken());
+        self::assertEquals('foo', $this->getCollection(['foo' => 'bar'], 'foo')->getContinueToken());
+    }
+
+    public function testContinue()
+    {
+        self::assertNull($this->getCollection()->continue());
+        self::assertInstanceOf(
+            Collection::class,
+            $this->getCollection(['foo' => 'bar'], 'foo')->continue(),
+        );
     }
 }

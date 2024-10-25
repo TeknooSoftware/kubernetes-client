@@ -583,7 +583,7 @@ class Client
     }
 
     /**
-     * @param array<string, string|null> $query
+     * @param array<string, int|string|null> $query
      */
     private function makeUri(
         string $uri,
@@ -615,7 +615,7 @@ class Client
     }
 
     /**
-     * @param array<string, string|null> $query
+     * @param array<string, int|string|null> $query
      * @throws \Http\Client\Exception
      * @throws ApiServerException
      */
@@ -704,7 +704,7 @@ class Client
     }
 
     /**
-     * @param array<string, string|null> $query
+     * @param array<string, int|string|null> $query
      * @return array<string, string|null>
      * @throws \Http\Client\Exception
      * @throws BadRequestException

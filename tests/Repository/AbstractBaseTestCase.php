@@ -34,6 +34,8 @@ use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 use Teknoo\Kubernetes\Client;
 use Teknoo\Kubernetes\Contracts\Repository\StreamingParser;
+use Teknoo\Kubernetes\Exceptions\ApiServerException;
+use Teknoo\Kubernetes\Exceptions\TimeExceededAboutContinueException;
 use Teknoo\Kubernetes\Model\Model;
 use Teknoo\Kubernetes\Repository\Repository;
 
@@ -202,6 +204,80 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
             $repository->setFieldSelector(['foo' => 'bar'], ['bar' => 'foo'])
                 ->setLabelSelector(['fool' => 'bar', 'world' => null], ['barl' => 'foo'])
                 ->find(['foo' => 'bar'])
+        );
+    }
+
+    public function testFindWithLimit(): void
+    {
+        $repository = $this->getRepository();
+        self::assertInstanceOf(
+            $this->getCollectionClassName(),
+            $repository->find(
+                ['foo' => 'bar'],
+                10,
+            )
+        );
+
+        $repository = $this->getRepository();
+        self::assertInstanceOf(
+            $this->getCollectionClassName(),
+            $repository->setFieldSelector(['foo' => 'bar'], ['bar' => 'foo'])
+                ->setLabelSelector(['fool' => 'bar', 'world' => null], ['barl' => 'foo'])
+                ->find(['foo' => 'bar'], 10)
+        );
+    }
+
+    public function testContinue(): void
+    {
+        $repository = $this->getRepository();
+        self::assertInstanceOf(
+            $this->getCollectionClassName(),
+            $repository->continue(
+                ['foo' => 'bar'],
+                'foo',
+            )
+        );
+
+        $repository = $this->getRepository();
+        self::assertInstanceOf(
+            $this->getCollectionClassName(),
+            $repository->continue(['foo' => 'bar'], 'foo')
+        );
+    }
+
+    public function testContinueTimeExceeded(): void
+    {
+        $repository = $this->getRepository();
+
+        $this->getClientMock()
+            ->expects($this->once())
+            ->method('sendRequest')
+            ->willThrowException(
+                new ApiServerException('error', 410)
+            );
+
+        $this->expectException(TimeExceededAboutContinueException::class);
+        $repository->continue(
+            ['foo' => 'bar'],
+            'foo',
+        );
+    }
+
+    public function testContinueOtherException(): void
+    {
+        $repository = $this->getRepository();
+
+        $this->getClientMock()
+            ->expects($this->once())
+            ->method('sendRequest')
+            ->willThrowException(
+                new ApiServerException('error', 400)
+            );
+
+        $this->expectException(ApiServerException::class);
+        $repository->continue(
+            ['foo' => 'bar'],
+            'foo',
         );
     }
 
