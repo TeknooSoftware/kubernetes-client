@@ -34,8 +34,8 @@
 		"php": "^8.2",
 		"ext-json": "*",
 		"psr/http-message": "^1.0.1||^2",
-		"php-http/client-common": "^2.7",
-		"php-http/discovery": "^1.19",
+		"php-http/client-common": "^2.7.2",
+		"php-http/discovery": "^1.20",
 		"symfony/yaml": "^6.4||^7.0",
 		"illuminate/contracts": "^10.48||^11",
 		"illuminate/collections": "^10.48||^11"

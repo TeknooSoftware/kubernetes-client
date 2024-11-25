@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.7.1] - 2024-11-25
+### Stable Release
+- Fix deprecation into test with PHP 8.4
+
 ## [1.7.0] - 2024-10-25
 ### Stable Release
 - Fix `Explorer` from model, to not alter the model's attribute from the model. A clone will be eturned, 
