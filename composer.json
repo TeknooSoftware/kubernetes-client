@@ -3,7 +3,7 @@
 	"type": "library",
 	"description": "A simple yet elegant client for accessing and controlling a Kubernetes cluster.",
 	"keywords": ["kubernetes", "docker", "container", "cluster"],
-	"homepage": "http://teknoo.software/lib/kubernetes-client",
+	"homepage": "https://teknoo.software/libraries/kubernetes-client",
 	"license": "MIT",
 	"authors": [
 		{
