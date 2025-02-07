@@ -40,7 +40,6 @@ use Teknoo\Kubernetes\Model\ReplicaSet;
  * @author      Marc Lough <http://maclof.com>
  */
 #[CoversClass(ReplicaSet::class)]
-#[CoversClass(FileFormat::class)]
 #[CoversClass(Model::class)]
 class ReplicaSetTest extends AbstractBaseTestCase
 {

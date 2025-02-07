@@ -40,7 +40,6 @@ use Teknoo\Kubernetes\Model\Model;
  * @author      Marc Lough <http://maclof.com>
  */
 #[CoversClass(CronJob::class)]
-#[CoversClass(FileFormat::class)]
 #[CoversClass(Model::class)]
 class CronJobTest extends AbstractBaseTestCase
 {

@@ -1,5 +1,14 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.7.2] - 2025-02-07
+### Stable Release
+- Update dev lib requirements
+  - Require Symfony libraries 6.4 or 7.2
+  - Update to PHPUnit 12
+- Drop support of PHP 8.2
+  - The library stay usable with PHP 8.2, without any waranties and tests
+  - In the next major release, Support of PHP 8.2 will be dropped
+
 ## [1.7.1] - 2024-11-25
 ### Stable Release
 - Fix deprecation into test with PHP 8.4

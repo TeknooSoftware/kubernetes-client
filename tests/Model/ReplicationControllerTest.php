@@ -40,7 +40,6 @@ use Teknoo\Kubernetes\Model\ReplicationController;
  * @author      Marc Lough <http://maclof.com>
  */
 #[CoversClass(ReplicationController::class)]
-#[CoversClass(FileFormat::class)]
 #[CoversClass(Model::class)]
 class ReplicationControllerTest extends AbstractBaseTestCase
 {

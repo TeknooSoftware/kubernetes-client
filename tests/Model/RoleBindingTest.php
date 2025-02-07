@@ -40,7 +40,6 @@ use Teknoo\Kubernetes\Model\RoleBinding;
  * @author      Marc Lough <http://maclof.com>
  */
 #[CoversClass(RoleBinding::class)]
-#[CoversClass(FileFormat::class)]
 #[CoversClass(Model::class)]
 class RoleBindingTest extends AbstractBaseTestCase
 {

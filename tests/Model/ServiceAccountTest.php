@@ -40,7 +40,6 @@ use Teknoo\Kubernetes\Model\ServiceAccount;
  * @author      Marc Lough <http://maclof.com>
  */
 #[CoversClass(ServiceAccount::class)]
-#[CoversClass(FileFormat::class)]
 #[CoversClass(Model::class)]
 class ServiceAccountTest extends AbstractBaseTestCase
 {

@@ -40,7 +40,6 @@ use Teknoo\Kubernetes\Model\NetworkPolicy;
  * @author      Marc Lough <http://maclof.com>
  */
 #[CoversClass(NetworkPolicy::class)]
-#[CoversClass(FileFormat::class)]
 #[CoversClass(Model::class)]
 class NetworkPolicyTest extends AbstractBaseTestCase
 {

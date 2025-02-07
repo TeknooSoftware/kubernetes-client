@@ -44,8 +44,6 @@ use Teknoo\Kubernetes\Repository\Repository;
  * @author      Marc Lough <http://maclof.com>
  */
 #[CoversClass(RoleBindingRepository::class)]
-#[CoversClass(PatchType::class)]
-#[CoversClass(RequestMethod::class)]
 #[CoversClass(Repository::class)]
 class RoleBindingRepositoryTest extends AbstractBaseTestCase
 {

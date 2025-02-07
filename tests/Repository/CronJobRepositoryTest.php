@@ -44,8 +44,6 @@ use Teknoo\Kubernetes\Repository\Repository;
  * @author      Marc Lough <http://maclof.com>
  */
 #[CoversClass(CronJobRepository::class)]
-#[CoversClass(PatchType::class)]
-#[CoversClass(RequestMethod::class)]
 #[CoversClass(Repository::class)]
 class CronJobRepositoryTest extends AbstractBaseTestCase
 {

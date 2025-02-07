@@ -71,9 +71,6 @@ use const PHP_EOL;
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  */
-#[CoversClass(RequestMethod::class)]
-#[CoversClass(PatchType::class)]
-#[CoversClass(FileFormat::class)]
 #[CoversClass(BadRequestException::class)]
 #[CoversClass(ApiServerException::class)]
 #[CoversClass(Client::class)]

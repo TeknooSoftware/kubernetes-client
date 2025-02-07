@@ -40,7 +40,6 @@ use Teknoo\Kubernetes\Model\Service;
  * @author      Marc Lough <http://maclof.com>
  */
 #[CoversClass(Service::class)]
-#[CoversClass(FileFormat::class)]
 #[CoversClass(Model::class)]
 class ServiceTest extends AbstractBaseTestCase
 {

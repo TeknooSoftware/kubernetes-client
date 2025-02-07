@@ -40,7 +40,6 @@ use Teknoo\Kubernetes\Model\Pod;
  * @author      Marc Lough <http://maclof.com>
  */
 #[CoversClass(Pod::class)]
-#[CoversClass(FileFormat::class)]
 #[CoversClass(Model::class)]
 class PodTest extends AbstractBaseTestCase
 {

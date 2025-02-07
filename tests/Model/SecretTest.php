@@ -40,7 +40,6 @@ use Teknoo\Kubernetes\Model\Secret;
  * @author      Marc Lough <http://maclof.com>
  */
 #[CoversClass(Secret::class)]
-#[CoversClass(FileFormat::class)]
 #[CoversClass(Model::class)]
 class SecretTest extends AbstractBaseTestCase
 {

@@ -40,7 +40,6 @@ use Teknoo\Kubernetes\Model\Role;
  * @author      Marc Lough <http://maclof.com>
  */
 #[CoversClass(Role::class)]
-#[CoversClass(FileFormat::class)]
 #[CoversClass(Model::class)]
 class RoleTest extends AbstractBaseTestCase
 {

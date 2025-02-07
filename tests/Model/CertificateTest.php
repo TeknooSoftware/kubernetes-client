@@ -40,7 +40,6 @@ use Teknoo\Kubernetes\Model\Model;
  * @author      Marc Lough <http://maclof.com>
  */
 #[CoversClass(Certificate::class)]
-#[CoversClass(FileFormat::class)]
 #[CoversClass(Model::class)]
 class CertificateTest extends AbstractBaseTestCase
 {

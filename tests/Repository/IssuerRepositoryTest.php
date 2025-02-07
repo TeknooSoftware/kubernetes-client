@@ -45,8 +45,6 @@ use Teknoo\Kubernetes\Repository\Strategy\PatchMergeTrait;
  * @author      Marc Lough <http://maclof.com>
  */
 #[CoversClass(IssuerRepository::class)]
-#[CoversClass(PatchType::class)]
-#[CoversClass(RequestMethod::class)]
 #[CoversClass(Repository::class)]
 class IssuerRepositoryTest extends AbstractBaseTestCase
 {

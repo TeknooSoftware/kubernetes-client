@@ -40,7 +40,6 @@ use Teknoo\Kubernetes\Model\NamespaceModel;
  * @author      Marc Lough <http://maclof.com>
  */
 #[CoversClass(NamespaceModel::class)]
-#[CoversClass(FileFormat::class)]
 #[CoversClass(Model::class)]
 class NamespaceTest extends AbstractBaseTestCase
 {

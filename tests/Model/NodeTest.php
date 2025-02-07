@@ -40,7 +40,6 @@ use Teknoo\Kubernetes\Model\Node;
  * @author      Marc Lough <http://maclof.com>
  */
 #[CoversClass(Node::class)]
-#[CoversClass(FileFormat::class)]
 #[CoversClass(Model::class)]
 class NodeTest extends AbstractBaseTestCase
 {
