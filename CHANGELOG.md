@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [1.7.3] - 2025-02-25
+### Stable Release
+- Allow Illuminate collections 12
+
 ## [1.7.2] - 2025-02-07
 ### Stable Release
 - Update dev lib requirements
