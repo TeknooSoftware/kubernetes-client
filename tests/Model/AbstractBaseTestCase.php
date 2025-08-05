@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/libraries/kubernetes-client Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  */
@@ -45,7 +45,7 @@ use function trim;
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @copyright   Copyright (c) Marc Lough ( https://github.com/maclof/kubernetes-client )
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  */
@@ -76,32 +76,32 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
         return trim($contents, ' ' . PHP_EOL);
     }
 
-    public function testCronstructionArrayWithWrongType()
+    public function testCronstructionArrayWithWrongType(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->getModel('', FileFormat::Array);
     }
 
-    public function testCronstructionJsonWithWrongType()
+    public function testCronstructionJsonWithWrongType(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->getModel([], FileFormat::Json);
     }
 
-    public function testCronstructionJsonWithMalFormedString()
+    public function testCronstructionJsonWithMalFormedString(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->getModel('aa', FileFormat::Json);
     }
 
-    public function testCronstructionYamlWithWrongType()
+    public function testCronstructionYamlWithWrongType(): void
     {
 
         $this->expectException(InvalidArgumentException::class);
         $this->getModel([], FileFormat::Yaml);
     }
 
-    public function testCronstructionYamlWithMalFormedString()
+    public function testCronstructionYamlWithMalFormedString(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->getModel('@', FileFormat::Yaml);
@@ -113,10 +113,10 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
 
         $schema = trim($model->getSchema());
         $toString = trim((string) $model);
-        $fixture = trim($this->getFixture($this->getEmptyFixtureFileName()));
+        $fixture = trim((string) $this->getFixture($this->getEmptyFixtureFileName()));
 
-        self::assertEquals($fixture, $schema);
-        self::assertEquals($fixture, $toString);
+        $this->assertEquals($fixture, $schema);
+        $this->assertEquals($fixture, $toString);
     }
 
     public function testToArrayFromArray(): void
@@ -133,10 +133,7 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
             FileFormat::Array
         );
 
-        self::assertEquals(
-            $a,
-            $model->toArray()
-        );
+        $this->assertEquals($a, $model->toArray());
     }
 
     public function testExplore(): void
@@ -153,28 +150,19 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
             FileFormat::Array
         );
 
-        self::assertInstanceOf(
-            Explorer::class,
-            $explorer = $model->explore()
-        );
+        $this->assertInstanceOf(Explorer::class, $explorer = $model->explore());
 
         $explorer->metadata->name = 'test2';
-        self::assertEquals(
-            $a,
-            $model->toArray(),
-        );
+        $this->assertEquals($a, $model->toArray());
 
-        self::assertEquals(
-            [
-                'metadata' => [
-                    'name' => 'test2',
-                ],
-                'spec' => [
-                    'foo' => 'bar'
-                ]
+        $this->assertEquals([
+            'metadata' => [
+                'name' => 'test2',
             ],
-            $explorer->getModel()->toArray()
-        );
+            'spec' => [
+                'foo' => 'bar'
+            ]
+        ], $explorer->getModel()->toArray());
     }
 
     public function testToArrayFromJson(): void
@@ -193,10 +181,7 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
             FileFormat::Json
         );
 
-        self::assertEquals(
-            $a,
-            $model->toArray()
-        );
+        $this->assertEquals($a, $model->toArray());
     }
 
     public function testToArrayFromYaml(): void
@@ -215,10 +200,7 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
             FileFormat::Yaml
         );
 
-        self::assertEquals(
-            $a,
-            $model->toArray()
-        );
+        $this->assertEquals($a, $model->toArray());
     }
 
     public function testGetMetadata(): void
@@ -233,18 +215,11 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
             FileFormat::Array
         );
 
-        self::assertEquals(
-            'test',
-            $model->getMetadata('name')
-        );
+        $this->assertEquals('test', $model->getMetadata('name'));
 
-        self::assertNull(
-            $model->getMetadata('foo')
-        );
+        $this->assertNull($model->getMetadata('foo'));
 
-        self::assertNull(
-            $model->getMetadata('bar')
-        );
+        $this->assertNull($model->getMetadata('bar'));
     }
 
     public function testGetApiVersion(): void
@@ -257,7 +232,7 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
             ],
             FileFormat::Array
         )::class;
-        self::assertIsString($modelClass::getApiVersion());
+        $this->assertIsString($modelClass::getApiVersion());
     }
 
     public function testUpdateModel(): void
@@ -280,17 +255,14 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
             ]
         ];
 
-        self::assertInstanceOf(
-            $model1::class,
-            $model2 = $model1->updateModel(
-                function (array $value) use ($a1, $a2): array {
-                    self::assertEquals($a1, $value);
+        $this->assertInstanceOf($model1::class, $model2 = $model1->updateModel(
+            function (array $value) use ($a1, $a2): array {
+                $this->assertEquals($a1, $value);
 
-                    return $a2;
-                }
-            )
-        );
-        self::assertEquals($a1, $model1->toArray());
-        self::assertEquals($a2, $model2->toArray());
+                return $a2;
+            }
+        ));
+        $this->assertEquals($a1, $model1->toArray());
+        $this->assertEquals($a2, $model2->toArray());
     }
 }

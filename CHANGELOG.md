@@ -1,5 +1,14 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [2.0.0] - 2025-08-05
+### Stable Release
+- Drop support of PHP 8.3
+- Requires PHP 8.4
+- Update to PHPStan 2
+- Fix some QA issues
+- Switch license from MIT to 3-Clause BSD
+- Remove last deprecated references about HttpClient
+
 ## [1.7.3] - 2025-02-25
 ### Stable Release
 - Allow Illuminate collections 12

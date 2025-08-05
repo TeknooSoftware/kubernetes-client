@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/libraries/kubernetes-client Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  */
@@ -34,7 +34,7 @@ use Teknoo\Kubernetes\Model\Model;
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class ExplorerTest extends PHPUnitTestCase
@@ -73,57 +73,51 @@ class ExplorerTest extends PHPUnitTestCase
         );
     }
 
-    public function testGetModel()
+    public function testGetModel(): void
     {
-        self::assertInstanceOf(
-            Model::class,
-            $this->createExplorer()->getModel(),
-        );
+        $this->assertInstanceOf(Model::class, $this->createExplorer()->getModel());
     }
 
-    public function testGet()
+    public function testGet(): void
     {
         $explorer = $this->createExplorer();
-        self::assertNull($explorer->bar);
-        self::assertInstanceOf(Explorer::class, $explorer->metadata);
-        self::assertEquals('foo', $explorer->metadata->name);
-        self::assertInstanceOf(Explorer::class, $explorer->spec);
-        self::assertEquals('foo', $explorer->spec->bar);
-        self::assertInstanceOf(Explorer::class, $explorer->spec->foo);
+        $this->assertNull($explorer->bar);
+        $this->assertInstanceOf(Explorer::class, $explorer->metadata);
+        $this->assertEquals('foo', $explorer->metadata->name);
+        $this->assertInstanceOf(Explorer::class, $explorer->spec);
+        $this->assertEquals('foo', $explorer->spec->bar);
+        $this->assertInstanceOf(Explorer::class, $explorer->spec->foo);
     }
 
-    public function testSet()
+    public function testSet(): void
     {
         $explorer = $this->createExplorer();
         $explorer->metadata->name = 'bar';
-        self::assertEquals('bar', $this->attributes['metadata']['name']);
-        self::assertEquals('foo', $explorer->spec->bar);
+        $this->assertEquals('bar', $this->attributes['metadata']['name']);
+        $this->assertEquals('foo', $explorer->spec->bar);
         $explorer->spec->bar = null;
-        self::assertArrayNotHasKey('bar', $this->attributes['spec']);
+        $this->assertArrayNotHasKey('bar', $this->attributes['spec']);
     }
 
-    public function testUnset()
+    public function testUnset(): void
     {
         $explorer = $this->createExplorer();
-        self::assertEquals('foo', $explorer->spec->bar);
+        $this->assertEquals('foo', $explorer->spec->bar);
         unset($explorer->spec->bar);
-        self::assertArrayNotHasKey('bar', $this->attributes['spec']);
+        $this->assertArrayNotHasKey('bar', $this->attributes['spec']);
     }
 
-    public function testIsset()
+    public function testIsset(): void
     {
         $explorer = $this->createExplorer();
-        self::assertTrue(isset($explorer->metadata));
-        self::assertTrue(isset($explorer->metadata->name));
-        self::assertFalse(isset($explorer->metadata->namespace));
-        self::assertFalse(isset($explorer->metadata2->name));
+        $this->assertTrue(isset($explorer->metadata));
+        $this->assertTrue(isset($explorer->metadata->name));
+        $this->assertFalse(isset($explorer->metadata->namespace));
+        $this->assertFalse(isset($explorer->metadata2->name));
     }
 
-    public function testToArray()
+    public function testToArray(): void
     {
-        self::assertEquals(
-            $this->attributes,
-            $this->createExplorer()->toArray(),
-        );
+        $this->assertEquals($this->attributes, $this->createExplorer()->toArray());
     }
 }

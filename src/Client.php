@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/libraries/kubernetes-client Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  */
@@ -39,6 +39,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\StreamInterface;
 use Symfony\Component\Yaml\Exception\ParseException as YamlParseException;
 use Symfony\Component\Yaml\Yaml;
 use Teknoo\Kubernetes\Enums\FileFormat;
@@ -87,7 +88,6 @@ use function file_get_contents;
 use function file_put_contents;
 use function http_build_query;
 use function in_array;
-use function is_a;
 use function is_array;
 use function is_dir;
 use function is_string;
@@ -107,7 +107,7 @@ use const PHP_EOL;
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @copyright   Copyright (c) Marc Lough ( https://github.com/maclof/kubernetes-client )
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  *
@@ -144,13 +144,13 @@ use const PHP_EOL;
  */
 class Client
 {
-    private const API_VERSION = 'v1';
+    private const string API_VERSION = 'v1';
 
     private ?string $master = null;
 
     private ?string $token = null;
 
-    private ?bool $verify = true;
+    private bool $verify = true;
 
     private ?string $caCertificate = null;
 
@@ -177,7 +177,7 @@ class Client
     private array $patchHeaders = ['Content-Type' => 'application/strategic-merge-patch+json'];
 
     /**
-     * @var callable
+     * @var callable|null
      */
     private static $tmpNameFunction = null;
 
@@ -287,14 +287,13 @@ class Client
     /**
      * @param string|array<string, mixed> $content
      * @return array<string, mixed>
-     * @throws JsonException
      */
     protected static function parseContent(
         string|array $content,
         FileFormat $format = FileFormat::Yaml,
     ): array {
         try {
-            return match (true) {
+            $result = match (true) {
                 FileFormat::Array === $format && !is_array($content) => throw new InvalidArgumentException(
                     'KubeConfig is not an array.'
                 ),
@@ -312,6 +311,9 @@ class Client
                 ),
                 FileFormat::Yaml === $format && is_string($content) => Yaml::parse($content),
             };
+
+            /** @var array<string, mixed> $result */
+            return $result;
         } catch (JsonException $jsonException) {
             throw new InvalidArgumentException(
                 message: 'Failed to parse JSON encoded KubeConfig: ' . $jsonException->getMessage(),
@@ -336,7 +338,11 @@ class Client
         $contexts = [];
         if (isset($content['contexts']) && is_array($content['contexts'])) {
             foreach ($content['contexts'] as $context) {
-                if (is_string($context['name'])) {
+                if (
+                    is_array($context)
+                    && isset($context['name']) && is_string($context['name'])
+                    && isset($context['context']) && is_array($context['context'])
+                ) {
                     $contexts[$context['name']] = $context['context'];
                 }
             }
@@ -346,6 +352,7 @@ class Client
             throw new InvalidArgumentException('KubeConfig parse error - No contexts are defined.');
         }
 
+        /** @var array<string, array<string, string>> $contexts */
         return $contexts;
     }
 
@@ -359,7 +366,13 @@ class Client
         $clusters = [];
         if (isset($content['clusters']) && is_array($content['clusters'])) {
             foreach ($content['clusters'] as $cluster) {
-                $clusters[$cluster['name']] = $cluster['cluster'];
+                if (
+                    is_array($cluster)
+                    && isset($cluster['name']) && is_string($cluster['name'])
+                    && isset($cluster['cluster']) && is_array($cluster['cluster'])
+                ) {
+                    $clusters[$cluster['name']] = $cluster['cluster'];
+                }
             }
         }
 
@@ -373,6 +386,7 @@ class Client
             );
         }
 
+        /** @var array<string, array<string, string>> $clusters */
         return $clusters[$context['cluster']];
     }
 
@@ -392,7 +406,13 @@ class Client
         $users = [];
         if (isset($content['users']) && is_array($content['users'])) {
             foreach ($content['users'] as $user) {
-                $users[$user['name']] = $user['user'];
+                if (
+                    is_array($user)
+                    && isset($user['name']) && is_string($user['name'])
+                    && isset($user['user']) && is_array($user['user'])
+                ) {
+                    $users[$user['name']] = $user['user'];
+                }
             }
         }
 
@@ -406,6 +426,7 @@ class Client
             );
         }
 
+        /** @var array<string, array<string, string>> $users */
         return $users[$context['user']];
     }
 
@@ -429,13 +450,20 @@ class Client
             throw new InvalidArgumentException('KubeConfig parse error - Missing current context attribute.');
         }
 
-        if (!isset($contexts[$content['current-context']])) {
+        $currentContext = $content['current-context'];
+        if (!is_string($currentContext) || !isset($contexts[$currentContext])) {
+            if (!is_string($currentContext)) {
+                throw new InvalidArgumentException(
+                    'KubeConfig parse error - The current context is invalid.'
+                );
+            }
+
             throw new InvalidArgumentException(
-                'KubeConfig parse error - The current context "' . $content['current-context'] . '" is undefined.'
+                'KubeConfig parse error - The current context "' . $currentContext . '" is undefined.'
             );
         }
 
-        $context = $contexts[$content['current-context']];
+        $context = $contexts[$currentContext];
 
         if (!isset($context['cluster'])) {
             throw new InvalidArgumentException(
@@ -459,7 +487,7 @@ class Client
         if (isset($cluster['certificate-authority-data'])) {
             $options['ca_cert'] = self::getTempFilePath(
                 'ca-cert.pem',
-                base64_decode(
+                (string) base64_decode(
                     (string) $cluster['certificate-authority-data'],
                     true,
                 )
@@ -476,7 +504,7 @@ class Client
         if (isset($user['client-certificate-data'])) {
             $options['client_cert'] = self::getTempFilePath(
                 'client-cert.pem',
-                base64_decode(
+                (string) base64_decode(
                     (string) $user['client-certificate-data'],
                     true,
                 )
@@ -486,7 +514,7 @@ class Client
         if (isset($user['client-key-data'])) {
             $options['client_key'] = self::getTempFilePath(
                 'client-key.pem',
-                base64_decode(
+                (string) base64_decode(
                     (string) $user['client-key-data'],
                     true,
                 )
@@ -607,7 +635,7 @@ class Client
             $requestUri = $this->master . '/' . $baseUri . $uri;
         }
 
-        if (is_array($query) && [] !== $query) {
+        if ([] !== $query) {
             $requestUri .= '?' . http_build_query($query);
         }
 
@@ -616,6 +644,7 @@ class Client
 
     /**
      * @param array<string, int|string|null> $query
+     * @param StreamInterface|string|array<string, mixed>|null $body
      * @throws \Http\Client\Exception
      * @throws ApiServerException
      */
@@ -623,7 +652,7 @@ class Client
         RequestMethod $method,
         string $uri,
         array $query = [],
-        mixed $body = null,
+        StreamInterface|string|array|null $body = null,
         bool $namespace = true,
         ?string $apiVersion = null
     ): ResponseInterface {
@@ -664,7 +693,7 @@ class Client
             }
 
             if (is_array($body)) {
-                $body = json_encode($body, JSON_FORCE_OBJECT | JSON_THROW_ON_ERROR);
+                $body = (string) json_encode($body, JSON_FORCE_OBJECT | JSON_THROW_ON_ERROR);
             }
 
             $response = $this->getHttpMethodsClients()->send(
@@ -705,6 +734,7 @@ class Client
 
     /**
      * @param array<string, int|string|null> $query
+     * @param StreamInterface|string|array<string, mixed>|null $body
      * @return array<string, string|null>
      * @throws \Http\Client\Exception
      * @throws BadRequestException
@@ -715,7 +745,7 @@ class Client
         RequestMethod $method,
         string $uri,
         array $query = [],
-        mixed $body = null,
+        StreamInterface|string|array|null $body = null,
         bool $namespace = true,
         ?string $apiVersion = null
     ): array {
@@ -729,11 +759,15 @@ class Client
         );
 
         $responseBody = (string) $response->getBody();
-        return json_decode($responseBody, true, 512, JSON_THROW_ON_ERROR);
+        $result = json_decode($responseBody, true, 512, JSON_THROW_ON_ERROR);
+
+        /** @var array<string, string|null> $result */
+        return $result;
     }
 
     /**
      * @param array<string, string|null> $query
+     * @param StreamInterface|string|array<string, mixed>|null $body
      * @throws \Http\Client\Exception
      * @throws BadRequestException
      * @throws ApiServerException
@@ -742,7 +776,7 @@ class Client
         RequestMethod $method,
         string $uri,
         array $query = [],
-        mixed $body = null,
+        StreamInterface|string|array|null $body = null,
         bool $namespace = true,
         ?string $apiVersion = null
     ): string {
@@ -760,12 +794,13 @@ class Client
 
     /**
      * @param array<string, string|null> $query
+     * @param StreamInterface|string|array<string, mixed>|null $body
      */
     public function sendStreamableRequest(
         RequestMethod $method,
         string $uri,
         array $query = [],
-        mixed $body = null,
+        StreamInterface|string|array|null $body = null,
         bool $namespace = true,
         ?string $apiVersion = null
     ): ResponseInterface {
@@ -805,7 +840,6 @@ class Client
     /**
      * @param class-string<Repository> $name
      * @param array<int|string, mixed> $args
-     * @return Repository
      */
     public function __call(string $name, array $args): Repository
     {
@@ -818,10 +852,6 @@ class Client
         }
 
         $class = $this->classRegistry[$name];
-
-        if (!is_a($class, Repository::class, true)) {
-            throw new BadMethodCallException("$class is not a valid Repository class");
-        }
 
         return $this->classInstances[$name] = new $class($this);
     }

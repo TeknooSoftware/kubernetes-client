@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/libraries/kubernetes-client Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  */
@@ -43,7 +43,7 @@ use Teknoo\Kubernetes\Repository\Repository;
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @copyright   Copyright (c) Marc Lough ( https://github.com/maclof/kubernetes-client )
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  */
@@ -76,22 +76,22 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
                 $result = [];
             }
 
-            $this->client->expects($this->any())
+            $this->client
                 ->method('sendRequest')
                 ->willReturn($result);
 
             $stream = $this->createMock(StreamInterface::class);
             $response = $this->createMock(ResponseInterface::class);
 
-            $response->expects($this->any())
+            $response
                 ->method('getBody')
                 ->willReturn($stream);
 
-            $this->client->expects($this->any())
+            $this->client
                 ->method('sendStreamableRequest')
                 ->willReturn($response);
 
-            $this->client->expects($this->any())
+            $this->client
                 ->method('sendStringableRequest')
                 ->willReturn('foo');
         }
@@ -102,147 +102,107 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
     public function testCreate(): void
     {
         $repository = $this->getRepository();
-        self::assertIsArray(
-            $repository->create($this->getModel())
-        );
+        $this->assertIsArray($repository->create($this->getModel()));
     }
 
     public function testUpdate(): void
     {
         $repository = $this->getRepository();
-        self::assertIsArray(
-            $repository->update($this->getModel())
-        );
+        $this->assertIsArray($repository->update($this->getModel()));
     }
 
     public function testPatch(): void
     {
         $repository = $this->getRepository();
-        self::assertIsArray(
-            $repository->patch($this->getModel())
-        );
+        $this->assertIsArray($repository->patch($this->getModel()));
     }
 
     public function testApplyJsonPatch(): void
     {
         $repository = $this->getRepository();
-        self::assertIsArray(
-            $repository->applyJsonPatch($this->getModel(), ['spec' => ['foo' => 'bar']])
-        );
+        $this->assertIsArray($repository->applyJsonPatch($this->getModel(), ['spec' => ['foo' => 'bar']]));
     }
 
     public function testApplyForNonExisting(): void
     {
         $this->getClientMock(true);
         $repository = $this->getRepository();
-        self::assertIsArray(
-            $repository->apply($this->getModel())
-        );
+        $this->assertIsArray($repository->apply($this->getModel()));
     }
 
     public function testApplyForExisting(): void
     {
         $repository = $this->getRepository();
-        self::assertIsArray(
-            $repository->apply($this->getModel())
-        );
+        $this->assertIsArray($repository->apply($this->getModel()));
     }
 
     public function testDelete(): void
     {
         $repository = $this->getRepository();
-        self::assertIsArray(
-            $repository->delete($this->getModel())
-        );
+        $this->assertIsArray($repository->delete($this->getModel()));
     }
 
     public function testDeleteByName(): void
     {
         $repository = $this->getRepository();
-        self::assertIsArray(
-            $repository->deleteByName('foo')
-        );
+        $this->assertIsArray($repository->deleteByName('foo'));
     }
 
     public function testSetLabelSelector(): void
     {
         $repository = $this->getRepository();
-        self::assertInstanceOf(
-            $repository::class,
-            $repository->setLabelSelector(
-                ['foo' => 'bar'],
-                ['bar' => 'foo'],
-            )
-        );
+        $this->assertInstanceOf($repository::class, $repository->setLabelSelector(
+            ['foo' => 'bar'],
+            ['bar' => 'foo'],
+        ));
     }
 
     public function testSetFieldSelector(): void
     {
         $repository = $this->getRepository();
-        self::assertInstanceOf(
-            $repository::class,
-            $repository->setFieldSelector(
-                ['foo' => 'bar'],
-                ['bar' => 'foo'],
-            )
-        );
+        $this->assertInstanceOf($repository::class, $repository->setFieldSelector(
+            ['foo' => 'bar'],
+            ['bar' => 'foo'],
+        ));
     }
 
     public function testFind(): void
     {
         $repository = $this->getRepository();
-        self::assertInstanceOf(
-            $this->getCollectionClassName(),
-            $repository->find(
-                ['foo' => 'bar'],
-            )
-        );
+        $this->assertInstanceOf($this->getCollectionClassName(), $repository->find(
+            ['foo' => 'bar'],
+        ));
 
         $repository = $this->getRepository();
-        self::assertInstanceOf(
-            $this->getCollectionClassName(),
-            $repository->setFieldSelector(['foo' => 'bar'], ['bar' => 'foo'])
-                ->setLabelSelector(['fool' => 'bar', 'world' => null], ['barl' => 'foo'])
-                ->find(['foo' => 'bar'])
-        );
+        $this->assertInstanceOf($this->getCollectionClassName(), $repository->setFieldSelector(['foo' => 'bar'], ['bar' => 'foo'])
+            ->setLabelSelector(['fool' => 'bar', 'world' => null], ['barl' => 'foo'])
+            ->find(['foo' => 'bar']));
     }
 
     public function testFindWithLimit(): void
     {
         $repository = $this->getRepository();
-        self::assertInstanceOf(
-            $this->getCollectionClassName(),
-            $repository->find(
-                ['foo' => 'bar'],
-                10,
-            )
-        );
+        $this->assertInstanceOf($this->getCollectionClassName(), $repository->find(
+            ['foo' => 'bar'],
+            10,
+        ));
 
         $repository = $this->getRepository();
-        self::assertInstanceOf(
-            $this->getCollectionClassName(),
-            $repository->setFieldSelector(['foo' => 'bar'], ['bar' => 'foo'])
-                ->setLabelSelector(['fool' => 'bar', 'world' => null], ['barl' => 'foo'])
-                ->find(['foo' => 'bar'], 10)
-        );
+        $this->assertInstanceOf($this->getCollectionClassName(), $repository->setFieldSelector(['foo' => 'bar'], ['bar' => 'foo'])
+            ->setLabelSelector(['fool' => 'bar', 'world' => null], ['barl' => 'foo'])
+            ->find(['foo' => 'bar'], 10));
     }
 
     public function testContinue(): void
     {
         $repository = $this->getRepository();
-        self::assertInstanceOf(
-            $this->getCollectionClassName(),
-            $repository->continue(
-                ['foo' => 'bar'],
-                'foo',
-            )
-        );
+        $this->assertInstanceOf($this->getCollectionClassName(), $repository->continue(
+            ['foo' => 'bar'],
+            'foo',
+        ));
 
         $repository = $this->getRepository();
-        self::assertInstanceOf(
-            $this->getCollectionClassName(),
-            $repository->continue(['foo' => 'bar'], 'foo')
-        );
+        $this->assertInstanceOf($this->getCollectionClassName(), $repository->continue(['foo' => 'bar'], 'foo'));
     }
 
     public function testContinueTimeExceeded(): void
@@ -294,10 +254,7 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
     public function testFirst(): void
     {
         $repository = $this->getRepository();
-        self::assertInstanceOf(
-            $this->getModel()::class,
-            $repository->first()
-        );
+        $this->assertInstanceOf($this->getModel()::class, $repository->first());
     }
 
     public function testStream(): void
@@ -306,22 +263,17 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
         $streamer->expects($this->once())->method('parse');
 
         $repository = $this->getRepository();
-        self::assertInstanceOf(
-            $repository::class,
-            $repository->stream(
-                $this->getModel(),
-                $streamer,
-            )
-        );
+        $this->assertInstanceOf($repository::class, $repository->stream(
+            $this->getModel(),
+            $streamer,
+        ));
     }
 
     public function testExists(): void
     {
         $repository = $this->getRepository();
-        self::assertIsBool(
-            $repository->exists(
-                'foo',
-            )
-        );
+        $this->assertIsBool($repository->exists(
+            'foo',
+        ));
     }
 }
