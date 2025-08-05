@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/libraries/kubernetes-client Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  */
@@ -30,11 +30,8 @@ use BadMethodCallException;
 use Http\Client\Common\HttpMethodsClient;
 use Http\Client\Exception\HttpException;
 use Http\Client\Exception\TransferException as HttpTransferException;
-use Http\Client\HttpClient;
 use Http\Discovery\Psr17FactoryDiscovery;
-use Http\Discovery\StreamFactoryDiscovery;
 use InvalidArgumentException;
-use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -56,6 +53,7 @@ use Teknoo\Kubernetes\Exceptions\ApiServerException;
 use Teknoo\Kubernetes\Exceptions\BadRequestException;
 use Teknoo\Kubernetes\Model\Pod;
 use Teknoo\Kubernetes\Repository\NamespaceRepository;
+use Teknoo\Kubernetes\Repository\Repository;
 use Teknoo\Kubernetes\RepositoryRegistry;
 use Teknoo\Tests\Kubernetes\Helper\HttpMethodsMockClient;
 
@@ -67,7 +65,7 @@ use const PHP_EOL;
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @copyright   Copyright (c) Marc Lough ( https://github.com/maclof/kubernetes-client )
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  */
@@ -76,7 +74,7 @@ use const PHP_EOL;
 #[CoversClass(Client::class)]
 class ClientTest extends TestCase
 {
-    private const JSON_BODY = [
+    private const array JSON_BODY = [
         'items' => [
             [],
             [],
@@ -95,16 +93,16 @@ class ClientTest extends TestCase
         parent::tearDown();
     }
 
-    public function testConstructorMissingMasterInConstruction()
+    public function testConstructorMissingMasterInConstruction(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $client = new Client([
+        new Client([
             'token' => 'foo',
             'namespace' => 'bar'
         ]);
     }
 
-    public function testSetOptionsMissingMasterInConstruction()
+    public function testSetOptionsMissingMasterInConstruction(): void
     {
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -122,7 +120,7 @@ class ClientTest extends TestCase
         );
     }
 
-    public function testSetOptions()
+    public function testSetOptions(): void
     {
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -130,20 +128,17 @@ class ClientTest extends TestCase
             'namespace' => 'bar',
         ]);
 
-        self::assertInstanceOf(
-            Client::class,
-            $client->setOptions(
-                [
-                    'master' => 'https://api2.example.com',
-                    'token' => 'foo2',
-                    'namespace' => 'bar2'
-                ],
-                true
-            )
-        );
+        $this->assertInstanceOf(Client::class, $client->setOptions(
+            [
+                'master' => 'https://api2.example.com',
+                'token' => 'foo2',
+                'namespace' => 'bar2'
+            ],
+            true
+        ));
     }
 
-    public function testSetOptionsWithTimeout()
+    public function testSetOptionsWithTimeout(): void
     {
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -152,110 +147,65 @@ class ClientTest extends TestCase
             'timeout' => 30,
         ]);
 
-        self::assertInstanceOf(
-            Client::class,
-            $client->setOptions(
-                [
-                    'master' => 'https://api2.example.com',
-                    'token' => 'foo2',
-                    'namespace' => 'bar2',
-                    'timeout' => 30,
-                ],
-                true
-            )
-        );
-    }
-
-    public function testSetNamespace()
-    {
-        $client = new Client([
-            'master' => 'https://api.example.com',
-            'token' => 'foo',
-            'namespace' => 'bar'
-        ]);
-
-        self::assertInstanceOf(
-            Client::class,
-            $client->setNamespace(
-                'bar2'
-            )
-        );
-    }
-
-    public function testSetPatchType()
-    {
-        $client = new Client([
-            'master' => 'https://api.example.com',
-            'token' => 'foo',
-            'namespace' => 'bar'
-        ]);
-
-        self::assertInstanceOf(
-            Client::class,
-            $client->setPatchType(PatchType::Json)
-        );
-
-        self::assertInstanceOf(
-            Client::class,
-            $client->setPatchType(PatchType::Strategic)
-        );
-
-        self::assertInstanceOf(
-            Client::class,
-            $client->setPatchType(PatchType::Merge)
-        );
-    }
-
-    public function testGetRepository()
-    {
-        $client = new Client([
-            'master' => 'https://api.example.com',
-            'token' => 'foo',
-            'namespace' => 'bar'
-        ]);
-
-        self::assertInstanceOf(
-            NamespaceRepository::class,
-            $client->namespaces()
-        );
-
-        self::assertInstanceOf(
-            NamespaceRepository::class,
-            $client->namespaces()
-        );
-    }
-
-    public function testGetWrongRepository()
-    {
-        $client = new Client([
-            'master' => 'https://api.example.com',
-            'token' => 'foo',
-            'namespace' => 'bar'
-        ]);
-
-        $this->expectException(BadMethodCallException::class);
-        $client->foo();
-    }
-
-    public function testGetInvalidRepository()
-    {
-        $registry = $this->createMock(RepositoryRegistry::class);
-        $registry->expects($this->any())
-            ->method('offsetGet')
-            ->willReturn(stdClass::class);
-
-        $registry->expects($this->any())
-            ->method('offsetExists')
-            ->willReturn(true);
-
-        $client = new Client(
-            options: [
-                'master' => 'https://api.example.com',
-                'token' => 'foo',
-                'namespace' => 'bar'
+        $this->assertInstanceOf(Client::class, $client->setOptions(
+            [
+                'master' => 'https://api2.example.com',
+                'token' => 'foo2',
+                'namespace' => 'bar2',
+                'timeout' => 30,
             ],
-            repositoryRegistry: $registry,
-        );
+            true
+        ));
+    }
+
+    public function testSetNamespace(): void
+    {
+        $client = new Client([
+            'master' => 'https://api.example.com',
+            'token' => 'foo',
+            'namespace' => 'bar'
+        ]);
+
+        $this->assertInstanceOf(Client::class, $client->setNamespace(
+            'bar2'
+        ));
+    }
+
+    public function testSetPatchType(): void
+    {
+        $client = new Client([
+            'master' => 'https://api.example.com',
+            'token' => 'foo',
+            'namespace' => 'bar'
+        ]);
+
+        $this->assertInstanceOf(Client::class, $client->setPatchType(PatchType::Json));
+
+        $this->assertInstanceOf(Client::class, $client->setPatchType(PatchType::Strategic));
+
+        $this->assertInstanceOf(Client::class, $client->setPatchType(PatchType::Merge));
+    }
+
+    public function testGetRepository(): void
+    {
+        $client = new Client([
+            'master' => 'https://api.example.com',
+            'token' => 'foo',
+            'namespace' => 'bar'
+        ]);
+
+        $this->assertInstanceOf(NamespaceRepository::class, $client->namespaces());
+
+        $this->assertInstanceOf(NamespaceRepository::class, $client->namespaces());
+    }
+
+    public function testGetWrongRepository(): void
+    {
+        $client = new Client([
+            'master' => 'https://api.example.com',
+            'token' => 'foo',
+            'namespace' => 'bar'
+        ]);
 
         $this->expectException(BadMethodCallException::class);
         $client->foo();
@@ -294,12 +244,9 @@ class ClientTest extends TestCase
 
         $result = $client->sendRequest(RequestMethod::Get, 'poddy/');
 
-        self::assertEquals(
-            [
-                'message' => 'Hello world',
-            ],
-            $result
-        );
+        $this->assertEquals([
+            'message' => 'Hello world',
+        ], $result);
     }
 
     public function testSendRequestWithAuthTokenWithEolAtMiddle(): void
@@ -318,7 +265,7 @@ class ClientTest extends TestCase
             'message' => 'Hello world',
         ]);
 
-        $response = new Response(200, [], $jsonBody);
+        new Response(200, [], $jsonBody);
 
         $mockClientInterface->expects($this->never())
             ->method('sendRequest');
@@ -370,12 +317,9 @@ class ClientTest extends TestCase
 
         $result = $client->sendRequest(RequestMethod::Get, 'poddy/');
 
-        self::assertEquals(
-            [
-                'message' => 'Hello world',
-            ],
-            $result
-        );
+        $this->assertEquals([
+            'message' => 'Hello world',
+        ], $result);
     }
 
     public function testSendRequestToPatch(): void
@@ -413,12 +357,9 @@ class ClientTest extends TestCase
 
         $result = $client->sendRequest(RequestMethod::Patch, 'poddy/', [], '{foo: "bar"}');
 
-        self::assertEquals(
-            [
-                'message' => 'Hello world',
-            ],
-            $result
-        );
+        $this->assertEquals([
+            'message' => 'Hello world',
+        ], $result);
     }
 
     public function testSendRequestToPost(): void
@@ -456,12 +397,9 @@ class ClientTest extends TestCase
 
         $result = $client->sendRequest(RequestMethod::Post, 'poddy/', [], ['foo' => "bar"]);
 
-        self::assertEquals(
-            [
-                'message' => 'Hello world',
-            ],
-            $result
-        );
+        $this->assertEquals([
+            'message' => 'Hello world',
+        ], $result);
     }
 
     public function testSendRequestAuthViaFileToken(): void
@@ -499,12 +437,9 @@ class ClientTest extends TestCase
 
         $result = $client->sendRequest(RequestMethod::Get, 'poddy/', [], ['foo' => "bar"]);
 
-        self::assertEquals(
-            [
-                'message' => 'Hello world',
-            ],
-            $result
-        );
+        $this->assertEquals([
+            'message' => 'Hello world',
+        ], $result);
     }
 
     public function testSendRequestAuthViaFileTokenWithEolAtEnd(): void
@@ -542,12 +477,9 @@ class ClientTest extends TestCase
 
         $result = $client->sendRequest(RequestMethod::Get, 'poddy/', [], ['foo' => "bar"]);
 
-        self::assertEquals(
-            [
-                'message' => 'Hello world',
-            ],
-            $result
-        );
+        $this->assertEquals([
+            'message' => 'Hello world',
+        ], $result);
     }
 
     public function testSendRequestAuthViaFileTokenWithEolInMiddle(): void
@@ -568,7 +500,7 @@ class ClientTest extends TestCase
             'message' => 'Hello world',
         ]);
 
-        $response = new Response(200, [], $jsonBody);
+        new Response(200, [], $jsonBody);
 
         $mockClientInterface->expects($this->never())
             ->method('sendRequest');
@@ -603,7 +535,7 @@ class ClientTest extends TestCase
             'message' => 'Hello world',
         ]);
 
-        $response = new Response(200, [], $jsonBody);
+        new Response(200, [], $jsonBody);
 
         $mockClientInterface->expects($this->never())
             ->method('sendRequest');
@@ -652,12 +584,9 @@ class ClientTest extends TestCase
 
         $result = $client->sendRequest(RequestMethod::Get, 'poddy/');
 
-        self::assertEquals(
-            [
-                'message' => 'Hello world',
-            ],
-            $result
-        );
+        $this->assertEquals([
+            'message' => 'Hello world',
+        ], $result);
     }
 
     public function testSendRequestWithHttpException(): void
@@ -675,7 +604,7 @@ class ClientTest extends TestCase
             'message' => 'Hello world',
         ]);
 
-        $response = new Response(200, [], $jsonBody);
+        new Response(200, [], $jsonBody);
 
         $mockClientInterface->expects($this->once())
             ->method('sendRequest')
@@ -762,10 +691,7 @@ class ClientTest extends TestCase
 
         $result = $client->sendStringableRequest(RequestMethod::Get, 'poddy/', apiVersion: 'batch/v1');
 
-        self::assertEquals(
-            $jsonBody,
-            $result
-        );
+        $this->assertEquals($jsonBody, $result);
     }
 
     public function testSendStreamableRequest(): void
@@ -797,10 +723,7 @@ class ClientTest extends TestCase
 
         $result = $client->sendStreamableRequest(RequestMethod::Get, 'poddy/', ['foo' => 'bar']);
 
-        self::assertInstanceOf(
-            ResponseInterface::class,
-            $result
-        );
+        $this->assertInstanceOf(ResponseInterface::class, $result);
     }
 
     public function testHealth(): void
@@ -835,12 +758,9 @@ class ClientTest extends TestCase
 
         $result = $client->health();
 
-        self::assertEquals(
-            json_encode([
-                'message' => 'Hello world',
-            ]),
-            $result
-        );
+        $this->assertEquals(json_encode([
+            'message' => 'Hello world',
+        ]), $result);
     }
 
     public function testVersion(): void
@@ -875,12 +795,9 @@ class ClientTest extends TestCase
 
         $result = $client->version();
 
-        self::assertEquals(
-            [
-                'message' => 'Hello world',
-            ],
-            $result
-        );
+        $this->assertEquals([
+            'message' => 'Hello world',
+        ], $result);
     }
 
     /**
@@ -929,37 +846,35 @@ class ClientTest extends TestCase
 
         $result = $client->pods()->find();
 
-        self::assertInstanceOf(PodCollection::class, $result);
+        $this->assertInstanceOf(PodCollection::class, $result);
 
-        self::assertCount(3, $result);
+        $this->assertCount(3, $result);
 
         $pod1 = $result->first();
-        self::assertInstanceOf(Pod::class, $pod1);
+        $this->assertInstanceOf(Pod::class, $pod1);
     }
 
-    public static function providerForFailedResponses(): array
+    public static function providerForFailedResponses(): \Iterator
     {
-        return [
-            [
-                500,
-                ApiServerException::class,
-                '/500 Error/',
-            ],
-            [
-                401,
-                ApiServerException::class,
-                '/Authentication Exception/',
-            ],
-            [
-                403,
-                ApiServerException::class,
-                '/Authentication Exception/',
-            ],
-            [
-                404,
-                ApiServerException::class,
-                '/Error hath occurred/',
-            ],
+        yield [
+            500,
+            ApiServerException::class,
+            '/500 Error/',
+        ];
+        yield [
+            401,
+            ApiServerException::class,
+            '/Authentication Exception/',
+        ];
+        yield [
+            403,
+            ApiServerException::class,
+            '/Authentication Exception/',
+        ];
+        yield [
+            404,
+            ApiServerException::class,
+            '/Error hath occurred/',
         ];
     }
 
@@ -976,232 +891,229 @@ class ClientTest extends TestCase
         );
 
         $this->expectException($exceptionClass);
-        if (method_exists($this, 'expectExceptionMessageRegExp')) {
-            $this->expectExceptionMessageRegExp($msgRegEx);
-        } else {
-            $this->expectExceptionMessageMatches($msgRegEx);
-        }
+        $this->expectExceptionMessageMatches($msgRegEx);
 
         $client->sendRequest(RequestMethod::Get, '/api/anything');
     }
 
-    public function testLoadFromKubeConfigFile()
+    public function testLoadFromKubeConfigFile(): void
     {
         Client::setTmpNameFunction(
-            fn (string $dir, string $file) => $dir . '/' . $file
+            fn (string $dir, string $file): string => $dir . '/' . $file
         );
         Client::setTmpDir('/tmp');
-        self::assertEquals(
-            new Client(
-                options: [
-                    'master' => 'https://your-k8s-cluster.com',
-                    'ca_cert' => '/tmp/kubernetes-client-ca-cert.pem',
-                    'client_cert' => '/tmp/kubernetes-client-client-cert.pem',
-                    'client_key' => '/tmp/kubernetes-client-client-key.pem',
-                ],
-                httpClient: $this->createMock(HttpClient::class),
-                httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
-            ),
-            Client::loadFromKubeConfigFile(
-                filePath: __DIR__ . '/fixtures/config/kubeconfig.example',
-                httpClient: $this->createMock(HttpClient::class),
-                httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
-            )
-        );
+        $this->assertEquals(new Client(
+            options: [
+                'master' => 'https://your-k8s-cluster.com',
+                'ca_cert' => '/tmp/kubernetes-client-ca-cert.pem',
+                'client_cert' => '/tmp/kubernetes-client-client-cert.pem',
+                'client_key' => '/tmp/kubernetes-client-client-key.pem',
+            ],
+            httpClient: $this->createMock(ClientInterface::class),
+            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+        ), Client::loadFromKubeConfigFile(
+            filePath: __DIR__ . '/fixtures/config/kubeconfig.example',
+            httpClient: $this->createMock(ClientInterface::class),
+            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+        ));
     }
 
-    public function testLoadFromKubeConfigFileWithoutServerCertificate()
+    public function testLoadFromKubeConfigFileWithoutServerCertificate(): void
     {
         Client::setTmpNameFunction(
-            fn (string $dir, string $file) => $dir . '/' . $file
+            fn (string $dir, string $file): string => $dir . '/' . $file
         );
         Client::setTmpDir('/tmp');
-        self::assertEquals(
-            new Client(
-                options: [
-                    'master' => 'https://your-k8s-cluster.com',
-                    'client_cert' => '/tmp/kubernetes-client-client-cert.pem',
-                    'client_key' => '/tmp/kubernetes-client-client-key.pem',
-                    'verify' => false,
-                ],
-                httpClient: $this->createMock(HttpClient::class),
-                httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
-            ),
-            Client::loadFromKubeConfigFile(
-                filePath: __DIR__ . '/fixtures/config/kubeconfig.without_server_certificate.example',
-                httpClient: $this->createMock(HttpClient::class),
-                httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
-            )
-        );
+        $this->assertEquals(new Client(
+            options: [
+                'master' => 'https://your-k8s-cluster.com',
+                'client_cert' => '/tmp/kubernetes-client-client-cert.pem',
+                'client_key' => '/tmp/kubernetes-client-client-key.pem',
+                'verify' => false,
+            ],
+            httpClient: $this->createMock(ClientInterface::class),
+            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+        ), Client::loadFromKubeConfigFile(
+            filePath: __DIR__ . '/fixtures/config/kubeconfig.without_server_certificate.example',
+            httpClient: $this->createMock(ClientInterface::class),
+            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+        ));
     }
 
-    public function testLoadFromKubeConfigFileWithUnsecureAPI()
+    public function testLoadFromKubeConfigFileWithUnsecureAPI(): void
     {
         Client::setTmpNameFunction(
-            fn (string $dir, string $file) => $dir . '/' . $file
+            fn (string $dir, string $file): string => $dir . '/' . $file
         );
         Client::setTmpDir('/tmp');
-        self::assertEquals(
-            new Client(
-                options: [
-                    'master' => 'http://your-k8s-cluster.com',
-                    'client_cert' => '/tmp/kubernetes-client-client-cert.pem',
-                    'client_key' => '/tmp/kubernetes-client-client-key.pem',
-                    'verify' => true,
-                ],
-                httpClient: $this->createMock(HttpClient::class),
-                httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
-            ),
-            Client::loadFromKubeConfigFile(
-                filePath: __DIR__ . '/fixtures/config/kubeconfig.unsecure.example',
-                httpClient: $this->createMock(HttpClient::class),
-                httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
-            )
-        );
+        $this->assertEquals(new Client(
+            options: [
+                'master' => 'http://your-k8s-cluster.com',
+                'client_cert' => '/tmp/kubernetes-client-client-cert.pem',
+                'client_key' => '/tmp/kubernetes-client-client-key.pem',
+                'verify' => true,
+            ],
+            httpClient: $this->createMock(ClientInterface::class),
+            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+        ), Client::loadFromKubeConfigFile(
+            filePath: __DIR__ . '/fixtures/config/kubeconfig.unsecure.example',
+            httpClient: $this->createMock(ClientInterface::class),
+            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+        ));
     }
 
-    public function testLoadFromKubeConfigFileWithoutServer()
+    public function testLoadFromKubeConfigFileWithoutServer(): void
     {
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.without_server.example',
-            httpClient: $this->createMock(HttpClient::class),
+            httpClient: $this->createMock(ClientInterface::class),
             httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
         );
     }
 
-    public function testLoadFromKubeConfigFileWithUserInContextUndefined()
+    public function testLoadFromKubeConfigFileWithUserInContextUndefined(): void
     {
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.user_in_context_undefined.example',
-            httpClient: $this->createMock(HttpClient::class),
+            httpClient: $this->createMock(ClientInterface::class),
             httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
         );
     }
 
-    public function testLoadFromKubeConfigFileWithClusterInContextUndefined()
+    public function testLoadFromKubeConfigFileWithClusterInContextUndefined(): void
     {
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.cluster_in_context_undefined.example',
-            httpClient: $this->createMock(HttpClient::class),
+            httpClient: $this->createMock(ClientInterface::class),
             httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
         );
     }
 
-    public function testLoadFromKubeConfigFileWithoutCluster()
+    public function testLoadFromKubeConfigFileWithoutCluster(): void
     {
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.without_cluster.example',
-            httpClient: $this->createMock(HttpClient::class),
+            httpClient: $this->createMock(ClientInterface::class),
             httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
         );
     }
 
-    public function testLoadFromKubeConfigFileWithoutContext()
+    public function testLoadFromKubeConfigFileWithoutContext(): void
     {
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.without_context.example',
-            httpClient: $this->createMock(HttpClient::class),
+            httpClient: $this->createMock(ClientInterface::class),
             httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
         );
     }
 
-    public function testLoadFromKubeConfigFileWithoutCurrentContext()
+    public function testLoadFromKubeConfigFileWithoutCurrentContext(): void
     {
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.without_current_context.example',
-            httpClient: $this->createMock(HttpClient::class),
+            httpClient: $this->createMock(ClientInterface::class),
             httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
         );
     }
 
-    public function testLoadFromKubeConfigFileWithoutUserInContext()
+    public function testLoadFromKubeConfigFileWithInvalidCurrentContext(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        Client::loadFromKubeConfigFile(
+            filePath: __DIR__ . '/fixtures/config/kubeconfig.with_invalid_current_context.example',
+            httpClient: $this->createMock(ClientInterface::class),
+            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+        );
+    }
+
+    public function testLoadFromKubeConfigFileWithoutUserInContext(): void
     {
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.without_user_in_context.example',
-            httpClient: $this->createMock(HttpClient::class),
+            httpClient: $this->createMock(ClientInterface::class),
             httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
         );
     }
 
-    public function testLoadFromKubeConfigFileWithoutClusterInContext()
+    public function testLoadFromKubeConfigFileWithoutClusterInContext(): void
     {
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.without_cluster_in_context.example',
-            httpClient: $this->createMock(HttpClient::class),
+            httpClient: $this->createMock(ClientInterface::class),
             httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
         );
     }
 
-    public function testLoadFromKubeConfigFileWithoutContextInContext()
+    public function testLoadFromKubeConfigFileWithoutContextInContext(): void
     {
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.without_current_context_in_contexts.example',
-            httpClient: $this->createMock(HttpClient::class),
+            httpClient: $this->createMock(ClientInterface::class),
             httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
         );
     }
 
-    public function testLoadFromKubeConfigFileWithoutUsers()
+    public function testLoadFromKubeConfigFileWithoutUsers(): void
     {
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.without_users.example',
-            httpClient: $this->createMock(HttpClient::class),
+            httpClient: $this->createMock(ClientInterface::class),
             httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
         );
     }
 
-    public function testLoadFromKubeConfigFileWithWrongFile()
+    public function testLoadFromKubeConfigFileWithWrongFile(): void
     {
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.missing.example',
-            httpClient: $this->createMock(HttpClient::class),
+            httpClient: $this->createMock(ClientInterface::class),
             httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
         );
     }
 
-    public function testLoadFromKubeConfigArrayWithWrongType()
+    public function testLoadFromKubeConfigArrayWithWrongType(): void
     {
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfig('', FileFormat::Array);
     }
 
-    public function testLoadFromKubeConfigJsonWithWrongType()
+    public function testLoadFromKubeConfigJsonWithWrongType(): void
     {
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfig([], FileFormat::Json);
     }
 
-    public function testLoadFromKubeConfigJsonWithMalFormedString()
+    public function testLoadFromKubeConfigJsonWithMalFormedString(): void
     {
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfig('aa', FileFormat::Json);
     }
 
-    public function testLoadFromKubeConfigYamlWithWrongType()
+    public function testLoadFromKubeConfigYamlWithWrongType(): void
     {
 
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfig([], FileFormat::Yaml);
     }
 
-    public function testLoadFromKubeConfigYamlWithMalFormedString()
+    public function testLoadFromKubeConfigYamlWithMalFormedString(): void
     {
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfig('@', FileFormat::Yaml);
     }
 
-    public function testSetTmpDir()
+    public function testSetTmpDir(): void
     {
         $this->expectException(InvalidArgumentException::class);
         Client::setTmpDir('foo/bar');

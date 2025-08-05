@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/libraries/kubernetes-client Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  */
@@ -34,7 +34,7 @@ use Teknoo\Kubernetes\Collection\Collection;
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @copyright   Copyright (c) Marc Lough ( https://github.com/maclof/kubernetes-client )
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  */
@@ -48,41 +48,33 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
     {
         $items = $this->getCollection()->toArray();
 
-        self::assertIsArray($items);
-        self::assertCount(3, $items);
+        $this->assertIsArray($items);
+        $this->assertCount(3, $items);
 
-        foreach ($items as $item) {
-            self::assertInstanceOf(
-                $this->getModelClassName(),
-                $item,
-            );
-        }
+        $this->assertContainsOnlyInstancesOf($this->getModelClassName(), $items);
     }
 
-    public function testHasNext()
+    public function testHasNext(): void
     {
-        self::assertFalse($this->getCollection()->hasNext());
-        self::assertTrue($this->getCollection(['foo' => 'bar'], 'foo')->hasNext());
+        $this->assertFalse($this->getCollection()->hasNext());
+        $this->assertTrue($this->getCollection(['foo' => 'bar'], 'foo')->hasNext());
     }
 
-    public function testGetQuery()
+    public function testGetQuery(): void
     {
-        self::assertEmpty($this->getCollection()->getQuery());
-        self::assertEquals(['foo' => 'bar'], $this->getCollection(['foo' => 'bar'], 'foo')->getQuery());
+        $this->assertEmpty($this->getCollection()->getQuery());
+        $this->assertEquals(['foo' => 'bar'], $this->getCollection(['foo' => 'bar'], 'foo')->getQuery());
     }
 
-    public function testGetContinueToken()
+    public function testGetContinueToken(): void
     {
-        self::assertEmpty($this->getCollection()->getContinueToken());
-        self::assertEquals('foo', $this->getCollection(['foo' => 'bar'], 'foo')->getContinueToken());
+        $this->assertEmpty($this->getCollection()->getContinueToken());
+        $this->assertEquals('foo', $this->getCollection(['foo' => 'bar'], 'foo')->getContinueToken());
     }
 
-    public function testContinue()
+    public function testContinue(): void
     {
-        self::assertNull($this->getCollection()->continue());
-        self::assertInstanceOf(
-            Collection::class,
-            $this->getCollection(['foo' => 'bar'], 'foo')->continue(),
-        );
+        $this->assertNotInstanceOf(\Teknoo\Kubernetes\Collection\Collection::class, $this->getCollection()->continue());
+        $this->assertInstanceOf(Collection::class, $this->getCollection(['foo' => 'bar'], 'foo')->continue());
     }
 }

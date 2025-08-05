@@ -234,7 +234,7 @@ sharing knowledge and skills.
 
 License
 -------
-Kubernetes Client is licensed under the MIT License - see the licenses folder for details.
+Kubernetes Client is licensed under the 3-Clause BSD License - see the licenses folder for details.
 
 Installation & Requirements
 ---------------------------

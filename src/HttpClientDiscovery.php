@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/libraries/kubernetes-client Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  */
@@ -26,7 +26,6 @@ declare(strict_types=1);
 
 namespace Teknoo\Kubernetes;
 
-use Http\Client\HttpClient;
 use Http\Client\Curl\Client as CurlClient;
 use Http\Adapter\Guzzle7\Client as Guzzle7Client;
 use Http\Client\Socket\Client as SocketClient;
@@ -47,15 +46,15 @@ use function is_string;
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 class HttpClientDiscovery extends ClassDiscovery
 {
     /**
-     * @var array<class-string<HttpClient>, class-string<InstantiatorInterface>>
+     * @var array<class-string<ClientInterface>, class-string<InstantiatorInterface>>
      */
-    private static $instantiatorsList = [
+    private static array $instantiatorsList = [
         CurlClient::class => Curl::class,
         Guzzle7Client::class => Guzzle7::class,
         SocketClient::class => Socket::class,
@@ -63,7 +62,7 @@ class HttpClientDiscovery extends ClassDiscovery
     ];
 
     /**
-     * @param class-string<HttpClient> $clientClass
+     * @param class-string<ClientInterface> $clientClass
      * @param class-string<InstantiatorInterface> $instantiatorClass
      */
     public static function registerInstantiator(string $clientClass, string $instantiatorClass): void
@@ -82,9 +81,9 @@ class HttpClientDiscovery extends ClassDiscovery
         ?string $clientCertificate = null,
         ?string $clientKey = null,
         ?int $timeout = null,
-    ): HttpClient|ClientInterface {
+    ): ClientInterface {
         try {
-            $clientClass = static::findOneByType(HttpClient::class);
+            $clientClass = static::findOneByType(ClientInterface::class);
             // @codeCoverageIgnoreStart
         } catch (DiscoveryFailedException $e) {
             throw new NotFoundException(
@@ -110,6 +109,7 @@ class HttpClientDiscovery extends ClassDiscovery
      * @param string|callable $class
      * @throws ClassInstantiationFailedException
      */
+    #[\Override]
     protected static function instantiateClass(
         $class,
         bool $verify = true,
@@ -117,10 +117,10 @@ class HttpClientDiscovery extends ClassDiscovery
         ?string $clientCertificate = null,
         ?string $clientKey = null,
         ?int $timeout = null,
-    ): HttpClient|ClientInterface {
+    ): ClientInterface {
         if (is_string($class) && isset(self::$instantiatorsList[$class])) {
             $instantiator = self::$instantiatorsList[$class];
-            return (new $instantiator())->build(
+            return new $instantiator()->build(
                 verify: $verify,
                 caCertificate: $caCertificate,
                 clientCertificate: $clientCertificate,

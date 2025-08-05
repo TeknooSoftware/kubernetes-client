@@ -5,7 +5,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -17,7 +17,7 @@
  *
  * @link        https://teknoo.software/libraries/kubernetes-client Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  */
@@ -28,6 +28,7 @@ namespace Teknoo\Kubernetes;
 
 use ArrayAccess;
 use Countable;
+use InvalidArgumentException;
 use Teknoo\Kubernetes\Repository\CertificateRepository;
 use Teknoo\Kubernetes\Repository\ClusterRoleBindingRepository;
 use Teknoo\Kubernetes\Repository\ClusterRoleRepository;
@@ -60,11 +61,14 @@ use Teknoo\Kubernetes\Repository\ServiceRepository;
 use Teknoo\Kubernetes\Repository\StatefulSetRepository;
 use Teknoo\Kubernetes\Repository\SubnamespaceAnchorRepository;
 
+use function is_a;
+use function is_string;
+
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @copyright   Copyright (c) Marc Lough ( https://github.com/maclof/kubernetes-client )
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  *
@@ -76,54 +80,54 @@ class RepositoryRegistry implements ArrayAccess, Countable
      * @var array<string, class-string<Repository>>
      */
     private array $map = [
-        'configMaps'             => ConfigMapRepository::class,
-        'endpoints'              => EndpointRepository::class,
-        'events'                 => EventRepository::class,
-        'limitRanges'            => LimitRangeRepository::class,
-        'namespaces'             => NamespaceRepository::class,
-        'nodes'                  => NodeRepository::class,
-        'persistentVolume'       => PersistentVolumeRepository::class,
+        'configMaps' => ConfigMapRepository::class,
+        'endpoints' => EndpointRepository::class,
+        'events' => EventRepository::class,
+        'limitRanges' => LimitRangeRepository::class,
+        'namespaces' => NamespaceRepository::class,
+        'nodes' => NodeRepository::class,
+        'persistentVolume' => PersistentVolumeRepository::class,
         'persistentVolumeClaims' => PersistentVolumeClaimRepository::class,
-        'pods'                   => PodRepository::class,
-        'replicaSets'            => ReplicaSetRepository::class,
+        'pods' => PodRepository::class,
+        'replicaSets' => ReplicaSetRepository::class,
         'replicationControllers' => ReplicationControllerRepository::class,
-        'resourceQuotas'         => ResourceQuotaRepository::class,
-        'secrets'                => SecretRepository::class,
-        'serviceAccounts'        => ServiceAccountRepository::class,
-        'services'               => ServiceRepository::class,
+        'resourceQuotas' => ResourceQuotaRepository::class,
+        'secrets' => SecretRepository::class,
+        'serviceAccounts' => ServiceAccountRepository::class,
+        'services' => ServiceRepository::class,
 
         // batch/v1
-        'jobs'                   => JobRepository::class,
+        'jobs' => JobRepository::class,
 
         // batch/v2
-        'cronJobs'               => CronJobRepository::class,
+        'cronJobs' => CronJobRepository::class,
 
         // apps/v1
-        'deployments'            => DeploymentRepository::class,
-        'statefulsets'           => StatefulSetRepository::class,
+        'deployments' => DeploymentRepository::class,
+        'statefulsets' => StatefulSetRepository::class,
 
         // extensions/v1
-        'daemonSets'             => DaemonSetRepository::class,
-        'ingresses'              => IngressRepository::class,
+        'daemonSets' => DaemonSetRepository::class,
+        'ingresses' => IngressRepository::class,
 
         // autoscaling/v2
-        'horizontalPodAutoscalers'  => HorizontalPodAutoscalerRepository::class,
+        'horizontalPodAutoscalers' => HorizontalPodAutoscalerRepository::class,
 
         // networking.k8s.io/v1
-        'networkPolicies'        => NetworkPolicyRepository::class,
+        'networkPolicies' => NetworkPolicyRepository::class,
 
         // certmanager.k8s.io/v1
-        'certificates'           => CertificateRepository::class,
-        'issuers'                => IssuerRepository::class,
+        'certificates' => CertificateRepository::class,
+        'issuers' => IssuerRepository::class,
 
         //rbac.authorization.k8s.io/v1
-        'roles'                  => RoleRepository::class,
-        'roleBindings'              => RoleBindingRepository::class,
-        'clusterRoles'              => ClusterRoleRepository::class,
-        'clusterRoleBindings'      => ClusterRoleBindingRepository::class,
+        'roles' => RoleRepository::class,
+        'roleBindings' => RoleBindingRepository::class,
+        'clusterRoles' => ClusterRoleRepository::class,
+        'clusterRoleBindings' => ClusterRoleBindingRepository::class,
 
         //hnc.x-k8s.io/v1
-        'subnamespacesAnchors'   => SubnamespaceAnchorRepository::class,
+        'subnamespacesAnchors' => SubnamespaceAnchorRepository::class,
     ];
 
     public function offsetExists(mixed $offset): bool
@@ -138,6 +142,14 @@ class RepositoryRegistry implements ArrayAccess, Countable
 
     public function offsetSet(mixed $offset, mixed $value): void
     {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException('$value must be a valid Repository Class');
+        }
+
+        if (!is_a($value, Repository::class, true)) {
+            throw new InvalidArgumentException("$value is not a valid Repository class");
+        }
+
         $this->map[$offset] = $value;
     }
 

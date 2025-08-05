@@ -4,7 +4,7 @@
  *
  * LICENSE
  *
- * This source file is subject to the MIT license
+ * This source file is subject to the 3-Clause BSD license
  * it is available in LICENSE file at the root of this package
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
@@ -15,7 +15,7 @@
  *
  * @link        https://teknoo.software/libraries/kubernetes-client Project website
  *
- * @license     https://teknoo.software/license/mit         MIT License
+ * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  */
 
@@ -24,6 +24,9 @@ declare(strict_types=1);
 namespace Teknoo\Tests\Kubernetes\Behat;
 
 use Behat\Behat\Context\Context;
+use Behat\Step\Given;
+use Behat\Step\Then;
+use Behat\Step\When;
 use Http\Client\Common\HttpMethodsClient;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
@@ -40,6 +43,7 @@ use Teknoo\Kubernetes\Model\Model;
 use Teknoo\Kubernetes\Model\Pod;
 use Throwable;
 
+use function array_shift;
 use function json_encode;
 
 /**
@@ -84,10 +88,8 @@ class FeatureContext implements Context
         $this->result = null;
     }
 
-    /**
-     * @Given a Kubernetes cluster
-     */
-    public function aKubernetesCluster()
+    #[Given('a Kubernetes cluster')]
+    public function aKubernetesCluster(): void
     {
         $this->psrClient = new class implements ClientInterface {
             private ?ResponseInterface $response = null;
@@ -112,9 +114,7 @@ class FeatureContext implements Context
             public function sendRequest(RequestInterface $request): ResponseInterface
             {
                 if (!empty($this->responses)) {
-                    $response = \array_shift($this->responses);
-
-                    return $response;
+                    return array_shift($this->responses);
                 }
 
                 Assert::assertNotNull($this->response);
@@ -129,35 +129,27 @@ class FeatureContext implements Context
         );
     }
 
-    /**
-     * @Given a service account identified by a token :value
-     */
-    public function aServiceAccountIdentifiedByAToken(string $value)
+    #[Given('a service account identified by a token :value')]
+    public function aServiceAccountIdentifiedByAToken(string $value): void
     {
         $this->token = $value;
     }
 
-    /**
-     * @Given an account identified by a certificate client
-     */
-    public function anAccountIdentifiedByAclientCert()
+    #[Given('an account identified by a certificate client')]
+    public function anAccountIdentifiedByAclientCert(): void
     {
         $this->clientCert = 'fooo';
         $this->clientKey = 'baaar';
     }
 
-    /**
-     * @Given a namespace :value
-     */
-    public function aNamespace(string $value)
+    #[Given('a namespace :value')]
+    public function aNamespace(string $value): void
     {
         $this->namespace = $value;
     }
 
-    /**
-     * @Given an instance of this client
-     */
-    public function anInstanceOfThisClient()
+    #[Given('an instance of this client')]
+    public function anInstanceOfThisClient(): void
     {
         $this->kubeClient = new Client(
             options: [
@@ -171,10 +163,8 @@ class FeatureContext implements Context
         );
     }
 
-    /**
-     * @Given a pod model :name
-     */
-    public function aPodModel(string $name)
+    #[Given('a pod model :name')]
+    public function aPodModel(string $name): void
     {
         $this->model = new Pod(
             [
@@ -190,18 +180,14 @@ class FeatureContext implements Context
         $this->kubeCollections = 'pods';
     }
 
-    /**
-     * @Then without error
-     */
-    public function withoutError()
+    #[Then('without error')]
+    public function withoutError(): void
     {
         Assert::assertNull($this->error);
     }
 
-    /**
-     * @Given the resource already exists in the cluster
-     */
-    public function theResourceAlreadyExistsInTheCluster()
+    #[Given('the resource already exists in the cluster')]
+    public function theResourceAlreadyExistsInTheCluster(): void
     {
         $this->psrClient->setFirstResponse(
             new Response(
@@ -217,11 +203,9 @@ class FeatureContext implements Context
         );
     }
 
-    /**
-     * @Given the resource does not already exist in the cluster
-     * @Given the cluster has no registered pod
-     */
-    public function theResourceDoesNotAlreadyExistInTheCluster()
+    #[Given('the resource does not already exist in the cluster')]
+    #[Given('the cluster has no registered pod')]
+    public function theResourceDoesNotAlreadyExistInTheCluster(): void
     {
         $this->kubeCollections = 'pods';
         $this->psrClient->setFirstResponse(
@@ -238,10 +222,8 @@ class FeatureContext implements Context
         );
     }
 
-    /**
-     * @Given the model is valid
-     */
-    public function theModelIsValid()
+    #[Given('the model is valid')]
+    public function theModelIsValid(): void
     {
         $this->psrClient->setResponse(
             new Response(
@@ -255,10 +237,8 @@ class FeatureContext implements Context
         );
     }
 
-    /**
-     * @Given the model is mal formed
-     */
-    public function theModelIsMalFormed()
+    #[Given('the model is mal formed')]
+    public function theModelIsMalFormed(): void
     {
         $this->psrClient->setResponse(
             new Response(
@@ -274,10 +254,8 @@ class FeatureContext implements Context
         );
     }
 
-    /**
-     * @Given the cluster has several registered pods
-     */
-    public function theClusterHasSeveralRegisteredPods()
+    #[Given('the cluster has several registered pods')]
+    public function theClusterHasSeveralRegisteredPods(): void
     {
         $this->kubeCollections = 'pods';
         $this->psrClient->setFirstResponse(
@@ -319,10 +297,8 @@ class FeatureContext implements Context
         );
     }
 
-    /**
-     * @Given the cluster has several registered pods will be fetched in limited
-     */
-    public function theClusterHasSeveralRegisteredPodsWillBeFetchedInLimited()
+    #[Given('the cluster has several registered pods will be fetched in limited')]
+    public function theClusterHasSeveralRegisteredPodsWillBeFetchedInLimited(): void
     {
         $this->kubeCollections = 'pods';
         $this->psrClient->setResponses([
@@ -394,10 +370,8 @@ class FeatureContext implements Context
         ]);
     }
 
-    /**
-     * @When the user create the resource on the server
-     */
-    public function theUserCreateTheResourceOnTheServer()
+    #[When('the user create the resource on the server')]
+    public function theUserCreateTheResourceOnTheServer(): void
     {
         Assert::assertNotNull($this->kubeCollections);
 
@@ -405,16 +379,14 @@ class FeatureContext implements Context
             $this->result = $this->kubeClient
                 ->{$this->kubeCollections}()
                 ->create($this->model);
-        } catch (Throwable $error) {
-            $this->error = $error;
+        } catch (Throwable $throwable) {
+            $this->error = $throwable;
         }
     }
 
 
-    /**
-     * @When the user apply the resource on the server
-     */
-    public function theUserApplyTheResourceOnTheServer()
+    #[When('the user apply the resource on the server')]
+    public function theUserApplyTheResourceOnTheServer(): void
     {
         Assert::assertNotNull($this->kubeCollections);
 
@@ -422,15 +394,13 @@ class FeatureContext implements Context
             $this->result = $this->kubeClient
                 ->{$this->kubeCollections}()
                 ->apply($this->model);
-        } catch (Throwable $error) {
-            $this->error = $error;
+        } catch (Throwable $throwable) {
+            $this->error = $throwable;
         }
     }
 
-    /**
-     * @When the user delete the resource on the server
-     */
-    public function theUserDeleteTheResourceOnTheServer()
+    #[When('the user delete the resource on the server')]
+    public function theUserDeleteTheResourceOnTheServer(): void
     {
         Assert::assertNotNull($this->kubeCollections);
 
@@ -438,15 +408,13 @@ class FeatureContext implements Context
             $this->result = $this->kubeClient
                 ->{$this->kubeCollections}()
                 ->delete($this->model);
-        } catch (Throwable $error) {
-            $this->error = $error;
+        } catch (Throwable $throwable) {
+            $this->error = $throwable;
         }
     }
 
-    /**
-     * @When the user recursive delete the resource on the server
-     */
-    public function theUserRecursiveDeleteTheResourceOnTheServer()
+    #[When('the user recursive delete the resource on the server')]
+    public function theUserRecursiveDeleteTheResourceOnTheServer(): void
     {
         Assert::assertNotNull($this->kubeCollections);
 
@@ -457,15 +425,13 @@ class FeatureContext implements Context
                     $this->model,
                     new DeleteOptions(['propagationPolicy' => 'Background'])
                 );
-        } catch (Throwable $error) {
-            $this->error = $error;
+        } catch (Throwable $throwable) {
+            $this->error = $throwable;
         }
     }
 
-    /**
-     * @When the user patch the resource on the server
-     */
-    public function theUserPatchTheResourceOnTheServer()
+    #[When('the user patch the resource on the server')]
+    public function theUserPatchTheResourceOnTheServer(): void
     {
         Assert::assertNotNull($this->kubeCollections);
 
@@ -473,15 +439,13 @@ class FeatureContext implements Context
             $this->result = $this->kubeClient
                 ->{$this->kubeCollections}()
                 ->patch($this->model);
-        } catch (Throwable $error) {
-            $this->error = $error;
+        } catch (Throwable $throwable) {
+            $this->error = $throwable;
         }
     }
 
-    /**
-     * @When the user update the resource on the server
-     */
-    public function theUserUpdateTheResourceOnTheServer()
+    #[When('the user update the resource on the server')]
+    public function theUserUpdateTheResourceOnTheServer(): void
     {
         Assert::assertNotNull($this->kubeCollections);
 
@@ -489,23 +453,19 @@ class FeatureContext implements Context
             $this->result = $this->kubeClient
                 ->{$this->kubeCollections}()
                 ->update($this->model);
-        } catch (Throwable $error) {
-            $this->error = $error;
+        } catch (Throwable $throwable) {
+            $this->error = $throwable;
         }
     }
 
-    /**
-     * @Then the server must return an array as response
-     */
-    public function theServerMustReturnAnArrayAsResponse()
+    #[Then('the server must return an array as response')]
+    public function theServerMustReturnAnArrayAsResponse(): void
     {
         Assert::assertIsArray($this->result);
     }
 
-    /**
-     * @Then the server must return an error :code
-     */
-    public function theServerMustReturnAnError(int $code)
+    #[Then('the server must return an error :code')]
+    public function theServerMustReturnAnError(int $code): void
     {
         Assert::assertInstanceOf(
             ApiServerException::class,
@@ -518,10 +478,8 @@ class FeatureContext implements Context
         );
     }
 
-    /**
-     * @When the user fetch the first resource on the server
-     */
-    public function theUserFetchTheFirstResourceOnTheServer()
+    #[When('the user fetch the first resource on the server')]
+    public function theUserFetchTheFirstResourceOnTheServer(): void
     {
         Assert::assertNotNull($this->kubeCollections);
 
@@ -529,15 +487,13 @@ class FeatureContext implements Context
             $this->result = $this->kubeClient
                 ->{$this->kubeCollections}()
                 ->first();
-        } catch (Throwable $error) {
-            $this->error = $error;
+        } catch (Throwable $throwable) {
+            $this->error = $throwable;
         }
     }
 
-    /**
-     * @When the user fetch a collection on the server
-     */
-    public function theUserFetchACollectionOnTheServer()
+    #[When('the user fetch a collection on the server')]
+    public function theUserFetchACollectionOnTheServer(): void
     {
         Assert::assertNotNull($this->kubeCollections);
 
@@ -545,15 +501,13 @@ class FeatureContext implements Context
             $this->result = $this->kubeClient
                 ->{$this->kubeCollections}()
                 ->find();
-        } catch (Throwable $error) {
-            $this->error = $error;
+        } catch (Throwable $throwable) {
+            $this->error = $throwable;
         }
     }
 
-    /**
-     * @When the user fetch a collection on the server with label selector
-     */
-    public function theUserFetchACollectionOnTheServerWithLabelSelector()
+    #[When('the user fetch a collection on the server with label selector')]
+    public function theUserFetchACollectionOnTheServerWithLabelSelector(): void
     {
         Assert::assertNotNull($this->kubeCollections);
 
@@ -562,15 +516,13 @@ class FeatureContext implements Context
                 ->{$this->kubeCollections}()
                 ->setLabelSelector(['foo' => 'bar'])
                 ->find();
-        } catch (Throwable $error) {
-            $this->error = $error;
+        } catch (Throwable $throwable) {
+            $this->error = $throwable;
         }
     }
 
-    /**
-     * @When the user fetch a limited collection on the server
-     */
-    public function theUserFetchALimitedCollectionOnTheServer()
+    #[When('the user fetch a limited collection on the server')]
+    public function theUserFetchALimitedCollectionOnTheServer(): void
     {
         Assert::assertNotNull($this->kubeCollections);
 
@@ -578,15 +530,13 @@ class FeatureContext implements Context
             $this->result = $this->kubeClient
                 ->{$this->kubeCollections}()
                 ->find(limit: 1);
-        } catch (Throwable $error) {
-            $this->error = $error;
+        } catch (Throwable $throwable) {
+            $this->error = $throwable;
         }
     }
 
-    /**
-     * @Then the server must return a limited collection of pods
-     */
-    public function theServerMustReturnALimitedCollectionOfPods()
+    #[Then('the server must return a limited collection of pods')]
+    public function theServerMustReturnALimitedCollectionOfPods(): void
     {
         Assert::assertInstanceOf(
             Collection::class,
@@ -597,7 +547,7 @@ class FeatureContext implements Context
 
         $count = 0;
         foreach ($this->result as $model) {
-            $count++;
+            ++$count;
             Assert::assertInstanceOf(
                 Pod::class,
                 $model,
@@ -607,10 +557,8 @@ class FeatureContext implements Context
         Assert::assertEquals(1, $count);
     }
 
-    /**
-     * @When the user fetch the next collection on the server
-     */
-    public function theUserFetchTheNextCollectionOnTheServer()
+    #[When('the user fetch the next collection on the server')]
+    public function theUserFetchTheNextCollectionOnTheServer(): void
     {
         Assert::assertInstanceOf(
             Collection::class,
@@ -619,15 +567,13 @@ class FeatureContext implements Context
 
         try {
             $this->result = $this->result->continue();
-        } catch (Throwable $error) {
-            $this->error = $error;
+        } catch (Throwable $throwable) {
+            $this->error = $throwable;
         }
     }
 
-    /**
-     * @When the server must return a final collection of pods
-     */
-    public function theServerMustReturnAFinalCollectionOfPods()
+    #[When('the server must return a final collection of pods')]
+    public function theServerMustReturnAFinalCollectionOfPods(): void
     {
         Assert::assertInstanceOf(
             Collection::class,
@@ -638,7 +584,7 @@ class FeatureContext implements Context
 
         $count = 0;
         foreach ($this->result as $model) {
-            $count++;
+            ++$count;
             Assert::assertInstanceOf(
                 Pod::class,
                 $model,
@@ -648,10 +594,8 @@ class FeatureContext implements Context
         Assert::assertEquals(1, $count);
     }
 
-    /**
-     * @Then the server must return a collection of pods
-     */
-    public function theServerMustReturnACollectionOfPods()
+    #[Then('the server must return a collection of pods')]
+    public function theServerMustReturnACollectionOfPods(): void
     {
         Assert::assertInstanceOf(
             Collection::class,
@@ -660,18 +604,11 @@ class FeatureContext implements Context
 
         Assert::assertNotCount(0, $this->result);
 
-        foreach ($this->result as $model) {
-            Assert::assertInstanceOf(
-                Pod::class,
-                $model,
-            );
-        }
+        Assert::assertContainsOnlyInstancesOf(Pod::class, $this->result);
     }
 
-    /**
-     * @Then the server must return a pod model
-     */
-    public function theServerMustReturnAPodModel()
+    #[Then('the server must return a pod model')]
+    public function theServerMustReturnAPodModel(): void
     {
         Assert::assertInstanceOf(
             Pod::class,
@@ -679,10 +616,8 @@ class FeatureContext implements Context
         );
     }
 
-    /**
-     * @Then the server must return an empty collection
-     */
-    public function theServerMustReturnAnEmptyCollection()
+    #[Then('the server must return an empty collection')]
+    public function theServerMustReturnAnEmptyCollection(): void
     {
         Assert::assertInstanceOf(
             Collection::class,
@@ -692,10 +627,8 @@ class FeatureContext implements Context
         Assert::assertCount(0, $this->result);
     }
 
-    /**
-     * @Then the server must return a null response
-     */
-    public function theServerMustReturnANullResponse()
+    #[Then('the server must return a null response')]
+    public function theServerMustReturnANullResponse(): void
     {
         Assert::assertNull($this->result);
     }

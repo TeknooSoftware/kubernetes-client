@@ -1,27 +1,26 @@
 parameters:
-    reportUnmatchedIgnoredErrors: false
     ignoreErrors:
-        -
-            message: '#mixed#'
-            path: src/Client.php
         -
             message: '#does not specify its types: T#'
             path: src/Client.php
         -
-            message: '#getTempFilePath#'
+            message: '#Cannot cast mixed to string#'
             path: src/Client.php
         -
             message: '#does not accept mixed#'
             path: src/Model/Model.php
         -
+            message: '#Parameter \$attributes of clas#'
+            path: src/Model/Attribute/Explorer.php
+        -
             message: '#does not specify its types: T#'
+            path: src/RepositoryRegistry.php
+        -
+            message: '#Call to function#'
             path: src/RepositoryRegistry.php
         -
             message: '#instantiateClass\(\) should return#'
             path: src/HttpClientDiscovery.php
         -
             message: '#instantiateClass\(\) expects#'
-            path: src/HttpClientDiscovery.php
-        -
-            message: '#does not accept default value of type array<string, string>#'
             path: src/HttpClientDiscovery.php
