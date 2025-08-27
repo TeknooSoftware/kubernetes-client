@@ -81,9 +81,10 @@ class HttpClientDiscovery extends ClassDiscovery
         ?string $clientCertificate = null,
         ?string $clientKey = null,
         ?int $timeout = null,
+        ?string $clientClass = null,
     ): ClientInterface {
         try {
-            $clientClass = static::findOneByType(ClientInterface::class);
+            $clientClass ??= static::findOneByType(ClientInterface::class);
             // @codeCoverageIgnoreStart
         } catch (DiscoveryFailedException $e) {
             throw new NotFoundException(
@@ -129,8 +130,6 @@ class HttpClientDiscovery extends ClassDiscovery
             );
         }
 
-        // @codeCoverageIgnoreStart
         return parent::instantiateClass($class);
-        // @codeCoverageIgnoreEnd
     }
 }

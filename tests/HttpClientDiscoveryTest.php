@@ -26,6 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes;
 
+use Http\Adapter\Guzzle7\Client as Guzzle7Client;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface;
@@ -45,5 +46,10 @@ class HttpClientDiscoveryTest extends TestCase
         HttpClientDiscovery::registerInstantiator('foo', 'bar');
 
         $this->assertInstanceOf(ClientInterface::class, HttpClientDiscovery::find());
+    }
+
+    public function testFindSpecificClass(): void
+    {
+        $this->assertInstanceOf(ClientInterface::class, HttpClientDiscovery::find(clientClass: Guzzle7Client::class));
     }
 }
