@@ -42,6 +42,7 @@ use Teknoo\Kubernetes\HttpClient\Instantiator\Symfony;
 use Teknoo\Kubernetes\HttpClient\InstantiatorInterface;
 
 use function is_string;
+use function is_array;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -119,8 +120,13 @@ class HttpClientDiscovery extends ClassDiscovery
         ?string $clientKey = null,
         ?int $timeout = null,
     ): ClientInterface {
-        if (is_string($class) && isset(self::$instantiatorsList[$class])) {
-            $instantiator = self::$instantiatorsList[$class];
+        $className = $class;
+        if (is_array($className) && is_string($className[0])) {
+            $className = $className[0];
+        }
+
+        if (is_string($className) && isset(self::$instantiatorsList[$className])) {
+            $instantiator = self::$instantiatorsList[$className];
             return new $instantiator()->build(
                 verify: $verify,
                 caCertificate: $caCertificate,
