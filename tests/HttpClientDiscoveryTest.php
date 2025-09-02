@@ -27,9 +27,13 @@ declare(strict_types=1);
 namespace Teknoo\Tests\Kubernetes;
 
 use Http\Adapter\Guzzle7\Client as Guzzle7Client;
+use Http\Client\Curl\Client;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface;
+use ReflectionClass;
+use stdClass;
+use Teknoo\Kubernetes\HttpClient\Instantiator\Curl;
 use Teknoo\Kubernetes\HttpClientDiscovery;
 
 /**
@@ -43,13 +47,40 @@ class HttpClientDiscoveryTest extends TestCase
 {
     public function testFind(): void
     {
-        HttpClientDiscovery::registerInstantiator('foo', 'bar');
+        $this->assertInstanceOf(
+            ClientInterface::class,
+            HttpClientDiscovery::find()
+        );
+    }
+    public function testFindWithInstatiator(): void
+    {
+        HttpClientDiscovery::registerInstantiator(stdClass::class, Curl::class);
 
-        $this->assertInstanceOf(ClientInterface::class, HttpClientDiscovery::find());
+        $this->assertInstanceOf(
+            Client::class,
+            HttpClientDiscovery::find(clientClass: \stdClass::class)
+        );
     }
 
-    public function testFindSpecificClass(): void
+    public function testFindSpecificClientClass(): void
     {
-        $this->assertInstanceOf(ClientInterface::class, HttpClientDiscovery::find(clientClass: Guzzle7Client::class));
+        $this->assertInstanceOf(
+            ClientInterface::class,
+            HttpClientDiscovery::find(clientClass: Guzzle7Client::class)
+        );
+    }
+
+    public function testFindWithNoInstantiators(): void
+    {
+        // Use reflection to clear the instantiators list
+        $refClass = new ReflectionClass(HttpClientDiscovery::class);
+        $refClass->setStaticPropertyValue('instantiatorsList', []);
+
+        $client = HttpClientDiscovery::find();
+
+        $this->assertInstanceOf(
+            ClientInterface::class,
+            $client
+        );
     }
 }

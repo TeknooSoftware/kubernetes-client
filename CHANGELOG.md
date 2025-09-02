@@ -1,5 +1,10 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [2.0.1] - 2025-09-02
+### Stable Release
+- Fix issue with HttpClientDiscovery to return instances managed by a referenced instantiator instead
+  call the `HttpClientDiscovery::findOneByType` method.
+
 ## [2.0.0] - 2025-08-05
 ### Stable Release
 - Drop support of PHP 8.3

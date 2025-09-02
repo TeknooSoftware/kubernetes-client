@@ -26,6 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Kubernetes;
 
+use Http\Client\Common\HttpMethodsClient;
 use Http\Client\Curl\Client as CurlClient;
 use Http\Adapter\Guzzle7\Client as Guzzle7Client;
 use Http\Client\Socket\Client as SocketClient;
@@ -33,6 +34,7 @@ use Http\Discovery\ClassDiscovery;
 use Http\Discovery\Exception\ClassInstantiationFailedException;
 use Http\Discovery\Exception\DiscoveryFailedException;
 use Http\Discovery\Exception\NotFoundException;
+use Override;
 use Psr\Http\Client\ClientInterface;
 use Symfony\Component\HttpClient\HttplugClient as SymfonyHttplug;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Curl;
@@ -41,6 +43,8 @@ use Teknoo\Kubernetes\HttpClient\Instantiator\Socket;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Symfony;
 use Teknoo\Kubernetes\HttpClient\InstantiatorInterface;
 
+use function array_keys;
+use function class_exists;
 use function is_string;
 use function is_array;
 
@@ -84,17 +88,29 @@ class HttpClientDiscovery extends ClassDiscovery
         ?int $timeout = null,
         ?string $clientClass = null,
     ): ClientInterface {
-        try {
-            $clientClass ??= static::findOneByType(ClientInterface::class);
-            // @codeCoverageIgnoreStart
-        } catch (DiscoveryFailedException $e) {
-            throw new NotFoundException(
-                'No HTTPlug clients found. Make sure to install a package providing "php-http/client-implementation". '
-                    . 'Example: "php-http/guzzle6-adapter".',
-                0,
-                $e
-            );
-            // @codeCoverageIgnoreEnd
+        if (null === $clientClass) {
+            foreach (array_keys(self::$instantiatorsList) as $class) {
+                if (class_exists($class)) {
+                    $clientClass = $class;
+
+                    break;
+                }
+            }
+        }
+
+        if (null === $clientClass) {
+            try {
+                $clientClass = static::findOneByType(ClientInterface::class);
+                // @codeCoverageIgnoreStart
+            } catch (DiscoveryFailedException $e) {
+                throw new NotFoundException(
+                    'No HTTPlug clients found. Make sure to install a package providing '
+                    . '"php-http/client-implementation". Example: "php-http/guzzle7-adapter".',
+                    0,
+                    $e
+                );
+                // @codeCoverageIgnoreEnd
+            }
         }
 
         return static::instantiateClass(
@@ -111,7 +127,7 @@ class HttpClientDiscovery extends ClassDiscovery
      * @param string|callable $class
      * @throws ClassInstantiationFailedException
      */
-    #[\Override]
+    #[Override]
     protected static function instantiateClass(
         $class,
         bool $verify = true,
