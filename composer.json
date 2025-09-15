@@ -43,7 +43,7 @@
 	"require-dev": {
 		"roave/security-advisories": "dev-latest",
 		"phpunit/phpunit": "^12.3",
-		"squizlabs/php_codesniffer": "^3.13.2",
+		"squizlabs/php_codesniffer": "^4",
 		"symfony/console": "^6.4||^7.3",
 		"symfony/options-resolver": "^6.4||^7.3",
 		"phpstan/phpstan": "^2",
