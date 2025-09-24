@@ -1,4 +1,7 @@
 parameters:
+    level: max
+    paths:
+        - src/
     ignoreErrors:
         -
             message: '#does not specify its types: T#'
