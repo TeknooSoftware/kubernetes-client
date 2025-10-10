@@ -58,8 +58,7 @@
 		"guzzlehttp/promises": "^2.2",
 		"guzzlehttp/psr7": "^2.7.1",
 		"symfony/http-client": "^6.4.24||^7.3",
-		"nyholm/psr7": "^1.8.2",
-		"rector/rector": "*"
+		"nyholm/psr7": "^1.8.2"
 	},
 	"autoload": {
 		"psr-4": {
