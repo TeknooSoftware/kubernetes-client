@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [2.0.2] - 2025-12-02
+### Stable Release
+- Update dev libraries
+
 ## [2.0.1] - 2025-09-02
 ### Stable Release
 - Fix issue with HttpClientDiscovery to return instances managed by a referenced instantiator instead
