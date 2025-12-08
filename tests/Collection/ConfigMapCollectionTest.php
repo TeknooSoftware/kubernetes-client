@@ -52,7 +52,7 @@ class ConfigMapCollectionTest extends AbstractBaseTestCase
                 new ConfigMap(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

@@ -52,7 +52,7 @@ class DeploymentCollectionTest extends AbstractBaseTestCase
                 new Deployment(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

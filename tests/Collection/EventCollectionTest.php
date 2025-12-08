@@ -52,7 +52,7 @@ class EventCollectionTest extends AbstractBaseTestCase
                 new Event(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

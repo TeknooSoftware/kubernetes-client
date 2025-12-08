@@ -52,7 +52,7 @@ class EndpointCollectionTest extends AbstractBaseTestCase
                 new Endpoint(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

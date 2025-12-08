@@ -52,7 +52,7 @@ class NamespaceCollectionTest extends AbstractBaseTestCase
                 new NamespaceModel(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

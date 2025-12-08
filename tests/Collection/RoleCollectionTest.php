@@ -52,7 +52,7 @@ class RoleCollectionTest extends AbstractBaseTestCase
                 new Role(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

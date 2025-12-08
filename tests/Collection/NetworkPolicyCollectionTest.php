@@ -52,7 +52,7 @@ class NetworkPolicyCollectionTest extends AbstractBaseTestCase
                 new NetworkPolicy(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

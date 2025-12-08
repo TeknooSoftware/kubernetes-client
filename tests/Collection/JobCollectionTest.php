@@ -52,7 +52,7 @@ class JobCollectionTest extends AbstractBaseTestCase
                 new Job(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

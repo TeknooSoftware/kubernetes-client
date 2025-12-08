@@ -52,7 +52,7 @@ class ReplicaSetCollectionTest extends AbstractBaseTestCase
                 new ReplicaSet(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

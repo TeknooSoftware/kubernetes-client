@@ -52,7 +52,7 @@ class RoleBindingCollectionTest extends AbstractBaseTestCase
                 new RoleBinding(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

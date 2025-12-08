@@ -28,7 +28,7 @@ namespace Teknoo\Tests\Kubernetes\Repository;
 
 use LogicException;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
@@ -49,10 +49,10 @@ class ErrorsInRepositoriesTest extends PHPUnitTestCase
 {
     private ?Client $client = null;
 
-    protected function getClientMock(bool $returnEmpty = false, bool $missingItems = false,): MockObject&Client
+    protected function getClientMock(bool $returnEmpty = false, bool $missingItems = false,): Stub&Client
     {
         if (null === $this->client) {
-            $this->client = $this->createMock(Client::class);
+            $this->client = $this->createStub(Client::class);
 
             $result = [
                 'items' => [
@@ -72,8 +72,8 @@ class ErrorsInRepositoriesTest extends PHPUnitTestCase
                 ->method('sendRequest')
                 ->willReturn($result);
 
-            $stream = $this->createMock(StreamInterface::class);
-            $response = $this->createMock(ResponseInterface::class);
+            $stream = $this->createStub(StreamInterface::class);
+            $response = $this->createStub(ResponseInterface::class);
 
             $response
                 ->method('getBody')

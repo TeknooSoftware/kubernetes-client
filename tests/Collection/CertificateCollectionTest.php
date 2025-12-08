@@ -52,7 +52,7 @@ class CertificateCollectionTest extends AbstractBaseTestCase
                 new Certificate(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

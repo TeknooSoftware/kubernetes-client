@@ -52,7 +52,7 @@ class PodCollectionTest extends AbstractBaseTestCase
                 new Pod(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

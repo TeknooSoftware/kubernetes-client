@@ -52,7 +52,7 @@ class NodeCollectionTest extends AbstractBaseTestCase
                 new Node(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

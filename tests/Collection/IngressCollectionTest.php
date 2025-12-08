@@ -52,7 +52,7 @@ class IngressCollectionTest extends AbstractBaseTestCase
                 new Ingress(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

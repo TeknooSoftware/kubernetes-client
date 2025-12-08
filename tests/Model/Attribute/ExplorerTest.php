@@ -26,7 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes\Model\Attribute;
 
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use Teknoo\Kubernetes\Model\Attribute\Explorer;
 use Teknoo\Kubernetes\Model\Model;
@@ -39,7 +39,7 @@ use Teknoo\Kubernetes\Model\Model;
  */
 class ExplorerTest extends PHPUnitTestCase
 {
-    private Model|MockObject|null $model = null;
+    private Model|Stub|null $model = null;
 
     private array $attributes = [];
 
@@ -62,7 +62,7 @@ class ExplorerTest extends PHPUnitTestCase
 
     private function createModel(): Model
     {
-        return $this->model ??= $this->createMock(Model::class);
+        return $this->model ??= $this->createStub(Model::class);
     }
 
     private function createExplorer(): Explorer

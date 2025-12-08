@@ -52,7 +52,7 @@ class StatefulSetCollectionTest extends AbstractBaseTestCase
                 new StatefulSet(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

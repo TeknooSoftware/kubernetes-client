@@ -52,7 +52,7 @@ class SecretCollectionTest extends AbstractBaseTestCase
                 new Secret(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

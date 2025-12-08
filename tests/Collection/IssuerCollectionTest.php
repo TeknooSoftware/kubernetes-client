@@ -52,7 +52,7 @@ class IssuerCollectionTest extends AbstractBaseTestCase
                 new Issuer(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

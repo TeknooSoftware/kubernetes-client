@@ -52,7 +52,7 @@ class ServiceAccountCollectionTest extends AbstractBaseTestCase
                 new ServiceAccount(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

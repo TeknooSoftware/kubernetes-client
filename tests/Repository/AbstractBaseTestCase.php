@@ -26,9 +26,8 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes\Repository;
 
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
-
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
@@ -57,10 +56,10 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
 
     abstract protected function getModel(): Model;
 
-    protected function getClientMock(bool $returnEmpty = false, bool $missingItems = false,): MockObject&Client
+    protected function getClientMock(bool $returnEmpty = false, bool $missingItems = false,): Stub&Client
     {
         if (null === $this->client) {
-            $this->client = $this->createMock(Client::class);
+            $this->client = $this->createStub(Client::class);
 
             $result = [
                 'items' => [
@@ -80,8 +79,8 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
                 ->method('sendRequest')
                 ->willReturn($result);
 
-            $stream = $this->createMock(StreamInterface::class);
-            $response = $this->createMock(ResponseInterface::class);
+            $stream = $this->createStub(StreamInterface::class);
+            $response = $this->createStub(ResponseInterface::class);
 
             $response
                 ->method('getBody')
@@ -207,14 +206,15 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
 
     public function testContinueTimeExceeded(): void
     {
-        $repository = $this->getRepository();
-
-        $this->getClientMock()
+        $this->client = $this->createMock(Client::class);
+        $this->client
             ->expects($this->once())
             ->method('sendRequest')
             ->willThrowException(
                 new ApiServerException('error', 410)
             );
+
+        $repository = $this->getRepository();
 
         $this->expectException(TimeExceededAboutContinueException::class);
         $repository->continue(
@@ -225,14 +225,15 @@ abstract class AbstractBaseTestCase extends PHPUnitTestCase
 
     public function testContinueOtherException(): void
     {
-        $repository = $this->getRepository();
-
-        $this->getClientMock()
+        $this->client = $this->createMock(Client::class);
+        $this->client
             ->expects($this->once())
             ->method('sendRequest')
             ->willThrowException(
                 new ApiServerException('error', 400)
             );
+
+        $repository = $this->getRepository();
 
         $this->expectException(ApiServerException::class);
         $repository->continue(

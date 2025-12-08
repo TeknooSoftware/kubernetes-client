@@ -52,7 +52,7 @@ class ReplicationControllerCollectionTest extends AbstractBaseTestCase
                 new ReplicationController(),
                 [],
             ],
-            $this->createMock(Repository::class),
+            $this->createStub(Repository::class),
             $query,
             $continue,
         );

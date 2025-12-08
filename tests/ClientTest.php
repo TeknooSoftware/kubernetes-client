@@ -644,7 +644,7 @@ class ClientTest extends TestCase
         $mockClientInterface->expects($this->once())
             ->method('sendRequest')
             ->withAnyParameters()
-            ->willThrowException(new HttpException('foo', $this->createMock(RequestInterface::class), $response));
+            ->willThrowException(new HttpException('foo', $this->createStub(RequestInterface::class), $response));
 
         $httpClient = new HttpMethodsClient(
             $mockClientInterface,
@@ -705,7 +705,7 @@ class ClientTest extends TestCase
 
         $mockClientInterface = $this->createMock(ClientInterface::class);
 
-        $body = $this->createMock(StreamInterface::class);
+        $body = $this->createStub(StreamInterface::class);
         $response = new Response(200, [], $body);
 
         $mockClientInterface->expects($this->once())
@@ -909,12 +909,12 @@ class ClientTest extends TestCase
                 'client_cert' => '/tmp/kubernetes-client-client-cert.pem',
                 'client_key' => '/tmp/kubernetes-client-client-key.pem',
             ],
-            httpClient: $this->createMock(ClientInterface::class),
-            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+            httpClient: $this->createStub(ClientInterface::class),
+            httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
         ), Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.example',
-            httpClient: $this->createMock(ClientInterface::class),
-            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+            httpClient: $this->createStub(ClientInterface::class),
+            httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
         ));
     }
 
@@ -931,12 +931,12 @@ class ClientTest extends TestCase
                 'client_key' => '/tmp/kubernetes-client-client-key.pem',
                 'verify' => false,
             ],
-            httpClient: $this->createMock(ClientInterface::class),
-            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+            httpClient: $this->createStub(ClientInterface::class),
+            httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
         ), Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.without_server_certificate.example',
-            httpClient: $this->createMock(ClientInterface::class),
-            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+            httpClient: $this->createStub(ClientInterface::class),
+            httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
         ));
     }
 
@@ -953,12 +953,12 @@ class ClientTest extends TestCase
                 'client_key' => '/tmp/kubernetes-client-client-key.pem',
                 'verify' => true,
             ],
-            httpClient: $this->createMock(ClientInterface::class),
-            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+            httpClient: $this->createStub(ClientInterface::class),
+            httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
         ), Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.unsecure.example',
-            httpClient: $this->createMock(ClientInterface::class),
-            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+            httpClient: $this->createStub(ClientInterface::class),
+            httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
         ));
     }
 
@@ -967,8 +967,8 @@ class ClientTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.without_server.example',
-            httpClient: $this->createMock(ClientInterface::class),
-            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+            httpClient: $this->createStub(ClientInterface::class),
+            httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
         );
     }
 
@@ -977,8 +977,8 @@ class ClientTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.user_in_context_undefined.example',
-            httpClient: $this->createMock(ClientInterface::class),
-            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+            httpClient: $this->createStub(ClientInterface::class),
+            httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
         );
     }
 
@@ -987,8 +987,8 @@ class ClientTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.cluster_in_context_undefined.example',
-            httpClient: $this->createMock(ClientInterface::class),
-            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+            httpClient: $this->createStub(ClientInterface::class),
+            httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
         );
     }
 
@@ -997,8 +997,8 @@ class ClientTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.without_cluster.example',
-            httpClient: $this->createMock(ClientInterface::class),
-            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+            httpClient: $this->createStub(ClientInterface::class),
+            httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
         );
     }
 
@@ -1007,8 +1007,8 @@ class ClientTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.without_context.example',
-            httpClient: $this->createMock(ClientInterface::class),
-            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+            httpClient: $this->createStub(ClientInterface::class),
+            httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
         );
     }
 
@@ -1017,8 +1017,8 @@ class ClientTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.without_current_context.example',
-            httpClient: $this->createMock(ClientInterface::class),
-            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+            httpClient: $this->createStub(ClientInterface::class),
+            httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
         );
     }
 
@@ -1027,8 +1027,8 @@ class ClientTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.with_invalid_current_context.example',
-            httpClient: $this->createMock(ClientInterface::class),
-            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+            httpClient: $this->createStub(ClientInterface::class),
+            httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
         );
     }
 
@@ -1037,8 +1037,8 @@ class ClientTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.without_user_in_context.example',
-            httpClient: $this->createMock(ClientInterface::class),
-            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+            httpClient: $this->createStub(ClientInterface::class),
+            httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
         );
     }
 
@@ -1047,8 +1047,8 @@ class ClientTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.without_cluster_in_context.example',
-            httpClient: $this->createMock(ClientInterface::class),
-            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+            httpClient: $this->createStub(ClientInterface::class),
+            httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
         );
     }
 
@@ -1057,8 +1057,8 @@ class ClientTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.without_current_context_in_contexts.example',
-            httpClient: $this->createMock(ClientInterface::class),
-            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+            httpClient: $this->createStub(ClientInterface::class),
+            httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
         );
     }
 
@@ -1067,8 +1067,8 @@ class ClientTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.without_users.example',
-            httpClient: $this->createMock(ClientInterface::class),
-            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+            httpClient: $this->createStub(ClientInterface::class),
+            httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
         );
     }
 
@@ -1077,8 +1077,8 @@ class ClientTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         Client::loadFromKubeConfigFile(
             filePath: __DIR__ . '/fixtures/config/kubeconfig.missing.example',
-            httpClient: $this->createMock(ClientInterface::class),
-            httpStreamFactory: $this->createMock(StreamFactoryInterface::class),
+            httpClient: $this->createStub(ClientInterface::class),
+            httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
         );
     }
 
