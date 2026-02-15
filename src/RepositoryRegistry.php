@@ -150,7 +150,7 @@ class RepositoryRegistry implements ArrayAccess, Countable
             throw new InvalidArgumentException("$value is not a valid Repository class");
         }
 
-        $this->map[$offset] = $value;
+        $this->map[(string) $offset] = $value;
     }
 
     public function offsetUnset(mixed $offset): void
