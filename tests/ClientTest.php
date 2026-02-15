@@ -214,7 +214,6 @@ class ClientTest extends TestCase
     public function testSendRequestWithAuthToken(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
-        $httpClientProp->setAccessible(true);
 
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -252,7 +251,6 @@ class ClientTest extends TestCase
     public function testSendRequestWithAuthTokenWithEolAtMiddle(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
-        $httpClientProp->setAccessible(true);
 
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -285,7 +283,6 @@ class ClientTest extends TestCase
     public function testSendRequestWithCertificate(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
-        $httpClientProp->setAccessible(true);
 
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -325,7 +322,6 @@ class ClientTest extends TestCase
     public function testSendRequestToPatch(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
-        $httpClientProp->setAccessible(true);
 
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -365,7 +361,6 @@ class ClientTest extends TestCase
     public function testSendRequestToPost(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
-        $httpClientProp->setAccessible(true);
 
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -405,7 +400,6 @@ class ClientTest extends TestCase
     public function testSendRequestAuthViaFileToken(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
-        $httpClientProp->setAccessible(true);
 
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -445,7 +439,6 @@ class ClientTest extends TestCase
     public function testSendRequestAuthViaFileTokenWithEolAtEnd(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
-        $httpClientProp->setAccessible(true);
 
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -485,7 +478,6 @@ class ClientTest extends TestCase
     public function testSendRequestAuthViaFileTokenWithEolInMiddle(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
-        $httpClientProp->setAccessible(true);
 
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -520,7 +512,6 @@ class ClientTest extends TestCase
     public function testSendRequestAuthViaUrl(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
-        $httpClientProp->setAccessible(true);
 
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -555,7 +546,6 @@ class ClientTest extends TestCase
     public function testSendRequestJsonParsesResponse(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
-        $httpClientProp->setAccessible(true);
 
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -592,7 +582,6 @@ class ClientTest extends TestCase
     public function testSendRequestWithHttpException(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
-        $httpClientProp->setAccessible(true);
 
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -627,7 +616,6 @@ class ClientTest extends TestCase
     public function testSendRequestWithHttpTransfertException(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
-        $httpClientProp->setAccessible(true);
 
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -662,7 +650,6 @@ class ClientTest extends TestCase
     public function testSendStringableRequest(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
-        $httpClientProp->setAccessible(true);
 
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -697,7 +684,6 @@ class ClientTest extends TestCase
     public function testSendStreamableRequest(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
-        $httpClientProp->setAccessible(true);
 
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -729,7 +715,6 @@ class ClientTest extends TestCase
     public function testHealth(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
-        $httpClientProp->setAccessible(true);
 
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -766,7 +751,6 @@ class ClientTest extends TestCase
     public function testVersion(): void
     {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpClient');
-        $httpClientProp->setAccessible(true);
 
         $client = new Client([
             'master' => 'https://api.example.com',
@@ -815,7 +799,6 @@ class ClientTest extends TestCase
         array  $respHeaders = []
     ): void {
         $httpClientProp = new ReflectionProperty(Client::class, 'httpMethodsClient');
-        $httpClientProp->setAccessible(true);
 
         $mockHttpMethodsClient = $this->createMock(HttpMethodsMockClient::class);
 
