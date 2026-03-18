@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [2.0.4] - 2026-03-18
+### Stable Release
+- Support Illuminate 12 and 13
+
 ## [2.0.3] - 2025-12-08
 ### Stable Release
 - Fix bc break introduced into patch of phpstan and phpunit
