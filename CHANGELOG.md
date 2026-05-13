@@ -1,5 +1,9 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [2.0.5] - 2026-05-13
+### Stable Release
+- Remove risky behavior when the master use https but certificate if not provided, verify was automatically disabled
+
 ## [2.0.4] - 2026-03-18
 ### Stable Release
 - Support Illuminate 12 and 13
