@@ -912,7 +912,7 @@ class ClientTest extends TestCase
                 'master' => 'https://your-k8s-cluster.com',
                 'client_cert' => '/tmp/kubernetes-client-client-cert.pem',
                 'client_key' => '/tmp/kubernetes-client-client-key.pem',
-                'verify' => false,
+                'verify' => true,
             ],
             httpClient: $this->createStub(ClientInterface::class),
             httpStreamFactory: $this->createStub(StreamFactoryInterface::class),

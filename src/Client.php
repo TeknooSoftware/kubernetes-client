@@ -494,13 +494,6 @@ class Client
             );
         }
 
-        if (
-            !isset($cluster['certificate-authority-data'])
-            && str_contains((string) $options['master'], 'https://')
-        ) {
-            $options['verify'] = false;
-        }
-
         if (isset($user['client-certificate-data'])) {
             $options['client_cert'] = self::getTempFilePath(
                 'client-cert.pem',
