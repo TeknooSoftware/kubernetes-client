@@ -7,10 +7,16 @@ parameters:
             message: '#does not specify its types: T#'
             path: src/Client.php
         -
+            message: '#will always evaluate to#'
+            path: src/Client.php
+        -
             message: '#Cannot cast mixed to string#'
             path: src/Client.php
         -
             message: '#does not accept mixed#'
+            path: src/Model/Model.php
+        -
+            message: '#will always evaluate to#'
             path: src/Model/Model.php
         -
             message: '#Parameter \$attributes of clas#'

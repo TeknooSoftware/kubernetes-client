@@ -46,7 +46,7 @@
 		"squizlabs/php_codesniffer": "^4.0.1",
 		"symfony/console": "^6.4||^7.4||^8",
 		"symfony/options-resolver": "^6.4||^7.4||^8",
-		"phpstan/phpstan": "^2.1.38",
+		"phpstan/phpstan": "^2.2.2",
 		"symfony/property-access": "^6.4||^7.4||^8",
 		"behat/behat": "^v3.29",
 		"php-http/socket-client": "^2.4",
