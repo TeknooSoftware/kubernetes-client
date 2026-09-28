@@ -26,6 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Kubernetes\HttpClient\Instantiator;
 
+use Override;
 use Psr\Http\Client\ClientInterface;
 use Symfony\Component\HttpClient\HttplugClient as SymfonyHttplug;
 use Teknoo\Kubernetes\HttpClient\InstantiatorInterface;
@@ -39,6 +40,7 @@ use Teknoo\Kubernetes\HttpClient\InstantiatorInterface;
  */
 class Symfony implements InstantiatorInterface
 {
+    #[Override]
     public function build(
         bool $verify,
         ?string $caCertificate,

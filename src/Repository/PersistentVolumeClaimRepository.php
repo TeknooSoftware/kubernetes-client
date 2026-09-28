@@ -26,7 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Kubernetes\Repository;
 
-use Teknoo\Kubernetes\Model\PersistentVolume;
+use Teknoo\Kubernetes\Model\PersistentVolumeClaim;
 use Teknoo\Kubernetes\Collection\PersistentVolumeClaimCollection;
 
 /**
@@ -37,7 +37,7 @@ use Teknoo\Kubernetes\Collection\PersistentVolumeClaimCollection;
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  *
- * @extends     Repository<PersistentVolume>
+ * @extends     Repository<PersistentVolumeClaim>
  */
 class PersistentVolumeClaimRepository extends Repository
 {

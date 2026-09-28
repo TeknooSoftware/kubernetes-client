@@ -1,5 +1,56 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [2.1.0] - 2026-09-28
+### Security
+- Temporary certificate and key files (inline PEM options, kubeconfig data) are private (0600) and removed when the
+  client is released, reset or can not be built. They were never deleted.
+- The bearer token never appears in exception messages. Stream wrapper urls are refused as token path, multiline
+  tokens are refused.
+- Namespace and resource names are URL encoded in the request paths.
+- Named operations (`update`, `patch`, `apply`, `delete`, `deleteByName`, `exists`, `logs`, `exec`, `proxy`) refuse a
+  model without `metadata.name` instead of targeting the whole collection.
+
+### Fixes
+- `RequestMethod::Delete` is `DELETE`, HTTP methods are case sensitive (`RequestMethod::from('Delete')` no longer works).
+- `Content-Type: application/json` is sent with `DELETE` bodies (`DeleteOptions`).
+- The patch type no longer leaks between repositories: it is given per request (optional last argument of the
+  `Client` send methods), a repository declares its own with `getPatchType()`, `PatchType::contentType()` added.
+- Inequality label and field selectors are reset between queries.
+- Empty maps are sent as `{}` without altering string values holding `: []`, array bodies keep their lists.
+- Invalid base64 certificate data in a kubeconfig is refused instead of written as an empty certificate.
+- A kubeconfig or model document decoding to a scalar raises `InvalidArgumentException` instead of `TypeError`.
+- Persistent volumes are watched on the cluster scoped path.
+- Zero values (`resourceVersion=0`, `timeoutSeconds=0`) are kept in list and watch queries.
+- Subclass overrides of `Repository::getApiVersion()` and `Collection::getModelClass()` are honoured.
+- `ApiServerException` reports the real 5xx status code, it was always 500.
+- HTTP adapters: curl `CURLOPT_SSL_VERIFYHOST` is 2 or 0, the socket timeout is applied and its host name check
+  follows `verify`, Guzzle honours `verify => false` even with a CA certificate.
+- `setOptions()` with `ca_cert`, `client_cert`, `client_key`, `timeout` or `verify` after a request rebuilds the
+  HTTP client. A trailing slash on `master` is ignored.
+- The generic HTTP client discovery throws `UnsupportedHttpClientOptionsException` instead of dropping the TLS and
+  timeout options, and checks the discovered class is a PSR-18 client.
+- `Issuer` uses `cert-manager.io/v1`, `SubnamespaceAnchor` uses the plural `subnamespaceanchors` and a merge patch.
+- `Model::getMetadata()` returns the valid name `0`.
+
+### Evolutions
+- kubeconfig: `token`, `tokenFile`, `certificate-authority`, `client-certificate`, `client-key` (relative paths are
+  resolved against the kubeconfig directory, or the new `baseDirectory` argument of `loadFromKubeConfig()`), the
+  `namespace` of the context and `insecure-skip-tls-verify`.
+- `first()` and `exists()` ask a single item to the API (`limit=1`).
+- Repository and collection metadata are validated once per class.
+- The curl adapter shares connections, DNS entries and TLS sessions between requests.
+- `#[Override]` on the methods implementing an interface.
+- The Behat fake cluster records the requests it receives. New PHPUnit and Behat tests for every fix.
+- Update dev libraries, allow Guzzle 8 and Symfony 8.1.
+
+### Documentation
+- README: client options, temporary files, kubeconfig attributes, HTTP client discovery, patch types, pagination,
+  watch and logs limits, resource list aligned with the code, examples fixed.
+- CONTRIBUTING (PSR-12, make targets, test rules), SECURITY and AGENTS.md updated, stale code comments fixed.
+- Obsolete Travis and Ant files removed, dist archives exclude the test suites and tooling.
+
+- Version developed with Claude's assistance (Fable 5.1).
+
 ## [2.0.5] - 2026-05-13
 ### Stable Release
 - Remove risky behavior when the master use https but certificate if not provided, verify was automatically disabled

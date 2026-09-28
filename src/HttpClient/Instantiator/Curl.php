@@ -27,15 +27,24 @@ declare(strict_types=1);
 namespace Teknoo\Kubernetes\HttpClient\Instantiator;
 
 use Http\Client\Curl\Client;
+use Override;
 use Psr\Http\Client\ClientInterface;
 use Teknoo\Kubernetes\HttpClient\InstantiatorInterface;
 
+use function curl_share_init;
+use function curl_share_setopt;
+
+use const CURL_LOCK_DATA_CONNECT;
+use const CURL_LOCK_DATA_DNS;
+use const CURL_LOCK_DATA_SSL_SESSION;
 use const CURLOPT_CAINFO;
 use const CURLOPT_SSL_VERIFYHOST;
+use const CURLOPT_SHARE;
 use const CURLOPT_SSL_VERIFYPEER;
 use const CURLOPT_SSLCERT;
 use const CURLOPT_SSLKEY;
 use const CURLOPT_TIMEOUT;
+use const CURLSHOPT_SHARE;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -46,6 +55,7 @@ use const CURLOPT_TIMEOUT;
  */
 class Curl implements InstantiatorInterface
 {
+    #[Override]
     public function build(
         bool $verify,
         ?string $caCertificate,
@@ -53,9 +63,22 @@ class Curl implements InstantiatorInterface
         ?string $clientKey,
         ?int $timeout,
     ): ClientInterface {
+        $verifyHost = 0;
+        if ($verify) {
+            $verifyHost = 2;
+        }
+
+        // curl-client creates a handle per request: a share handle lets the connections, the DNS cache and the
+        // TLS sessions be reused across requests, avoiding a TLS handshake at each call
+        $share = curl_share_init();
+        curl_share_setopt($share, CURLSHOPT_SHARE, CURL_LOCK_DATA_CONNECT);
+        curl_share_setopt($share, CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS);
+        curl_share_setopt($share, CURLSHOPT_SHARE, CURL_LOCK_DATA_SSL_SESSION);
+
         $options = [
             CURLOPT_SSL_VERIFYPEER => $verify,
-            CURLOPT_SSL_VERIFYHOST => $verify,
+            CURLOPT_SSL_VERIFYHOST => $verifyHost,
+            CURLOPT_SHARE => $share,
         ];
 
         if (!empty($caCertificate)) {

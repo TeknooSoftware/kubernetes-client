@@ -888,6 +888,7 @@ class ClientTest extends TestCase
         $this->assertEquals(new Client(
             options: [
                 'master' => 'https://your-k8s-cluster.com',
+                'token' => 'foobar',
                 'ca_cert' => '/tmp/kubernetes-client-ca-cert.pem',
                 'client_cert' => '/tmp/kubernetes-client-client-cert.pem',
                 'client_key' => '/tmp/kubernetes-client-client-key.pem',
@@ -910,6 +911,7 @@ class ClientTest extends TestCase
         $this->assertEquals(new Client(
             options: [
                 'master' => 'https://your-k8s-cluster.com',
+                'token' => 'foobar',
                 'client_cert' => '/tmp/kubernetes-client-client-cert.pem',
                 'client_key' => '/tmp/kubernetes-client-client-key.pem',
                 'verify' => true,
@@ -932,6 +934,7 @@ class ClientTest extends TestCase
         $this->assertEquals(new Client(
             options: [
                 'master' => 'http://your-k8s-cluster.com',
+                'token' => 'foobar',
                 'client_cert' => '/tmp/kubernetes-client-client-cert.pem',
                 'client_key' => '/tmp/kubernetes-client-client-key.pem',
                 'verify' => true,

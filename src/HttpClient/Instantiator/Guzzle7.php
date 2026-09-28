@@ -28,6 +28,7 @@ namespace Teknoo\Kubernetes\HttpClient\Instantiator;
 
 use GuzzleHttp\RequestOptions;
 use Http\Adapter\Guzzle7\Client;
+use Override;
 use Psr\Http\Client\ClientInterface;
 use Teknoo\Kubernetes\HttpClient\InstantiatorInterface;
 
@@ -40,6 +41,7 @@ use Teknoo\Kubernetes\HttpClient\InstantiatorInterface;
  */
 class Guzzle7 implements InstantiatorInterface
 {
+    #[Override]
     public function build(
         bool $verify,
         ?string $caCertificate,
@@ -51,7 +53,7 @@ class Guzzle7 implements InstantiatorInterface
             RequestOptions::VERIFY => $verify,
         ];
 
-        if (!empty($caCertificate)) {
+        if ($verify && !empty($caCertificate)) {
             $options[RequestOptions::VERIFY] = $caCertificate;
         }
 

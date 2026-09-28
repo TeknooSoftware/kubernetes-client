@@ -29,17 +29,18 @@ namespace Teknoo\Kubernetes\Model;
 use Illuminate\Contracts\Support\Arrayable;
 use InvalidArgumentException;
 use JsonException;
+use Override;
 use Stringable;
 use Symfony\Component\Yaml\Exception\ParseException as YamlParseException;
 use Symfony\Component\Yaml\Yaml;
 use Teknoo\Kubernetes\Enums\FileFormat;
 use Teknoo\Kubernetes\Model\Attribute\Explorer;
-use Throwable;
 
 use function array_merge;
 use function basename;
 use function is_array;
 use function is_string;
+use function json_decode;
 use function json_encode;
 use function str_replace;
 
@@ -80,9 +81,9 @@ abstract class Model implements Arrayable, Stringable
     public function __construct(array|string $attributes = [], FileFormat $format = FileFormat::Array)
     {
         try {
-            $this->attributes = match (true) {
+            $decoded = match (true) {
                 FileFormat::Array === $format && !is_array($attributes) => throw new InvalidArgumentException(
-                    'JSON attributes must be provided as a JSON encoded string.'
+                    'Array attributes must be provided as an array.'
                 ),
                 FileFormat::Array === $format && is_array($attributes) => $attributes,
                 FileFormat::Json === $format && !is_string($attributes) => throw new InvalidArgumentException(
@@ -109,16 +110,23 @@ abstract class Model implements Arrayable, Stringable
                 message: 'Failed to parse YAML encoded attributes: ' . $yamlParseException->getMessage(),
                 previous: $yamlParseException
             );
-        } catch (Throwable $error) {
-            throw $error;
         }
+
+        if (!is_array($decoded)) {
+            throw new InvalidArgumentException('Attributes must decode to an array.');
+        }
+
+        /** @var array<string, string|array<string, mixed>> $decoded */
+        $this->attributes = $decoded;
     }
 
+    #[Override]
     public function toArray(): array
     {
         return $this->attributes;
     }
 
+    #[Override]
     public function __toString(): string
     {
         return $this->getSchema();
@@ -126,8 +134,14 @@ abstract class Model implements Arrayable, Stringable
 
     public function getMetadata(string $key): ?string
     {
-        if (!empty($this->attributes['metadata'][$key]) && is_string($this->attributes['metadata'][$key])) {
-            return $this->attributes['metadata'][$key];
+        $metadata = $this->attributes['metadata'] ?? null;
+        if (!is_array($metadata)) {
+            return null;
+        }
+
+        $value = $metadata[$key] ?? null;
+        if (is_string($value) && '' !== $value) {
+            return $value;
         }
 
         return null;
@@ -160,10 +174,9 @@ abstract class Model implements Arrayable, Stringable
         $jsonSchema = json_encode($schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
 
         // Fix for issue #37, can't use JSON_FORCE_OBJECT as the encoding breaks arrays of objects,
-        // for example port mappings.
-        $jsonSchema = str_replace(': []', ': {}', $jsonSchema);
-
-        return $jsonSchema;
+        // for example port mappings. Empty arrays are maps (labels, annotations...), encoded as JSON objects.
+        // The closing quote of the key is required before ": []", so a string value holding ": []" is not altered.
+        return str_replace('": []', '": {}', $jsonSchema);
     }
 
     public static function getApiVersion(): string
@@ -171,6 +184,10 @@ abstract class Model implements Arrayable, Stringable
         return static::$apiVersion;
     }
 
+    /**
+     * Returns a copy of this model whose attributes are replaced by the result of the modifier; this model is not
+     * altered, so the returned copy must be used.
+     */
     public function updateModel(callable $modifier): self
     {
         $that = clone $this;

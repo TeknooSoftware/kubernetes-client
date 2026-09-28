@@ -80,9 +80,12 @@ use Teknoo\Kubernetes\Repository\ServiceAccountRepository;
 use Teknoo\Kubernetes\Repository\ServiceRepository;
 use Teknoo\Kubernetes\Repository\StatefulSetRepository;
 use Teknoo\Kubernetes\Repository\SubnamespaceAnchorRepository;
-use Throwable;
+use Teknoo\Kubernetes\Support\TemporaryFiles;
+use WeakMap;
 
 use function base64_decode;
+use function chmod;
+use function dirname;
 use function file_exists;
 use function file_get_contents;
 use function file_put_contents;
@@ -91,17 +94,26 @@ use function in_array;
 use function is_array;
 use function is_dir;
 use function is_string;
+use function is_writable;
 use function json_decode;
 use function json_encode;
 use function parse_url;
+use function preg_match;
+use function rawurlencode;
+use function rtrim;
 use function str_contains;
+use function str_replace;
+use function str_starts_with;
+use function stream_get_wrappers;
+use function strtolower;
 use function substr;
+use function sys_get_temp_dir;
 use function tempnam;
 use function trim;
 
-use const JSON_FORCE_OBJECT;
+use const DIRECTORY_SEPARATOR;
 use const JSON_THROW_ON_ERROR;
-use const PHP_EOL;
+use const PHP_URL_SCHEME;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -171,10 +183,7 @@ class Client
      */
     private array $classInstances = [];
 
-    /**
-     * @var array<string, string>
-     */
-    private array $patchHeaders = ['Content-Type' => 'application/strategic-merge-patch+json'];
+    private PatchType $patchType = PatchType::Strategic;
 
     /**
      * @var callable|null
@@ -182,6 +191,14 @@ class Client
     private static $tmpNameFunction = null;
 
     private static ?string $tmpDir = null;
+
+    /**
+     * Temporary files (certificates, keys) owned by each client instance. Entries vanish with the client,
+     * and the files are removed when their last owner is released.
+     *
+     * @var WeakMap<Client, TemporaryFiles>|null
+     */
+    private static ?WeakMap $temporaryFiles = null;
 
     /**
      * @param array<string, string|bool|int> $options
@@ -197,22 +214,62 @@ class Client
         $this->classRegistry = $repositoryRegistry ?? new RepositoryRegistry();
     }
 
+    /**
+     * A clone keeps using the temporary files of the original instance: they are shared and removed only when
+     * the last instance using them is released.
+     */
+    public function __clone()
+    {
+        $shared = null;
+        foreach (self::getTemporaryFilesMap() as $temporaryFiles) {
+            foreach ([$this->caCertificate, $this->clientCertificate, $this->clientKey] as $path) {
+                if (null !== $path && $temporaryFiles->contains($path)) {
+                    $shared = $temporaryFiles;
+
+                    break 2;
+                }
+            }
+        }
+
+        if (null !== $shared) {
+            self::getTemporaryFilesMap()[$this] = $shared;
+        }
+    }
+
+    /**
+     * @return WeakMap<Client, TemporaryFiles>
+     */
+    private static function getTemporaryFilesMap(): WeakMap
+    {
+        return self::$temporaryFiles ??= new WeakMap();
+    }
+
     private function getHttpMethodsClients(): HttpMethodsClientInterface
     {
         if (null !== $this->httpMethodsClient) {
             return $this->httpMethodsClient;
         }
 
+        $temporaryFiles = self::getTemporaryFilesMap()[$this] ?? new TemporaryFiles();
+
         if (null !== $this->caCertificate && !file_exists($this->caCertificate)) {
-            $this->caCertificate = self::getTempFilePath('ca-cert', $this->caCertificate);
+            $this->caCertificate = self::getTempFilePath('ca-cert', $this->caCertificate, $temporaryFiles);
         }
 
         if (null !== $this->clientCertificate && !file_exists($this->clientCertificate)) {
-            $this->clientCertificate = self::getTempFilePath('client-cert', $this->clientCertificate);
+            $this->clientCertificate = self::getTempFilePath(
+                'client-cert',
+                $this->clientCertificate,
+                $temporaryFiles,
+            );
         }
 
         if (null !== $this->clientKey && !file_exists($this->clientKey)) {
-            $this->clientKey = self::getTempFilePath('client-cert', $this->clientKey);
+            $this->clientKey = self::getTempFilePath('client-key', $this->clientKey, $temporaryFiles);
+        }
+
+        if (!$temporaryFiles->isEmpty()) {
+            self::getTemporaryFilesMap()[$this] = $temporaryFiles;
         }
 
         return $this->httpMethodsClient = new HttpMethodsClient(
@@ -243,10 +300,13 @@ class Client
             $this->namespace = 'default';
             $this->verify = true;
             $this->httpMethodsClient = null;
+
+            $temporaryFilesMap = self::getTemporaryFilesMap();
+            unset($temporaryFilesMap[$this]);
         }
 
         if (isset($options['master'])) {
-            $this->master = (string) $options['master'];
+            $this->master = rtrim((string) $options['master'], '/');
         }
 
         if (isset($options['token'])) {
@@ -275,6 +335,17 @@ class Client
 
         if (isset($options['verify'])) {
             $this->verify = !empty($options['verify']);
+        }
+
+        if (
+            isset($options['ca_cert'])
+            || isset($options['client_cert'])
+            || isset($options['client_key'])
+            || isset($options['timeout'])
+            || isset($options['verify'])
+        ) {
+            // The HTTP client is built with these options, it must be rebuilt on the next request
+            $this->httpMethodsClient = null;
         }
 
         if (empty($this->master)) {
@@ -311,9 +382,6 @@ class Client
                 ),
                 FileFormat::Yaml === $format && is_string($content) => Yaml::parse($content),
             };
-
-            /** @var array<string, mixed> $result */
-            return $result;
         } catch (JsonException $jsonException) {
             throw new InvalidArgumentException(
                 message: 'Failed to parse JSON encoded KubeConfig: ' . $jsonException->getMessage(),
@@ -324,9 +392,14 @@ class Client
                 message: 'Failed to parse YAML encoded KubeConfig: ' . $yamlParseException->getMessage(),
                 previous: $yamlParseException,
             );
-        } catch (Throwable $error) {
-            throw $error;
         }
+
+        if (!is_array($result)) {
+            throw new InvalidArgumentException('KubeConfig parse error - The document must decode to an array.');
+        }
+
+        /** @var array<string, mixed> $result */
+        return $result;
     }
 
     /**
@@ -431,6 +504,32 @@ class Client
     }
 
     /**
+     * Decodes a base64 attribute of a kubeconfig (certificate or key), refusing invalid content instead of
+     * silently producing an empty certificate.
+     */
+    private static function decodeBase64Attribute(mixed $value, string $attribute): string
+    {
+        $decoded = false;
+        if (is_string($value)) {
+            $decoded = base64_decode($value, true);
+        }
+
+        if (false === $decoded) {
+            throw new InvalidArgumentException(
+                'KubeConfig parse error - The attribute "' . $attribute . '" is not a valid base64 encoded value.'
+            );
+        }
+
+        return $decoded;
+    }
+
+    /**
+     * Builds a client from a kubeconfig document (YAML, JSON or array). Supported attributes of the current
+     * context: the cluster server, certificate-authority(-data) and insecure-skip-tls-verify, the user token,
+     * tokenFile, client-certificate(-data) and client-key(-data), and the namespace of the context. Embedded data
+     * takes precedence over file paths, which are resolved against $baseDirectory when they are relative
+     * (the directory of the kubeconfig file for loadFromKubeConfigFile()).
+     *
      * @param string|array<string, mixed> $content
      * @throws JsonException
      * @throws Exception
@@ -442,6 +541,7 @@ class Client
         ?ClientInterface $httpClient = null,
         ?RequestFactoryInterface $httpRequestFactory = null,
         ?StreamFactoryInterface $httpStreamFactory = null,
+        ?string $baseDirectory = null,
     ): self {
         $content = self::parseContent($content, $format);
 
@@ -484,46 +584,124 @@ class Client
 
         $options['master'] = $cluster['server'];
 
+        // If the client can not be built, this local object is released and the files already written are removed
+        $temporaryFiles = new TemporaryFiles();
+
         if (isset($cluster['certificate-authority-data'])) {
             $options['ca_cert'] = self::getTempFilePath(
                 'ca-cert.pem',
-                (string) base64_decode(
-                    (string) $cluster['certificate-authority-data'],
-                    true,
-                )
+                self::decodeBase64Attribute($cluster['certificate-authority-data'], 'certificate-authority-data'),
+                $temporaryFiles,
             );
         }
 
         if (isset($user['client-certificate-data'])) {
             $options['client_cert'] = self::getTempFilePath(
                 'client-cert.pem',
-                (string) base64_decode(
-                    (string) $user['client-certificate-data'],
-                    true,
-                )
+                self::decodeBase64Attribute($user['client-certificate-data'], 'client-certificate-data'),
+                $temporaryFiles,
             );
         }
 
         if (isset($user['client-key-data'])) {
             $options['client_key'] = self::getTempFilePath(
                 'client-key.pem',
-                (string) base64_decode(
-                    (string) $user['client-key-data'],
-                    true,
-                )
+                self::decodeBase64Attribute($user['client-key-data'], 'client-key-data'),
+                $temporaryFiles,
             );
         }
 
-        return new self(
+        // File paths are used when no embedded data is given
+        if (!isset($options['ca_cert']) && isset($cluster['certificate-authority'])) {
+            $options['ca_cert'] = self::resolveKubeConfigPath(
+                $cluster['certificate-authority'],
+                'certificate-authority',
+                $baseDirectory,
+            );
+        }
+
+        if (!isset($options['client_cert']) && isset($user['client-certificate'])) {
+            $options['client_cert'] = self::resolveKubeConfigPath(
+                $user['client-certificate'],
+                'client-certificate',
+                $baseDirectory,
+            );
+        }
+
+        if (!isset($options['client_key']) && isset($user['client-key'])) {
+            $options['client_key'] = self::resolveKubeConfigPath($user['client-key'], 'client-key', $baseDirectory);
+        }
+
+        if (isset($user['token'])) {
+            if (!is_string($user['token']) || '' === $user['token']) {
+                throw new InvalidArgumentException(
+                    'KubeConfig parse error - The attribute "token" must be a non empty string.'
+                );
+            }
+
+            $options['token'] = $user['token'];
+        } elseif (isset($user['tokenFile'])) {
+            $options['token'] = self::resolveKubeConfigPath($user['tokenFile'], 'tokenFile', $baseDirectory);
+        }
+
+        if (isset($context['namespace']) && '' !== $context['namespace']) {
+            $options['namespace'] = $context['namespace'];
+        }
+
+        if (!empty($cluster['insecure-skip-tls-verify'])) {
+            $options['verify'] = false;
+        }
+
+        $client = new self(
             options: $options,
             repositoryRegistry: $repositoryRegistry,
             httpClient: $httpClient,
             httpRequestFactory: $httpRequestFactory,
             httpStreamFactory: $httpStreamFactory,
         );
+
+        if (!$temporaryFiles->isEmpty()) {
+            self::getTemporaryFilesMap()[$client] = $temporaryFiles;
+        }
+
+        return $client;
     }
 
     /**
+     * Resolves a file path referenced by a kubeconfig (certificate, key, token file), relative paths being
+     * resolved against the base directory when it is known, and checks the file exists.
+     */
+    private static function resolveKubeConfigPath(mixed $path, string $attribute, ?string $baseDirectory): string
+    {
+        if (!is_string($path) || '' === $path) {
+            throw new InvalidArgumentException(
+                'KubeConfig parse error - The attribute "' . $attribute . '" must be a non empty path.'
+            );
+        }
+
+        if (null !== $baseDirectory && !self::isAbsolutePath($path)) {
+            $path = rtrim($baseDirectory, '/\\') . DIRECTORY_SEPARATOR . $path;
+        }
+
+        if (!file_exists($path)) {
+            throw new InvalidArgumentException(
+                'KubeConfig parse error - The file "' . $path . '" referenced by "' . $attribute . '" does not exist.'
+            );
+        }
+
+        return $path;
+    }
+
+    private static function isAbsolutePath(string $path): bool
+    {
+        return str_starts_with($path, '/')
+            || str_starts_with($path, '\\')
+            || 1 === preg_match('#^[a-zA-Z]:[\\\\/]#', $path);
+    }
+
+    /**
+     * Builds a client from a kubeconfig file, relative paths of the document being resolved against its directory.
+     *
      * @throws JsonException
      */
     public static function loadFromKubeConfigFile(
@@ -544,6 +722,7 @@ class Client
             httpClient: $httpClient,
             httpRequestFactory: $httpRequestFactory,
             httpStreamFactory: $httpStreamFactory,
+            baseDirectory: dirname($filePath),
         );
     }
 
@@ -558,29 +737,40 @@ class Client
             throw new InvalidArgumentException("$tmpDir is not a valid directory");
         }
 
+        if (null !== $tmpDir && !is_writable($tmpDir)) {
+            throw new InvalidArgumentException("$tmpDir is not a writable directory");
+        }
+
         self::$tmpDir = $tmpDir;
     }
 
     /**
-     * @throws Exception
+     * Writes a private (0600) temporary file and registers it into $temporaryFiles, which owns it.
+     *
+     * @throws WriteErrorException
      */
-    private static function getTempFilePath(string $fileName, string $fileContent): string
-    {
-        if (null === self::$tmpNameFunction) {
-            self::$tmpNameFunction = tempnam(...);
-        }
+    private static function getTempFilePath(
+        string $fileName,
+        string $fileContent,
+        TemporaryFiles $temporaryFiles,
+    ): string {
+        self::$tmpNameFunction ??= tempnam(...);
+        self::$tmpDir ??= sys_get_temp_dir();
 
-        if (null === self::$tmpDir) {
-            self::$tmpDir = sys_get_temp_dir();
-        }
+        $tempFilePath = (self::$tmpNameFunction)(self::$tmpDir, 'kubernetes-client-' . $fileName);
 
-        $tempFilePath = (string) (self::$tmpNameFunction)(self::$tmpDir, 'kubernetes-client-' . $fileName);
+        if (!is_string($tempFilePath) || '' === $tempFilePath) {
+            throw new WriteErrorException('Failed to create a temp file in: ' . self::$tmpDir);
+        }
 
         if (false === file_put_contents($tempFilePath, $fileContent)) {
             // @codeCoverageIgnoreStart
             throw new WriteErrorException('Failed to write content to temp file: ' . $tempFilePath);
             // @codeCoverageIgnoreEnd
         }
+
+        $temporaryFiles->add($tempFilePath);
+        chmod($tempFilePath, 0600);
 
         return $tempFilePath;
     }
@@ -592,13 +782,12 @@ class Client
         return $this;
     }
 
+    /**
+     * Defines the default patch type of this client, used when a request does not define its own patch type.
+     */
     public function setPatchType(PatchType $patchType = PatchType::Strategic): self
     {
-        $this->patchHeaders = match ($patchType) {
-            PatchType::Merge => ['Content-Type' => 'application/merge-patch+json'],
-            PatchType::Json => ['Content-Type' => 'application/json-patch+json'],
-            PatchType::Strategic => ['Content-Type' => 'application/strategic-merge-patch+json'],
-        };
+        $this->patchType = $patchType;
 
         return $this;
     }
@@ -619,7 +808,7 @@ class Client
         }
 
         if (!empty($namespace)) {
-            $baseUri .= '/namespaces/' . $this->namespace;
+            $baseUri .= '/namespaces/' . rawurlencode($this->namespace);
         }
 
         if ('/healthz' === $uri || '/version' === $uri) {
@@ -636,6 +825,53 @@ class Client
     }
 
     /**
+     * The token option holds either the bearer token itself, or the path of a file holding it (service account
+     * token, re-read at each request to follow its rotation). Stream wrapper urls are refused as path, and the
+     * resolved token must be a single line. The token value is never included in error messages.
+     */
+    private function resolveToken(string $token): string
+    {
+        $scheme = parse_url($token, PHP_URL_SCHEME);
+        if (
+            str_contains($token, '://')
+            || (is_string($scheme) && in_array(strtolower($scheme), stream_get_wrappers(), true))
+        ) {
+            throw new InvalidArgumentException('Error, stream wrapper urls are not allowed as token path');
+        }
+
+        $isFile = file_exists($token);
+        if ($isFile) {
+            $token = trim((string) file_get_contents($token));
+        }
+
+        if (1 === preg_match('/[\r\n]/', $token)) {
+            if ($isFile) {
+                throw new InvalidArgumentException("Error, the token read from the file `{$this->token}` is multiline");
+            }
+
+            throw new InvalidArgumentException('Error, the token must be a single line');
+        }
+
+        return trim($token);
+    }
+
+    /**
+     * Encodes an array body as JSON: an empty body is an empty object, empty arrays which are the value of a key are
+     * maps (JSON objects), lists stay lists (no JSON_FORCE_OBJECT) and string values are never altered.
+     *
+     * @param array<int|string, mixed> $body
+     * @throws JsonException
+     */
+    private function encodeBody(array $body): string
+    {
+        if ([] === $body) {
+            return '{}';
+        }
+
+        return str_replace('":[]', '":{}', json_encode($body, JSON_THROW_ON_ERROR));
+    }
+
+    /**
      * @param array<string, int|string|null> $query
      * @param StreamInterface|string|array<string, mixed>|null $body
      * @throws \Http\Client\Exception
@@ -647,7 +883,8 @@ class Client
         array $query = [],
         StreamInterface|string|array|null $body = null,
         bool $namespace = true,
-        ?string $apiVersion = null
+        ?string $apiVersion = null,
+        ?PatchType $patchType = null,
     ): ResponseInterface {
         try {
             $requestUri = $this->makeUri(
@@ -660,33 +897,24 @@ class Client
             $headers = [];
 
             if (RequestMethod::Patch === $method) {
-                $headers = $this->patchHeaders;
+                $headers['Content-Type'] = ($patchType ?? $this->patchType)->contentType();
             }
 
             if (RequestMethod::Post === $method || RequestMethod::Put === $method) {
                 $headers['Content-Type'] = 'application/json';
             }
 
+            if (RequestMethod::Delete === $method && null !== $body) {
+                // DeleteOptions body, without this header curl sends it as form data and the API answers 415
+                $headers['Content-Type'] = 'application/json';
+            }
+
             if (!empty($this->token)) {
-                $token = $this->token;
-
-                if (!empty(parse_url($token)['scheme'])) {
-                    throw new InvalidArgumentException("Error, Url are not allowed in token path for `{$this->token}`");
-                }
-
-                if (file_exists($token)) {
-                    $token = trim((string) file_get_contents($token));
-                }
-
-                if (str_contains($token, PHP_EOL)) {
-                    throw new InvalidArgumentException("Error, the token in `{$this->token}` is multiline");
-                }
-
-                $headers['Authorization'] = 'Bearer ' . trim($token);
+                $headers['Authorization'] = 'Bearer ' . $this->resolveToken($this->token);
             }
 
             if (is_array($body)) {
-                $body = (string) json_encode($body, JSON_FORCE_OBJECT | JSON_THROW_ON_ERROR);
+                $body = $this->encodeBody($body);
             }
 
             $response = $this->getHttpMethodsClients()->send(
@@ -699,7 +927,10 @@ class Client
             // Error Handling
             if (500 <= $response->getStatusCode()) {
                 $msg = substr((string) $response->getBody(), 0, 1200); // Limit maximum chars
-                throw new ApiServerException("Server responded with 500 Error: " . $msg, 500);
+                throw new ApiServerException(
+                    'Server responded with ' . $response->getStatusCode() . ' Error: ' . $msg,
+                    $response->getStatusCode(),
+                );
             }
 
             if (in_array($response->getStatusCode(), [401, 403], true)) {
@@ -740,7 +971,8 @@ class Client
         array $query = [],
         StreamInterface|string|array|null $body = null,
         bool $namespace = true,
-        ?string $apiVersion = null
+        ?string $apiVersion = null,
+        ?PatchType $patchType = null,
     ): array {
         $response = $this->makeRequest(
             method: $method,
@@ -749,6 +981,7 @@ class Client
             body: $body,
             namespace: $namespace,
             apiVersion: $apiVersion,
+            patchType: $patchType,
         );
 
         $responseBody = (string) $response->getBody();
@@ -771,7 +1004,8 @@ class Client
         array $query = [],
         StreamInterface|string|array|null $body = null,
         bool $namespace = true,
-        ?string $apiVersion = null
+        ?string $apiVersion = null,
+        ?PatchType $patchType = null,
     ): string {
         $response = $this->makeRequest(
             method: $method,
@@ -780,6 +1014,7 @@ class Client
             body: $body,
             namespace: $namespace,
             apiVersion: $apiVersion,
+            patchType: $patchType,
         );
 
         return (string) $response->getBody();
@@ -795,7 +1030,8 @@ class Client
         array $query = [],
         StreamInterface|string|array|null $body = null,
         bool $namespace = true,
-        ?string $apiVersion = null
+        ?string $apiVersion = null,
+        ?PatchType $patchType = null,
     ): ResponseInterface {
         return $this->makeRequest(
             method: $method,
@@ -804,6 +1040,7 @@ class Client
             body: $body,
             namespace: $namespace,
             apiVersion: $apiVersion,
+            patchType: $patchType,
         );
     }
 
@@ -831,7 +1068,10 @@ class Client
     }
 
     /**
-     * @param class-string<Repository> $name
+     * Returns the repository registered under this name in the repository registry (pods(), deployments()...).
+     * Instances are cached for the lifetime of the client.
+     *
+     * @param string $name key of the repository in the registry
      * @param array<int|string, mixed> $args
      */
     public function __call(string $name, array $args): Repository

@@ -9,9 +9,7 @@ parameters:
         -
             message: '#will always evaluate to#'
             path: src/Client.php
-        -
-            message: '#Cannot cast mixed to string#'
-            path: src/Client.php
+
         -
             message: '#does not accept mixed#'
             path: src/Model/Model.php
@@ -27,9 +25,7 @@ parameters:
         -
             message: '#Call to function#'
             path: src/RepositoryRegistry.php
-        -
-            message: '#instantiateClass\(\) should return#'
-            path: src/HttpClientDiscovery.php
+
         -
             message: '#instantiateClass\(\) expects#'
             path: src/HttpClientDiscovery.php

@@ -26,6 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes\Model;
 
+use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\Kubernetes\Enums\FileFormat;
 use Teknoo\Kubernetes\Model\Issuer;
@@ -53,9 +54,9 @@ class IssuerTest extends AbstractBaseTestCase
         return new Issuer($attributes, $format);
     }
 
-    #[\Override]
+    #[Override]
     protected function getApiVersion(): string
     {
-        return 'certmanager.k8s.io/v1';
+        return 'cert-manager.io/v1';
     }
 }

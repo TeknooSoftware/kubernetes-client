@@ -28,6 +28,7 @@ namespace Teknoo\Kubernetes\Repository;
 
 use Teknoo\Kubernetes\Model\SubnamespaceAnchor;
 use Teknoo\Kubernetes\Collection\SubnamespaceAnchorCollection;
+use Teknoo\Kubernetes\Repository\Strategy\PatchMergeTrait;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -39,7 +40,9 @@ use Teknoo\Kubernetes\Collection\SubnamespaceAnchorCollection;
  */
 class SubnamespaceAnchorRepository extends Repository
 {
-    protected string $uri = 'subnamespacesanchors';
+    use PatchMergeTrait;
+
+    protected string $uri = 'subnamespaceanchors';
 
     protected static ?string $collectionClassName = SubnamespaceAnchorCollection::class;
 }

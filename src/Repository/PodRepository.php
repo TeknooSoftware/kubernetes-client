@@ -53,7 +53,7 @@ class PodRepository extends Repository
     {
         return $this->client->sendStringableRequest(
             method: RequestMethod::Get,
-            uri: '/' . $this->uri . '/' . $pod->getMetadata('name') . '/log',
+            uri: $this->getResourceUri($this->requireName($pod)) . '/log',
             query: $queryParams,
         );
     }
@@ -65,7 +65,7 @@ class PodRepository extends Repository
     {
         return $this->client->sendStringableRequest(
             method: RequestMethod::Post,
-            uri: '/' . $this->uri . '/' . $pod->getMetadata('name') . '/exec',
+            uri: $this->getResourceUri($this->requireName($pod)) . '/exec',
             query: $queryParams
         );
     }

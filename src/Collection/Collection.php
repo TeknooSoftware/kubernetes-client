@@ -53,6 +53,13 @@ abstract class Collection extends IlluminateCollection
     protected static ?string $modelClassName = null;
 
     /**
+     * Collections whose model class has already been validated, to avoid a reflection on every instantiation.
+     *
+     * @var array<class-string, true>
+     */
+    private static array $validatedModels = [];
+
+    /**
      * @param array<int, T> $items
      * @param Repository<T> $repository
      * @param array<string, int|string|null> $query
@@ -71,6 +78,10 @@ abstract class Collection extends IlluminateCollection
      */
     public static function getModelClass(): string
     {
+        if (isset(self::$validatedModels[static::class]) && null !== static::$modelClassName) {
+            return static::$modelClassName;
+        }
+
         if (null === static::$modelClassName) {
             throw new LogicException(
                 "Error, Model class name or getItems must be defined for the collection " . static::class
@@ -88,6 +99,8 @@ abstract class Collection extends IlluminateCollection
             );
         }
 
+        self::$validatedModels[static::class] = true;
+
         return static::$modelClassName;
     }
 
@@ -97,10 +110,10 @@ abstract class Collection extends IlluminateCollection
      */
     protected function getItems(array &$items): array
     {
-        $modelClassName = self::getModelClass();
+        $modelClassName = static::getModelClass();
 
         $final = [];
-        foreach ($items as &$item) {
+        foreach ($items as $item) {
             if ($item instanceof $modelClassName) {
                 $final[] = $item;
 
