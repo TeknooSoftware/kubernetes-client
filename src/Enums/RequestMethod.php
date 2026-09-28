@@ -42,5 +42,5 @@ enum RequestMethod: string
 
     case Patch = 'PATCH';
 
-    case Delete = 'Delete';
+    case Delete = 'DELETE';
 }

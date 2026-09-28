@@ -32,7 +32,19 @@ namespace Teknoo\Kubernetes\Enums;
  */
 enum PatchType: string
 {
-     case Merge = 'merge';
-     case Json = 'json';
-     case Strategic = 'strategic';
+    case Merge = 'merge';
+    case Json = 'json';
+    case Strategic = 'strategic';
+
+    /**
+     * The media type to send in the Content-Type header of a PATCH request for this patch type
+     */
+    public function contentType(): string
+    {
+        return match ($this) {
+            self::Merge => 'application/merge-patch+json',
+            self::Json => 'application/json-patch+json',
+            self::Strategic => 'application/strategic-merge-patch+json',
+        };
+    }
 }

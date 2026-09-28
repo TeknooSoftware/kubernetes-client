@@ -26,6 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes\Model;
 
+use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Teknoo\Kubernetes\Enums\FileFormat;
 use Teknoo\Kubernetes\Model\Job;
@@ -53,7 +54,7 @@ class JobTest extends AbstractBaseTestCase
         return new Job($attributes, $format);
     }
 
-    #[\Override]
+    #[Override]
     protected function getApiVersion(): string
     {
         return 'batch/v1';

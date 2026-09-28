@@ -26,6 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Kubernetes\Repository;
 
+use InvalidArgumentException;
 use LogicException;
 use Psr\Http\Message\StreamInterface;
 use Teknoo\Kubernetes\Client;
@@ -39,7 +40,12 @@ use Teknoo\Kubernetes\Model\Model;
 use Teknoo\Kubernetes\Model\DeleteOptions;
 use Teknoo\Kubernetes\Repository\Exception\NoItemsException;
 
+use function array_filter;
+use function array_merge;
 use function implode;
+use function is_a;
+use function rawurlencode;
+use function sprintf;
 use function json_encode;
 
 /**
@@ -78,7 +84,17 @@ abstract class Repository
      */
     protected array $inequalityFieldSelector = [];
 
+    /**
+     * @var class-string<Collection<T>>|null
+     */
     protected static ?string $collectionClassName = null;
+
+    /**
+     * Repositories whose collection class has already been validated, to avoid a reflection on every request.
+     *
+     * @var array<class-string, true>
+     */
+    private static array $validatedCollections = [];
 
     public function __construct(
         protected Client $client
@@ -98,13 +114,9 @@ abstract class Repository
         bool $namespace = true,
         ?PatchType $patchType = null,
     ): array {
-        $apiVersion = self::getApiVersion();
+        $apiVersion = static::getApiVersion();
         if ('v1' === $apiVersion) {
             $apiVersion = null;
-        }
-
-        if (null !== $patchType) {
-            $this->client->setPatchType($patchType);
         }
 
         return $this->client->sendRequest(
@@ -114,7 +126,18 @@ abstract class Repository
             body: $body,
             namespace: $namespace,
             apiVersion: $apiVersion,
+            patchType: $patchType,
         );
+    }
+
+    /**
+     * The patch type used by patch() and apply() for this repository. Null means the default type configured on
+     * the client. Repositories of custom resources must return PatchType::Merge, as CRDs do not support the
+     * strategic merge patch.
+     */
+    protected function getPatchType(): ?PatchType
+    {
+        return null;
     }
 
     protected static function getApiVersion(): ?string
@@ -145,7 +168,7 @@ abstract class Repository
     {
         return $this->sendRequest(
             method: RequestMethod::Put,
-            uri: '/' . $this->uri . '/' . $model->getMetadata('name'),
+            uri: $this->getResourceUri($this->requireName($model)),
             body: $model->getSchema(),
             namespace: $this->namespace
         );
@@ -158,9 +181,10 @@ abstract class Repository
     {
         return $this->sendRequest(
             method: RequestMethod::Patch,
-            uri: '/' . $this->uri . '/' . $model->getMetadata('name'),
+            uri: $this->getResourceUri($this->requireName($model)),
             body: $model->getSchema(),
-            namespace: $this->namespace
+            namespace: $this->namespace,
+            patchType: $this->getPatchType(),
         );
     }
 
@@ -174,7 +198,7 @@ abstract class Repository
 
         return $this->sendRequest(
             method: RequestMethod::Patch,
-            uri: '/' . $this->uri . '/' . $model->getMetadata('name'),
+            uri: $this->getResourceUri($this->requireName($model)),
             body: $patch,
             namespace: $this->namespace,
             patchType: PatchType::Json,
@@ -186,7 +210,7 @@ abstract class Repository
      */
     public function apply(Model $model): array
     {
-        if ($this->exists((string) $model->getMetadata("name"))) {
+        if ($this->exists($this->requireName($model))) {
             return $this->patch($model);
         }
 
@@ -198,7 +222,7 @@ abstract class Repository
      */
     public function delete(Model $model, ?DeleteOptions $options = null): array
     {
-        return $this->deleteByName((string) $model->getMetadata('name'), $options);
+        return $this->deleteByName($this->requireName($model), $options);
     }
 
     /**
@@ -208,7 +232,7 @@ abstract class Repository
     {
         return $this->sendRequest(
             method: RequestMethod::Delete,
-            uri: '/' . $this->uri . '/' . $name,
+            uri: $this->getResourceUri($this->requireNonEmptyName($name)),
             body: $options?->getSchema(),
             namespace: $this->namespace
         );
@@ -280,7 +304,9 @@ abstract class Repository
     protected function resetParameters(): self
     {
         $this->labelSelector = [];
+        $this->inequalityLabelSelector = [];
         $this->fieldSelector = [];
+        $this->inequalityFieldSelector = [];
 
         return $this;
     }
@@ -299,7 +325,7 @@ abstract class Repository
                 ],
                 $query
             ),
-            static fn($value): bool => !empty($value)
+            static fn ($value): bool => null !== $value && '' !== $value
         );
 
         if (null !== $limit) {
@@ -354,7 +380,8 @@ abstract class Repository
 
     public function first(): ?Model
     {
-        return $this->find()->first();
+        // Only the first item is needed, the API is asked for a single item
+        return $this->find(limit: 1)->first();
     }
 
     /**
@@ -379,12 +406,12 @@ abstract class Repository
                 ],
                 $query
             ),
-            static fn($value): bool => !empty($value)
+            static fn ($value): bool => null !== $value && '' !== $value
         );
 
         $this->resetParameters();
 
-        $apiVersion = self::getApiVersion();
+        $apiVersion = static::getApiVersion();
         if ('v1' === $apiVersion) {
             $apiVersion = null;
         }
@@ -405,7 +432,39 @@ abstract class Repository
     public function exists(string $name): bool
     {
         $this->resetParameters();
-        return null !== $this->setFieldSelector(['metadata.name' => $name])->first();
+        return null !== $this->setFieldSelector(['metadata.name' => $this->requireNonEmptyName($name)])->first();
+    }
+
+    /**
+     * The uri of a resource of this repository, its name being encoded to stay a single path segment.
+     */
+    protected function getResourceUri(string $name): string
+    {
+        return '/' . $this->uri . '/' . rawurlencode($name);
+    }
+
+    /**
+     * Returns the name of the model, required to target a resource (update, patch, delete, logs...).
+     *
+     * @throws InvalidArgumentException when the model has no metadata.name
+     */
+    protected function requireName(Model $model): string
+    {
+        return $this->requireNonEmptyName((string) $model->getMetadata('name'));
+    }
+
+    /**
+     * @throws InvalidArgumentException when the name is empty: the request would target the whole collection
+     */
+    protected function requireNonEmptyName(string $name): string
+    {
+        if ('' === $name) {
+            throw new InvalidArgumentException(
+                'Error, a non empty metadata.name is required to target a resource with ' . static::class
+            );
+        }
+
+        return $name;
     }
 
     /**
@@ -413,6 +472,10 @@ abstract class Repository
      */
     private static function getCollectionName(): string
     {
+        if (isset(self::$validatedCollections[static::class]) && null !== static::$collectionClassName) {
+            return static::$collectionClassName;
+        }
+
         if (null === static::$collectionClassName) {
             throw new LogicException(
                 "Error, Model class name or getItems must be defined for the collection " . static::class
@@ -429,6 +492,8 @@ abstract class Repository
                 ),
             );
         }
+
+        self::$validatedCollections[static::class] = true;
 
         return static::$collectionClassName;
     }

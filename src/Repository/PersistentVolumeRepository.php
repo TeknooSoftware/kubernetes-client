@@ -26,6 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Kubernetes\Repository;
 
+use Override;
 use Psr\Http\Message\StreamInterface;
 use Teknoo\Kubernetes\Model\PersistentVolume;
 use Teknoo\Kubernetes\Collection\PersistentVolumeCollection;
@@ -46,6 +47,8 @@ class PersistentVolumeRepository extends Repository
 {
     protected string $uri = 'persistentvolumes';
 
+    protected bool $namespace = false;
+
     protected static ?string $collectionClassName = PersistentVolumeCollection::class;
 
     /**
@@ -53,7 +56,7 @@ class PersistentVolumeRepository extends Repository
      * @param StreamInterface|string|array<string, mixed>|null $body
      * @return array<string, string|null>
      */
-    #[\Override]
+    #[Override]
     protected function sendRequest(
         RequestMethod $method,
         string $uri,

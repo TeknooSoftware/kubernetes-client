@@ -27,6 +27,7 @@ declare(strict_types=1);
 namespace Teknoo\Kubernetes\HttpClient\Instantiator;
 
 use Http\Client\Socket\Client;
+use Override;
 use Psr\Http\Client\ClientInterface;
 use Teknoo\Kubernetes\HttpClient\InstantiatorInterface;
 
@@ -39,6 +40,7 @@ use Teknoo\Kubernetes\HttpClient\InstantiatorInterface;
  */
 class Socket implements InstantiatorInterface
 {
+    #[Override]
     public function build(
         bool $verify,
         ?string $caCertificate,
@@ -50,6 +52,7 @@ class Socket implements InstantiatorInterface
             'stream_context_options' => [
                 'ssl' => [
                     'verify_peer' => $verify,
+                    'verify_peer_name' => $verify,
                 ],
             ]
         ];
@@ -67,7 +70,8 @@ class Socket implements InstantiatorInterface
         }
 
         if (!empty($timeout)) {
-            $options['stream_context_options']['http'] = ['timeout' => $timeout];
+            // socket-client reads its timeout, in milliseconds, at the top level of its configuration
+            $options['timeout'] = $timeout * 1000;
         }
 
         return new Client($options);

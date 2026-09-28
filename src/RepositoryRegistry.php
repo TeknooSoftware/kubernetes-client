@@ -29,6 +29,7 @@ namespace Teknoo\Kubernetes;
 use ArrayAccess;
 use Countable;
 use InvalidArgumentException;
+use Override;
 use Teknoo\Kubernetes\Repository\CertificateRepository;
 use Teknoo\Kubernetes\Repository\ClusterRoleBindingRepository;
 use Teknoo\Kubernetes\Repository\ClusterRoleRepository;
@@ -62,6 +63,7 @@ use Teknoo\Kubernetes\Repository\StatefulSetRepository;
 use Teknoo\Kubernetes\Repository\SubnamespaceAnchorRepository;
 
 use function is_a;
+use function count;
 use function is_string;
 
 /**
@@ -99,14 +101,14 @@ class RepositoryRegistry implements ArrayAccess, Countable
         // batch/v1
         'jobs' => JobRepository::class,
 
-        // batch/v2
+        // batch/v1
         'cronJobs' => CronJobRepository::class,
 
         // apps/v1
         'deployments' => DeploymentRepository::class,
         'statefulsets' => StatefulSetRepository::class,
 
-        // extensions/v1
+        // apps/v1 and networking.k8s.io/v1
         'daemonSets' => DaemonSetRepository::class,
         'ingresses' => IngressRepository::class,
 
@@ -116,7 +118,7 @@ class RepositoryRegistry implements ArrayAccess, Countable
         // networking.k8s.io/v1
         'networkPolicies' => NetworkPolicyRepository::class,
 
-        // certmanager.k8s.io/v1
+        // cert-manager.io/v1
         'certificates' => CertificateRepository::class,
         'issuers' => IssuerRepository::class,
 
@@ -130,16 +132,19 @@ class RepositoryRegistry implements ArrayAccess, Countable
         'subnamespacesAnchors' => SubnamespaceAnchorRepository::class,
     ];
 
+    #[Override]
     public function offsetExists(mixed $offset): bool
     {
         return isset($this->map[$offset]);
     }
 
+    #[Override]
     public function offsetGet(mixed $offset): ?string
     {
         return $this->map[$offset] ?? null;
     }
 
+    #[Override]
     public function offsetSet(mixed $offset, mixed $value): void
     {
         if (!is_string($value)) {
@@ -153,11 +158,13 @@ class RepositoryRegistry implements ArrayAccess, Countable
         $this->map[(string) $offset] = $value;
     }
 
+    #[Override]
     public function offsetUnset(mixed $offset): void
     {
         unset($this->map[$offset]);
     }
 
+    #[Override]
     public function count(): int
     {
         return count($this->map);

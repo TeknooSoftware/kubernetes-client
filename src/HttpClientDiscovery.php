@@ -26,7 +26,6 @@ declare(strict_types=1);
 
 namespace Teknoo\Kubernetes;
 
-use Http\Client\Common\HttpMethodsClient;
 use Http\Client\Curl\Client as CurlClient;
 use Http\Adapter\Guzzle7\Client as Guzzle7Client;
 use Http\Client\Socket\Client as SocketClient;
@@ -37,6 +36,7 @@ use Http\Discovery\Exception\NotFoundException;
 use Override;
 use Psr\Http\Client\ClientInterface;
 use Symfony\Component\HttpClient\HttplugClient as SymfonyHttplug;
+use Teknoo\Kubernetes\Exception\UnsupportedHttpClientOptionsException;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Curl;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Guzzle7;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Socket;
@@ -99,6 +99,20 @@ class HttpClientDiscovery extends ClassDiscovery
         }
 
         if (null === $clientClass) {
+            if (
+                !$verify
+                || null !== $caCertificate
+                || null !== $clientCertificate
+                || null !== $clientKey
+                || null !== $timeout
+            ) {
+                throw new UnsupportedHttpClientOptionsException(
+                    'No supported HTTP client is installed to apply the TLS or timeout options (php-http/curl-client, '
+                    . 'php-http/guzzle7-adapter, php-http/socket-client or symfony/http-client). Install one of them, '
+                    . 'register an instantiator or inject a configured PSR-18 client.'
+                );
+            }
+
             try {
                 $clientClass = static::findOneByType(ClientInterface::class);
                 // @codeCoverageIgnoreStart
@@ -152,6 +166,14 @@ class HttpClientDiscovery extends ClassDiscovery
             );
         }
 
-        return parent::instantiateClass($class);
+        $client = parent::instantiateClass($class);
+
+        if (!$client instanceof ClientInterface) {
+            throw new ClassInstantiationFailedException(
+                'The discovered class ' . $client::class . ' is not a PSR-18 HTTP client'
+            );
+        }
+
+        return $client;
     }
 }

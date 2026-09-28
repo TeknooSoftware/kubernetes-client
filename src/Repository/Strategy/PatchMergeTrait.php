@@ -26,8 +26,8 @@ declare(strict_types=1);
 
 namespace Teknoo\Kubernetes\Repository\Strategy;
 
+use Override;
 use Teknoo\Kubernetes\Enums\PatchType;
-use Teknoo\Kubernetes\Model\Model;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
@@ -39,15 +39,13 @@ use Teknoo\Kubernetes\Model\Model;
  */
 trait PatchMergeTrait
 {
-    public function patch(Model $model): array
+    /**
+     * Custom resources do not support the strategic merge patch: a merge patch is used for this repository only,
+     * without altering the patch type configured on the shared client.
+     */
+    #[Override]
+    protected function getPatchType(): ?PatchType
     {
-        $this->client->setPatchType(PatchType::Merge);
-
-        $result = parent::patch($model);
-
-        // Reverting default patch type
-        $this->client->setPatchType();
-
-        return $result;
+        return PatchType::Merge;
     }
 }

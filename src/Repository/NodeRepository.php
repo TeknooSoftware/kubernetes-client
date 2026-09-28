@@ -56,7 +56,7 @@ class NodeRepository extends Repository
     {
         return $this->client->sendRequest(
             method: $method,
-            uri: '/' . $this->uri . '/' . $node->getMetadata('name') . '/proxy/' . $proxyUri,
+            uri: $this->getResourceUri($this->requireName($node)) . '/proxy/' . $proxyUri,
             query: $queryParams,
             body: [],
             namespace: $this->namespace
