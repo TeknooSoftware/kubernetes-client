@@ -4,7 +4,7 @@
 /.gitlab-ci.yml     export-ignore
 /.editorconfig      export-ignore
 /AGENTS.md          export-ignore
-/behat.yml          export-ignore
+/behat.php          export-ignore
 /features           export-ignore
 /Makefile           export-ignore
 /phpstan.neon       export-ignore
