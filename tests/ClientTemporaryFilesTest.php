@@ -30,9 +30,11 @@ use InvalidArgumentException;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\Kubernetes\Client;
+use Teknoo\Kubernetes\Enums\FileFormat;
 use Teknoo\Kubernetes\Enums\RequestMethod;
 use Teknoo\Kubernetes\Exception\MissingMasterOptionException;
 use Teknoo\Kubernetes\Exception\WriteErrorException;
@@ -41,6 +43,8 @@ use Teknoo\Kubernetes\Support\TemporaryFiles;
 use function array_map;
 use function basename;
 use function bin2hex;
+use function debug_backtrace;
+use function dirname;
 use function file_get_contents;
 use function file_put_contents;
 use function fileperms;
@@ -49,10 +53,13 @@ use function glob;
 use function is_writable;
 use function mkdir;
 use function random_bytes;
+use function realpath;
 use function rmdir;
 use function sort;
 use function str_starts_with;
+use function symlink;
 use function sys_get_temp_dir;
+use function tempnam;
 use function unlink;
 
 /**
@@ -72,6 +79,13 @@ class ClientTemporaryFilesTest extends TestCase
     private const string CLIENT_KEY = "-----BEGIN PRIVATE KEY-----\nkey\n-----END PRIVATE KEY-----";
 
     private string $directory;
+
+    /**
+     * Stack frames kept alive, like a debugger or a profiler does (Xdebug develop mode)
+     *
+     * @var array<int, array<int, array<string, mixed>>>
+     */
+    private array $keptFrames = [];
 
     protected function setUp(): void
     {
@@ -184,6 +198,70 @@ class ClientTemporaryFilesTest extends TestCase
         $this->assertSame([], $this->listTemporaryFiles());
     }
 
+    public function testFilesAreWrittenUnderTheTemporaryDirectoryReachedThroughASymbolicLink(): void
+    {
+        $link = $this->directory . '-link';
+        symlink($this->directory, $link);
+
+        try {
+            Client::setTmpDir($link);
+
+            $client = Client::loadFromKubeConfigFile(
+                filePath: __DIR__ . '/fixtures/config/kubeconfig.example',
+                httpClient: $this->createStub(ClientInterface::class),
+                httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
+            );
+
+            foreach (['caCertificate', 'clientCertificate', 'clientKey'] as $option) {
+                $path = (string) new ReflectionProperty(Client::class, $option)->getValue($client);
+                $this->assertStringStartsWith($link . '/kubernetes-client-', $path);
+                $this->assertFileExists($path);
+            }
+
+            $this->assertTemporaryFiles([
+                'kubernetes-client-ca-cert.pem' => 'foo-data',
+                'kubernetes-client-client-cert.pem' => 'foo-data',
+                'kubernetes-client-client-key.pem' => 'foo-data',
+            ]);
+
+            unset($client);
+            gc_collect_cycles();
+
+            $this->assertSame([], $this->listTemporaryFiles());
+        } finally {
+            @unlink($link);
+        }
+    }
+
+    public function testACustomNameFunctionWritingOutsideTheTemporaryDirectoryIsKept(): void
+    {
+        $outside = $this->directory . '/outside';
+        mkdir($outside, 0700);
+
+        try {
+            Client::setTmpNameFunction(
+                static fn (string $dir, string $prefix): string|false => tempnam($outside, $prefix)
+            );
+
+            $client = Client::loadFromKubeConfigFile(
+                filePath: __DIR__ . '/fixtures/config/kubeconfig.example',
+                httpClient: $this->createStub(ClientInterface::class),
+                httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
+            );
+
+            $path = (string) new ReflectionProperty(Client::class, 'caCertificate')->getValue($client);
+            $this->assertSame(realpath($outside), dirname($path));
+            $this->assertFileExists($path);
+
+            unset($client);
+            gc_collect_cycles();
+
+            $this->assertFileDoesNotExist($path);
+        } finally {
+            @rmdir($outside);
+        }
+    }
+
     public function testFilesFromKubeConfigAreRemovedEvenWhenRepositoriesWereUsed(): void
     {
         $client = Client::loadFromKubeConfigFile(
@@ -284,6 +362,81 @@ class ClientTemporaryFilesTest extends TestCase
         }
 
         $this->assertInstanceOf(MissingMasterOptionException::class, $thrown);
+        $this->assertSame([], $this->listTemporaryFiles());
+    }
+
+    private function keepStackFramesAlive(): void
+    {
+        Client::setTmpNameFunction(
+            function (string $dir, string $prefix): string|false {
+                $this->keptFrames[] = debug_backtrace();
+
+                return tempnam($dir, $prefix);
+            }
+        );
+    }
+
+    public function testFilesAreRemovedWhenTheClientCanNotBeBuiltEvenIfTheFramesAreKeptAlive(): void
+    {
+        $this->keepStackFramesAlive();
+
+        $thrown = null;
+        try {
+            Client::loadFromKubeConfigFile(
+                filePath: __DIR__ . '/fixtures/config/kubeconfig.empty_server.example',
+                httpClient: $this->createStub(ClientInterface::class),
+                httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
+            );
+        } catch (MissingMasterOptionException $error) {
+            $thrown = $error;
+        }
+
+        $this->assertInstanceOf(MissingMasterOptionException::class, $thrown);
+        $this->assertCount(3, $this->keptFrames);
+        $this->assertSame([], $this->listTemporaryFiles());
+    }
+
+    public function testFilesAreRemovedWhenTheKubeConfigDataIsInvalidEvenIfTheFramesAreKeptAlive(): void
+    {
+        $this->keepStackFramesAlive();
+
+        $thrown = null;
+        try {
+            Client::loadFromKubeConfig(
+                content: [
+                    'clusters' => [
+                        [
+                            'name' => 'cluster',
+                            'cluster' => [
+                                'server' => 'https://api.example.com',
+                                'certificate-authority-data' => 'Zm9vLWRhdGE=',
+                            ],
+                        ],
+                    ],
+                    'contexts' => [
+                        ['name' => 'ctx', 'context' => ['cluster' => 'cluster', 'user' => 'user']],
+                    ],
+                    'current-context' => 'ctx',
+                    'users' => [
+                        [
+                            'name' => 'user',
+                            'user' => [
+                                'client-certificate-data' => 'Zm9vLWRhdGE=',
+                                'client-key-data' => '%%%',
+                            ],
+                        ],
+                    ],
+                ],
+                format: FileFormat::Array,
+                httpClient: $this->createStub(ClientInterface::class),
+                httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
+            );
+        } catch (InvalidArgumentException $error) {
+            $thrown = $error;
+        }
+
+        $this->assertInstanceOf(InvalidArgumentException::class, $thrown);
+        $this->assertCount(2, $this->keptFrames);
         $this->assertSame([], $this->listTemporaryFiles());
     }
 

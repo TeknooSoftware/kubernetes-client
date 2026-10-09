@@ -81,9 +81,11 @@ use Teknoo\Kubernetes\Repository\ServiceRepository;
 use Teknoo\Kubernetes\Repository\StatefulSetRepository;
 use Teknoo\Kubernetes\Repository\SubnamespaceAnchorRepository;
 use Teknoo\Kubernetes\Support\TemporaryFiles;
+use Throwable;
 use WeakMap;
 
 use function base64_decode;
+use function basename;
 use function chmod;
 use function dirname;
 use function file_exists;
@@ -100,6 +102,7 @@ use function json_encode;
 use function parse_url;
 use function preg_match;
 use function rawurlencode;
+use function realpath;
 use function rtrim;
 use function str_contains;
 use function str_replace;
@@ -584,81 +587,88 @@ class Client
 
         $options['master'] = $cluster['server'];
 
-        // If the client can not be built, this local object is released and the files already written are removed
+        // If the client can not be built, the files already written are removed at once: their cleanup must not
+        // wait for the release of this local object, a debugger or a profiler can keep the stack frames alive
         $temporaryFiles = new TemporaryFiles();
 
-        if (isset($cluster['certificate-authority-data'])) {
-            $options['ca_cert'] = self::getTempFilePath(
-                'ca-cert.pem',
-                self::decodeBase64Attribute($cluster['certificate-authority-data'], 'certificate-authority-data'),
-                $temporaryFiles,
-            );
-        }
-
-        if (isset($user['client-certificate-data'])) {
-            $options['client_cert'] = self::getTempFilePath(
-                'client-cert.pem',
-                self::decodeBase64Attribute($user['client-certificate-data'], 'client-certificate-data'),
-                $temporaryFiles,
-            );
-        }
-
-        if (isset($user['client-key-data'])) {
-            $options['client_key'] = self::getTempFilePath(
-                'client-key.pem',
-                self::decodeBase64Attribute($user['client-key-data'], 'client-key-data'),
-                $temporaryFiles,
-            );
-        }
-
-        // File paths are used when no embedded data is given
-        if (!isset($options['ca_cert']) && isset($cluster['certificate-authority'])) {
-            $options['ca_cert'] = self::resolveKubeConfigPath(
-                $cluster['certificate-authority'],
-                'certificate-authority',
-                $baseDirectory,
-            );
-        }
-
-        if (!isset($options['client_cert']) && isset($user['client-certificate'])) {
-            $options['client_cert'] = self::resolveKubeConfigPath(
-                $user['client-certificate'],
-                'client-certificate',
-                $baseDirectory,
-            );
-        }
-
-        if (!isset($options['client_key']) && isset($user['client-key'])) {
-            $options['client_key'] = self::resolveKubeConfigPath($user['client-key'], 'client-key', $baseDirectory);
-        }
-
-        if (isset($user['token'])) {
-            if (!is_string($user['token']) || '' === $user['token']) {
-                throw new InvalidArgumentException(
-                    'KubeConfig parse error - The attribute "token" must be a non empty string.'
+        try {
+            if (isset($cluster['certificate-authority-data'])) {
+                $options['ca_cert'] = self::getTempFilePath(
+                    'ca-cert.pem',
+                    self::decodeBase64Attribute($cluster['certificate-authority-data'], 'certificate-authority-data'),
+                    $temporaryFiles,
                 );
             }
 
-            $options['token'] = $user['token'];
-        } elseif (isset($user['tokenFile'])) {
-            $options['token'] = self::resolveKubeConfigPath($user['tokenFile'], 'tokenFile', $baseDirectory);
-        }
+            if (isset($user['client-certificate-data'])) {
+                $options['client_cert'] = self::getTempFilePath(
+                    'client-cert.pem',
+                    self::decodeBase64Attribute($user['client-certificate-data'], 'client-certificate-data'),
+                    $temporaryFiles,
+                );
+            }
 
-        if (isset($context['namespace']) && '' !== $context['namespace']) {
-            $options['namespace'] = $context['namespace'];
-        }
+            if (isset($user['client-key-data'])) {
+                $options['client_key'] = self::getTempFilePath(
+                    'client-key.pem',
+                    self::decodeBase64Attribute($user['client-key-data'], 'client-key-data'),
+                    $temporaryFiles,
+                );
+            }
 
-        if (!empty($cluster['insecure-skip-tls-verify'])) {
-            $options['verify'] = false;
-        }
+            // File paths are used when no embedded data is given
+            if (!isset($options['ca_cert']) && isset($cluster['certificate-authority'])) {
+                $options['ca_cert'] = self::resolveKubeConfigPath(
+                    $cluster['certificate-authority'],
+                    'certificate-authority',
+                    $baseDirectory,
+                );
+            }
 
-        $client = new self(
-            options: $options,
-            repositoryRegistry: $repositoryRegistry,
-            httpClient: $httpClient,
-            httpRequestFactory: $httpRequestFactory,
-            httpStreamFactory: $httpStreamFactory,
-        );
+            if (!isset($options['client_cert']) && isset($user['client-certificate'])) {
+                $options['client_cert'] = self::resolveKubeConfigPath(
+                    $user['client-certificate'],
+                    'client-certificate',
+                    $baseDirectory,
+                );
+            }
+
+            if (!isset($options['client_key']) && isset($user['client-key'])) {
+                $options['client_key'] = self::resolveKubeConfigPath($user['client-key'], 'client-key', $baseDirectory);
+            }
+
+            if (isset($user['token'])) {
+                if (!is_string($user['token']) || '' === $user['token']) {
+                    throw new InvalidArgumentException(
+                        'KubeConfig parse error - The attribute "token" must be a non empty string.'
+                    );
+                }
+
+                $options['token'] = $user['token'];
+            } elseif (isset($user['tokenFile'])) {
+                $options['token'] = self::resolveKubeConfigPath($user['tokenFile'], 'tokenFile', $baseDirectory);
+            }
+
+            if (isset($context['namespace']) && '' !== $context['namespace']) {
+                $options['namespace'] = $context['namespace'];
+            }
+
+            if (!empty($cluster['insecure-skip-tls-verify'])) {
+                $options['verify'] = false;
+            }
+
+            $client = new self(
+                options: $options,
+                repositoryRegistry: $repositoryRegistry,
+                httpClient: $httpClient,
+                httpRequestFactory: $httpRequestFactory,
+                httpStreamFactory: $httpStreamFactory,
+            );
+        } catch (Throwable $error) {
+            $temporaryFiles->remove();
+
+            throw $error;
+        }
 
         if (!$temporaryFiles->isEmpty()) {
             self::getTemporaryFilesMap()[$client] = $temporaryFiles;
@@ -761,6 +771,16 @@ class Client
 
         if (!is_string($tempFilePath) || '' === $tempFilePath) {
             throw new WriteErrorException('Failed to create a temp file in: ' . self::$tmpDir);
+        }
+
+        // tempnam() resolves symbolic links (/var is /private/var on macOS): keep the configured directory
+        $directory = rtrim(self::$tmpDir, '/\\');
+        if (
+            dirname($tempFilePath) !== $directory
+            && false !== ($realDirectory = realpath($directory))
+            && realpath(dirname($tempFilePath)) === $realDirectory
+        ) {
+            $tempFilePath = $directory . DIRECTORY_SEPARATOR . basename($tempFilePath);
         }
 
         if (false === file_put_contents($tempFilePath, $fileContent)) {

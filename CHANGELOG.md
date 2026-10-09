@@ -1,5 +1,12 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [2.1.1] - 2026-10-09
+### Fixes
+- The temporary files written from a kubeconfig are removed as soon as the client can not be built, even when a
+  debugger or a profiler keeps the stack frames alive (Xdebug in `develop` mode, the default on macOS with Homebrew).
+- The paths of the temporary files start with the directory given to `Client::setTmpDir()` (or the system temporary
+  directory), even when it is reached through a symbolic link (`tempnam()` resolves `/var` to `/private/var` on macOS).
+
 ## [2.1.0] - 2026-09-28
 ### Security
 - Temporary certificate and key files (inline PEM options, kubeconfig data) are private (0600) and removed when the
