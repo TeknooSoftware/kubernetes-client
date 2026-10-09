@@ -85,6 +85,7 @@ use Throwable;
 use WeakMap;
 
 use function base64_decode;
+use function basename;
 use function chmod;
 use function dirname;
 use function file_exists;
@@ -101,6 +102,7 @@ use function json_encode;
 use function parse_url;
 use function preg_match;
 use function rawurlencode;
+use function realpath;
 use function rtrim;
 use function str_contains;
 use function str_replace;
@@ -769,6 +771,16 @@ class Client
 
         if (!is_string($tempFilePath) || '' === $tempFilePath) {
             throw new WriteErrorException('Failed to create a temp file in: ' . self::$tmpDir);
+        }
+
+        // tempnam() resolves symbolic links (/var is /private/var on macOS): keep the configured directory
+        $directory = rtrim(self::$tmpDir, '/\\');
+        if (
+            dirname($tempFilePath) !== $directory
+            && false !== ($realDirectory = realpath($directory))
+            && realpath(dirname($tempFilePath)) === $realDirectory
+        ) {
+            $tempFilePath = $directory . DIRECTORY_SEPARATOR . basename($tempFilePath);
         }
 
         if (false === file_put_contents($tempFilePath, $fileContent)) {

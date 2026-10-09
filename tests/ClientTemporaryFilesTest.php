@@ -30,6 +30,7 @@ use InvalidArgumentException;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Teknoo\Kubernetes\Client;
@@ -43,6 +44,7 @@ use function array_map;
 use function basename;
 use function bin2hex;
 use function debug_backtrace;
+use function dirname;
 use function file_get_contents;
 use function file_put_contents;
 use function fileperms;
@@ -51,9 +53,11 @@ use function glob;
 use function is_writable;
 use function mkdir;
 use function random_bytes;
+use function realpath;
 use function rmdir;
 use function sort;
 use function str_starts_with;
+use function symlink;
 use function sys_get_temp_dir;
 use function tempnam;
 use function unlink;
@@ -192,6 +196,70 @@ class ClientTemporaryFilesTest extends TestCase
         gc_collect_cycles();
 
         $this->assertSame([], $this->listTemporaryFiles());
+    }
+
+    public function testFilesAreWrittenUnderTheTemporaryDirectoryReachedThroughASymbolicLink(): void
+    {
+        $link = $this->directory . '-link';
+        symlink($this->directory, $link);
+
+        try {
+            Client::setTmpDir($link);
+
+            $client = Client::loadFromKubeConfigFile(
+                filePath: __DIR__ . '/fixtures/config/kubeconfig.example',
+                httpClient: $this->createStub(ClientInterface::class),
+                httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
+            );
+
+            foreach (['caCertificate', 'clientCertificate', 'clientKey'] as $option) {
+                $path = (string) new ReflectionProperty(Client::class, $option)->getValue($client);
+                $this->assertStringStartsWith($link . '/kubernetes-client-', $path);
+                $this->assertFileExists($path);
+            }
+
+            $this->assertTemporaryFiles([
+                'kubernetes-client-ca-cert.pem' => 'foo-data',
+                'kubernetes-client-client-cert.pem' => 'foo-data',
+                'kubernetes-client-client-key.pem' => 'foo-data',
+            ]);
+
+            unset($client);
+            gc_collect_cycles();
+
+            $this->assertSame([], $this->listTemporaryFiles());
+        } finally {
+            @unlink($link);
+        }
+    }
+
+    public function testACustomNameFunctionWritingOutsideTheTemporaryDirectoryIsKept(): void
+    {
+        $outside = $this->directory . '/outside';
+        mkdir($outside, 0700);
+
+        try {
+            Client::setTmpNameFunction(
+                static fn (string $dir, string $prefix): string|false => tempnam($outside, $prefix)
+            );
+
+            $client = Client::loadFromKubeConfigFile(
+                filePath: __DIR__ . '/fixtures/config/kubeconfig.example',
+                httpClient: $this->createStub(ClientInterface::class),
+                httpStreamFactory: $this->createStub(StreamFactoryInterface::class),
+            );
+
+            $path = (string) new ReflectionProperty(Client::class, 'caCertificate')->getValue($client);
+            $this->assertSame(realpath($outside), dirname($path));
+            $this->assertFileExists($path);
+
+            unset($client);
+            gc_collect_cycles();
+
+            $this->assertFileDoesNotExist($path);
+        } finally {
+            @rmdir($outside);
+        }
     }
 
     public function testFilesFromKubeConfigAreRemovedEvenWhenRepositoriesWereUsed(): void

@@ -85,6 +85,7 @@ use function json_encode;
 use function mkdir;
 use function random_bytes;
 use function rmdir;
+use function symlink;
 use function sys_get_temp_dir;
 use function tempnam;
 use function unlink;
@@ -124,6 +125,8 @@ class FeatureContext implements Context
     private array $keptFrames = [];
 
     private ?string $tmpDir = null;
+
+    private ?string $tmpLink = null;
 
     private ?RepositoryRegistry $repositoryRegistry = null;
 
@@ -856,6 +859,28 @@ class FeatureContext implements Context
         return $files;
     }
 
+    #[Given('the temporary directory is reached through a symbolic link')]
+    public function theTemporaryDirectoryIsReachedThroughASymbolicLink(): void
+    {
+        Assert::assertNotNull($this->tmpDir, 'No temporary directory was defined in this scenario');
+        $this->tmpLink = $this->tmpDir . '-link';
+        symlink($this->tmpDir, $this->tmpLink);
+        Client::setTmpDir($this->tmpLink);
+    }
+
+    #[Then('the certificate files of the client must be in the directory reached through the symbolic link')]
+    public function theCertificateFilesOfTheClientMustBeInTheDirectoryReachedThroughTheSymbolicLink(): void
+    {
+        Assert::assertNotNull($this->tmpLink, 'No symbolic link was defined in this scenario');
+        Assert::assertNotNull($this->kubeClient);
+
+        foreach (['caCertificate', 'clientCertificate', 'clientKey'] as $option) {
+            $path = (string) new ReflectionProperty(Client::class, $option)->getValue($this->kubeClient);
+            Assert::assertStringStartsWith($this->tmpLink . '/kubernetes-client-', $path);
+            Assert::assertFileExists($path);
+        }
+    }
+
     #[Given('a tool keeps the stack frames of the client alive')]
     public function aToolKeepsTheStackFramesOfTheClientAlive(): void
     {
@@ -910,6 +935,11 @@ class FeatureContext implements Context
         Client::setTmpDir(null);
         Client::setTmpNameFunction(null);
         $this->keptFrames = [];
+
+        if (null !== $this->tmpLink) {
+            @unlink($this->tmpLink);
+            $this->tmpLink = null;
+        }
 
         if (null === $this->tmpDir) {
             return;
