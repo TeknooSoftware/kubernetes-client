@@ -47,6 +47,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Teknoo\Kubernetes\Client;
+use Teknoo\Kubernetes\Exception\MissingMasterOptionException;
 use Teknoo\Kubernetes\Exception\UnsupportedHttpClientOptionsException;
 use Teknoo\Kubernetes\HttpClientDiscovery;
 use Teknoo\Kubernetes\HttpClient\InstantiatorInterface;
@@ -76,6 +77,7 @@ use function array_shift;
 use function bin2hex;
 use function file_put_contents;
 use function count;
+use function debug_backtrace;
 use function gc_collect_cycles;
 use function glob;
 use function json_decode;
@@ -84,6 +86,7 @@ use function mkdir;
 use function random_bytes;
 use function rmdir;
 use function sys_get_temp_dir;
+use function tempnam;
 use function unlink;
 
 /**
@@ -112,6 +115,13 @@ class FeatureContext implements Context
     private ?Throwable $error = null;
 
     private mixed $result = null;
+
+    /**
+     * Stack frames kept alive, like a debugger or a profiler does (Xdebug develop mode)
+     *
+     * @var array<int, array<int, array<string, mixed>>>
+     */
+    private array $keptFrames = [];
 
     private ?string $tmpDir = null;
 
@@ -846,6 +856,18 @@ class FeatureContext implements Context
         return $files;
     }
 
+    #[Given('a tool keeps the stack frames of the client alive')]
+    public function aToolKeepsTheStackFramesOfTheClientAlive(): void
+    {
+        Client::setTmpNameFunction(
+            function (string $dir, string $prefix): string|false {
+                $this->keptFrames[] = debug_backtrace();
+
+                return tempnam($dir, $prefix);
+            }
+        );
+    }
+
     #[Then(':count temporary certificate files must exist')]
     #[Then(':count temporary certificate file must exist')]
     public function temporaryCertificateFilesMustExist(int $count): void
@@ -887,6 +909,7 @@ class FeatureContext implements Context
     {
         Client::setTmpDir(null);
         Client::setTmpNameFunction(null);
+        $this->keptFrames = [];
 
         if (null === $this->tmpDir) {
             return;
@@ -913,6 +936,12 @@ class FeatureContext implements Context
     public function theClientMustRefuseTheOperationWithAnInvalidArgumentError(): void
     {
         Assert::assertInstanceOf(InvalidArgumentException::class, $this->error);
+    }
+
+    #[Then('the client must refuse the operation with a missing master error')]
+    public function theClientMustRefuseTheOperationWithAMissingMasterError(): void
+    {
+        Assert::assertInstanceOf(MissingMasterOptionException::class, $this->error);
     }
 
     #[Given('a pod model from the YAML document:')]

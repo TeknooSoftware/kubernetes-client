@@ -116,3 +116,60 @@ Feature: Load a client from a kubeconfig
           token: foo
       """
     Then the client must refuse the operation with an invalid argument error
+
+  Scenario: No file is left behind when the certificate data is invalid, even if the stack frames are kept alive
+    Given a Kubernetes cluster
+    And a temporary directory for the certificate files
+    And a tool keeps the stack frames of the client alive
+    When the user loads a client from this kubeconfig:
+      """
+      apiVersion: v1
+      clusters:
+      - cluster:
+          certificate-authority-data: Zm9vLWRhdGE=
+          server: https://api.example.com
+        name: cluster-name
+      contexts:
+      - context:
+          cluster: cluster-name
+          user: cluster-user
+        name: context-name
+      current-context: context-name
+      kind: Config
+      users:
+      - name: cluster-user
+        user:
+          client-certificate-data: Zm9vLWRhdGE=
+          client-key-data: "this is not base64!"
+      """
+    Then the client must refuse the operation with an invalid argument error
+    And no temporary certificate file must remain
+
+  Scenario: No file is left behind when the server is missing, even if the stack frames are kept alive
+    Given a Kubernetes cluster
+    And a temporary directory for the certificate files
+    And a tool keeps the stack frames of the client alive
+    When the user loads a client from this kubeconfig:
+      """
+      apiVersion: v1
+      clusters:
+      - cluster:
+          certificate-authority-data: Zm9vLWRhdGE=
+          server: ""
+        name: cluster-name
+      contexts:
+      - context:
+          cluster: cluster-name
+          user: cluster-user
+        name: context-name
+      current-context: context-name
+      kind: Config
+      users:
+      - name: cluster-user
+        user:
+          token: foobar
+          client-certificate-data: Zm9vLWRhdGE=
+          client-key-data: Zm9vLWRhdGE=
+      """
+    Then the client must refuse the operation with a missing master error
+    And no temporary certificate file must remain
