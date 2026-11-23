@@ -24,6 +24,8 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes;
 
+use GuzzleHttp\Client as GuzzleClient;
+use Http\Client\Curl\Client as CurlClient;
 use Http\Discovery\Exception\ClassInstantiationFailedException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -33,6 +35,9 @@ use ReflectionClass;
 use ReflectionProperty;
 use stdClass;
 use Teknoo\Kubernetes\Exception\UnsupportedHttpClientOptionsException;
+use Teknoo\Kubernetes\HttpClient\Instantiator\Curl;
+use Teknoo\Kubernetes\HttpClient\Instantiator\Guzzle;
+use Teknoo\Kubernetes\HttpClient\Instantiator\Guzzle7;
 use Teknoo\Kubernetes\HttpClientDiscovery;
 
 /**
@@ -104,5 +109,57 @@ class HttpClientDiscoveryOptionsTest extends TestCase
 
         $this->expectException(ClassInstantiationFailedException::class);
         HttpClientDiscovery::find(clientClass: stdClass::class);
+    }
+
+    /**
+     * @param array<class-string, class-string> $instantiators
+     */
+    private function useInstantiators(array $instantiators): void
+    {
+        new ReflectionClass(HttpClientDiscovery::class)->setStaticPropertyValue('instantiatorsList', $instantiators);
+    }
+
+    public function testTheNativeGuzzleClientHasAnInstantiatorByDefault(): void
+    {
+        $default = new ReflectionProperty(HttpClientDiscovery::class, 'instantiatorsList')->getDefaultValue();
+
+        $this->assertArrayHasKey(GuzzleClient::class, $default);
+        $this->assertSame(Guzzle::class, $default[GuzzleClient::class]);
+    }
+
+    public function testTheNativeGuzzleClientReceivesTheTlsAndTimeoutOptions(): void
+    {
+        $this->useInstantiators([GuzzleClient::class => Guzzle::class]);
+
+        $client = HttpClientDiscovery::find(caCertificate: '/ca.pem', timeout: 20);
+
+        $this->assertInstanceOf(GuzzleClient::class, $client);
+        $config = new ReflectionProperty(GuzzleClient::class, 'config')->getValue($client);
+        $this->assertSame('/ca.pem', $config['verify']);
+        $this->assertSame(20, $config['timeout']);
+    }
+
+    public function testARegisteredInstantiatorIsPreferredToTheNativeGuzzleClient(): void
+    {
+        $this->useInstantiators([GuzzleClient::class => Guzzle::class]);
+        HttpClientDiscovery::registerInstantiator(stdClass::class, Curl::class);
+
+        $this->assertInstanceOf(CurlClient::class, HttpClientDiscovery::find(caCertificate: '/ca.pem'));
+    }
+
+    public function testTheClientClassOfTheGuzzle7AdapterGivesANativeGuzzleClientWithTheOptions(): void
+    {
+        $this->useInstantiators(['Http\\Adapter\\Guzzle7\\Client' => Guzzle7::class]);
+
+        $client = HttpClientDiscovery::find(
+            caCertificate: '/ca.pem',
+            timeout: 20,
+            clientClass: 'Http\\Adapter\\Guzzle7\\Client',
+        );
+
+        $this->assertInstanceOf(GuzzleClient::class, $client);
+        $config = new ReflectionProperty(GuzzleClient::class, 'config')->getValue($client);
+        $this->assertSame('/ca.pem', $config['verify']);
+        $this->assertSame(20, $config['timeout']);
     }
 }

@@ -26,7 +26,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Kubernetes\HttpClient\Instantiator;
 
-use Http\Adapter\Guzzle7\Client;
+use GuzzleHttp\Client;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Guzzle7;

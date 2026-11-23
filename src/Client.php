@@ -35,6 +35,7 @@ use Http\Client\Exception\TransferException as HttpTransferException;
 use Http\Discovery\Psr17FactoryDiscovery;
 use InvalidArgumentException;
 use JsonException;
+use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -973,6 +974,8 @@ class Client
             $responseBody = (string) $response->getBody();
 
             throw new BadRequestException($responseBody, $response->getStatusCode(), $httpTransferException);
+        } catch (ClientExceptionInterface $clientException) {
+            throw new BadRequestException($clientException->getMessage(), 500, $clientException);
         }
     }
 

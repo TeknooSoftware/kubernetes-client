@@ -26,49 +26,17 @@ declare(strict_types=1);
 
 namespace Teknoo\Kubernetes\HttpClient\Instantiator;
 
-use GuzzleHttp\RequestOptions;
-use Http\Adapter\Guzzle7\Client;
-use Override;
-use Psr\Http\Client\ClientInterface;
-use Teknoo\Kubernetes\HttpClient\InstantiatorInterface;
-
 /**
+ * Builds a native Guzzle client, even when php-http/guzzle7-adapter is installed: Guzzle implements PSR-18.
+ *
+ * @deprecated since 2.2, use Guzzle instead.
+ *
  * @copyright   Copyright (c) EIRL Richard Déloge (https://deloge.io - richard@deloge.io)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software - contact@teknoo.software)
  * @license     http://teknoo.software/license/bsd-3         3-Clause BSD License
  * @author      Richard Déloge <richard@teknoo.software>
  * @author      Marc Lough <http://maclof.com>
  */
-class Guzzle7 implements InstantiatorInterface
+class Guzzle7 extends Guzzle
 {
-    #[Override]
-    public function build(
-        bool $verify,
-        ?string $caCertificate,
-        ?string $clientCertificate,
-        ?string $clientKey,
-        ?int $timeout,
-    ): ClientInterface {
-        $options = [
-            RequestOptions::VERIFY => $verify,
-        ];
-
-        if ($verify && !empty($caCertificate)) {
-            $options[RequestOptions::VERIFY] = $caCertificate;
-        }
-
-        if (!empty($clientCertificate)) {
-            $options[RequestOptions::CERT] = $clientCertificate;
-        }
-
-        if (!empty($clientKey)) {
-            $options[RequestOptions::SSL_KEY] = $clientKey;
-        }
-
-        if (!empty($timeout)) {
-            $options[RequestOptions::TIMEOUT] = (int) $timeout;
-        }
-
-        return Client::createWithConfig($options);
-    }
 }

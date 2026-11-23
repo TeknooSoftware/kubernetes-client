@@ -30,12 +30,13 @@ use Behat\Step\Given;
 use Behat\Step\Then;
 use Behat\Step\When;
 use GuzzleHttp\Client as GuzzleClient;
-use Http\Adapter\Guzzle7\Client as Guzzle7Client;
+use GuzzleHttp\Exception\ConnectException;
 use Http\Client\Common\HttpMethodsClient;
 use Http\Client\Curl\Client as CurlClient;
 use Http\Client\Socket\Client as SocketClient;
 use ReflectionClass;
 use ReflectionProperty;
+use SensitiveParameter;
 use Symfony\Component\HttpClient\HttplugClient as SymfonyHttplug;
 use InvalidArgumentException;
 use Nyholm\Psr7\Factory\Psr17Factory;
@@ -43,6 +44,7 @@ use Nyholm\Psr7\Response;
 use Nyholm\Psr7\Stream;
 use PHPUnit\Framework\Assert;
 use Psr\Http\Client\ClientInterface;
+use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
@@ -52,6 +54,7 @@ use Teknoo\Kubernetes\Exception\UnsupportedHttpClientOptionsException;
 use Teknoo\Kubernetes\HttpClientDiscovery;
 use Teknoo\Kubernetes\HttpClient\InstantiatorInterface;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Curl as CurlInstantiator;
+use Teknoo\Kubernetes\HttpClient\Instantiator\Guzzle as GuzzleInstantiator;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Guzzle7 as Guzzle7Instantiator;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Socket as SocketInstantiator;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Symfony as SymfonyInstantiator;
@@ -60,6 +63,7 @@ use Teknoo\Kubernetes\Contracts\Repository\StreamingParser;
 use Teknoo\Kubernetes\Enums\FileFormat;
 use Teknoo\Kubernetes\Enums\RequestMethod;
 use Teknoo\Kubernetes\Exceptions\ApiServerException;
+use Teknoo\Kubernetes\Exceptions\BadRequestException;
 use Teknoo\Kubernetes\Model\Certificate;
 use Teknoo\Kubernetes\Model\ConfigMap;
 use Teknoo\Kubernetes\Model\DeleteOptions;
@@ -71,6 +75,7 @@ use Teknoo\Kubernetes\Model\SubnamespaceAnchor;
 use Teknoo\Kubernetes\RepositoryRegistry;
 use Teknoo\Tests\Kubernetes\Behat\Fixture\ThingRepository;
 use Throwable;
+use stdClass;
 
 use function array_key_last;
 use function array_shift;
@@ -197,9 +202,20 @@ class FeatureContext implements Context
                 $this->setResponses([$firstResponse]);
             }
 
+            private ?Throwable $exception = null;
+
+            public function setException(#[SensitiveParameter] ?Throwable $exception): void
+            {
+                $this->exception = $exception;
+            }
+
             public function sendRequest(RequestInterface $request): ResponseInterface
             {
                 $this->requests[] = $request;
+
+                if (null !== $this->exception) {
+                    throw $this->exception;
+                }
 
                 if (!empty($this->responses)) {
                     return array_shift($this->responses);
@@ -832,6 +848,27 @@ class FeatureContext implements Context
         );
     }
 
+    #[Given('the cluster can not be reached')]
+    public function theClusterCanNotBeReached(): void
+    {
+        $this->kubeCollections ??= 'pods';
+        $this->psrClient->setException(
+            new ConnectException(
+                'Connection refused',
+                new Psr17Factory()->createRequest('GET', 'https://api.example.com'),
+            ),
+        );
+    }
+
+    #[Then('the client must fail with a bad request error :code')]
+    public function theClientMustFailWithABadRequestError(int $code): void
+    {
+        Assert::assertInstanceOf(BadRequestException::class, $this->error);
+        Assert::assertSame($code, $this->error->getCode());
+        Assert::assertSame('Connection refused', $this->error->getMessage());
+        Assert::assertInstanceOf(NetworkExceptionInterface::class, $this->error->getPrevious());
+    }
+
     #[Given('a temporary directory for the certificate files')]
     public function aTemporaryDirectoryForTheCertificateFiles(): void
     {
@@ -1212,6 +1249,7 @@ class FeatureContext implements Context
             'curl' => new CurlInstantiator(),
             'socket' => new SocketInstantiator(),
             'guzzle7' => new Guzzle7Instantiator(),
+            'guzzle' => new GuzzleInstantiator(),
             'symfony' => new SymfonyInstantiator(),
         };
 
@@ -1258,9 +1296,8 @@ class FeatureContext implements Context
             ];
         }
 
-        if ($client instanceof Guzzle7Client) {
-            $guzzle = new ReflectionProperty(Guzzle7Client::class, 'guzzle')->getValue($client);
-            $config = new ReflectionProperty(GuzzleClient::class, 'config')->getValue($guzzle);
+        if ($client instanceof GuzzleClient) {
+            $config = new ReflectionProperty(GuzzleClient::class, 'config')->getValue($client);
 
             $ca = null;
             if (is_string($config['verify'])) {
@@ -1345,6 +1382,16 @@ class FeatureContext implements Context
         }
     }
 
+    #[When('an HTTP client is discovered for the client class :class with a CA certificate')]
+    public function anHttpClientIsDiscoveredForTheClientClassWithACaCertificate(string $class): void
+    {
+        try {
+            $this->builtHttpClient = HttpClientDiscovery::find(caCertificate: '/ca.pem', clientClass: $class);
+        } catch (Throwable $throwable) {
+            $this->error = $throwable;
+        }
+    }
+
     #[When('an HTTP client is discovered without options')]
     public function anHttpClientIsDiscoveredWithoutOptions(): void
     {
@@ -1360,6 +1407,37 @@ class FeatureContext implements Context
     {
         Assert::assertInstanceOf(UnsupportedHttpClientOptionsException::class, $this->error);
         Assert::assertNull($this->builtHttpClient);
+    }
+
+    #[Given('only the native Guzzle client is available')]
+    public function onlyTheNativeGuzzleClientIsAvailable(): void
+    {
+        $this->saveHttpClientInstantiators();
+        new ReflectionClass(HttpClientDiscovery::class)->setStaticPropertyValue(
+            'instantiatorsList',
+            [GuzzleClient::class => GuzzleInstantiator::class],
+        );
+    }
+
+    #[Given('an instantiator is registered for another HTTP client class')]
+    public function anInstantiatorIsRegisteredForAnotherHttpClientClass(): void
+    {
+        $this->saveHttpClientInstantiators();
+        HttpClientDiscovery::registerInstantiator(stdClass::class, CurlInstantiator::class);
+    }
+
+    #[Then('the built client must be a native Guzzle client')]
+    public function theBuiltClientMustBeANativeGuzzleClient(): void
+    {
+        Assert::assertNull($this->error);
+        Assert::assertInstanceOf(GuzzleClient::class, $this->builtHttpClient);
+    }
+
+    #[Then('the built client must be built by the registered instantiator')]
+    public function theBuiltClientMustBeBuiltByTheRegisteredInstantiator(): void
+    {
+        Assert::assertNull($this->error);
+        Assert::assertInstanceOf(CurlClient::class, $this->builtHttpClient);
     }
 
     #[Then('an HTTP client must have been discovered')]

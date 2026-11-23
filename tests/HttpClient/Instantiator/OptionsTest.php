@@ -25,7 +25,6 @@ declare(strict_types=1);
 namespace Teknoo\Tests\Kubernetes\HttpClient\Instantiator;
 
 use GuzzleHttp\Client as GuzzleClient;
-use Http\Adapter\Guzzle7\Client as Guzzle7Client;
 use Http\Client\Curl\Client as CurlClient;
 use Http\Client\Socket\Client as SocketClient;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -121,12 +120,9 @@ class OptionsTest extends TestCase
     private function guzzleConfig(bool $verify, ?string $ca): array
     {
         $client = new Guzzle7()->build($verify, $ca, '/cert.pem', '/key.pem', 20);
-        $this->assertInstanceOf(Guzzle7Client::class, $client);
+        $this->assertInstanceOf(GuzzleClient::class, $client);
 
-        $guzzle = new ReflectionProperty(Guzzle7Client::class, 'guzzle')->getValue($client);
-        $this->assertInstanceOf(GuzzleClient::class, $guzzle);
-
-        return new ReflectionProperty(GuzzleClient::class, 'config')->getValue($guzzle);
+        return new ReflectionProperty(GuzzleClient::class, 'config')->getValue($client);
     }
 
     public function testGuzzleHonoursADisabledVerificationEvenWithACaCertificate(): void

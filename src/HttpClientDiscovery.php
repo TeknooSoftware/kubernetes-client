@@ -26,8 +26,8 @@ declare(strict_types=1);
 
 namespace Teknoo\Kubernetes;
 
+use GuzzleHttp\Client as GuzzleClient;
 use Http\Client\Curl\Client as CurlClient;
-use Http\Adapter\Guzzle7\Client as Guzzle7Client;
 use Http\Client\Socket\Client as SocketClient;
 use Http\Discovery\ClassDiscovery;
 use Http\Discovery\Exception\ClassInstantiationFailedException;
@@ -38,6 +38,7 @@ use Psr\Http\Client\ClientInterface;
 use Symfony\Component\HttpClient\HttplugClient as SymfonyHttplug;
 use Teknoo\Kubernetes\Exception\UnsupportedHttpClientOptionsException;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Curl;
+use Teknoo\Kubernetes\HttpClient\Instantiator\Guzzle;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Guzzle7;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Socket;
 use Teknoo\Kubernetes\HttpClient\Instantiator\Symfony;
@@ -57,13 +58,22 @@ use function is_array;
 class HttpClientDiscovery extends ClassDiscovery
 {
     /**
-     * @var array<class-string<ClientInterface>, class-string<InstantiatorInterface>>
+     * Client of the deprecated php-http/guzzle7-adapter, which is not a dependency of this library
+     */
+    private const string GUZZLE7_ADAPTER_CLIENT = 'Http\\Adapter\\Guzzle7\\Client';
+
+    /**
+     * Class names of PSR-18 clients, not always installed. The native Guzzle client is often installed by another
+     * dependency: it has the lowest priority in `find()`, after the registered instantiators.
+     *
+     * @var array<string, class-string<InstantiatorInterface>>
      */
     private static array $instantiatorsList = [
         CurlClient::class => Curl::class,
-        Guzzle7Client::class => Guzzle7::class,
+        self::GUZZLE7_ADAPTER_CLIENT => Guzzle7::class,
         SocketClient::class => Socket::class,
         SymfonyHttplug::class => Symfony::class,
+        GuzzleClient::class => Guzzle::class,
     ];
 
     /**
@@ -90,12 +100,20 @@ class HttpClientDiscovery extends ClassDiscovery
     ): ClientInterface {
         if (null === $clientClass) {
             foreach (array_keys(self::$instantiatorsList) as $class) {
-                if (class_exists($class)) {
+                if (GuzzleClient::class !== $class && class_exists($class)) {
                     $clientClass = $class;
 
                     break;
                 }
             }
+        }
+
+        if (
+            null === $clientClass
+            && isset(self::$instantiatorsList[GuzzleClient::class])
+            && class_exists(GuzzleClient::class)
+        ) {
+            $clientClass = GuzzleClient::class;
         }
 
         if (null === $clientClass) {
@@ -108,7 +126,7 @@ class HttpClientDiscovery extends ClassDiscovery
             ) {
                 throw new UnsupportedHttpClientOptionsException(
                     'No supported HTTP client is installed to apply the TLS or timeout options (php-http/curl-client, '
-                    . 'php-http/guzzle7-adapter, php-http/socket-client or symfony/http-client). Install one of them, '
+                    . 'guzzlehttp/guzzle, php-http/socket-client or symfony/http-client). Install one of them, '
                     . 'register an instantiator or inject a configured PSR-18 client.'
                 );
             }

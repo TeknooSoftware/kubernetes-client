@@ -190,7 +190,10 @@ supported.
 ### HTTP client
 
 The client discovers the installed HTTP adapter (`php-http/curl-client`, `php-http/guzzle7-adapter`,
-`php-http/socket-client` or `symfony/http-client`) to apply the TLS and timeout options. An instantiator can be
+`php-http/socket-client` or `symfony/http-client`) to apply the TLS and timeout options. Guzzle 7 and 8
+(`guzzlehttp/guzzle`) are also supported without adapter. Guzzle is often installed by another dependency, so it is
+used only when none of the other supported or registered clients is installed. `php-http/guzzle7-adapter` is no
+longer needed: its instantiator `Guzzle7` is deprecated and builds a native Guzzle client. An instantiator can be
 registered with `HttpClientDiscovery::registerInstantiator()` for a client class not supported out of the box. When
 none of the supported adapters is installed, the generic discovery is used and an exception is thrown if a TLS or
 timeout option can not be applied. A configured PSR-18 client can also be injected in the constructor; the TLS
