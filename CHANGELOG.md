@@ -1,5 +1,21 @@
 # Teknoo Software - Kubernetes Client - Change Log
 
+## [2.2.0] - 2026-11-23
+### Evolutions
+- The errors of a PSR-18 client which is not an HTTPlug client (a network failure of an injected Guzzle client...)
+  are thrown as `BadRequestException` (code 500), like the HTTPlug errors. They were thrown as is.
+- Guzzle 7 and 8 are supported without adapter (new instantiator `Guzzle`). The native Guzzle client is chosen only
+  when no other supported or registered client is installed. It then receives the TLS and timeout options, instead
+  of an `UnsupportedHttpClientOptionsException` or the generic discovery without options.
+- The instantiator `Guzzle7` is deprecated, use `Guzzle`. It builds a native Guzzle client, even when
+  `php-http/guzzle7-adapter` is installed.
+- Dev libraries: `php-http/guzzle7-adapter` removed, Guzzle 8.
+
+### Documentation
+- README: HTTP client discovery with the native Guzzle client.
+
+*Release assisted by Claude*
+
 ## [2.1.1] - 2026-10-09
 ### Fixes
 - The temporary files written from a kubeconfig are removed as soon as the client can not be built, even when a

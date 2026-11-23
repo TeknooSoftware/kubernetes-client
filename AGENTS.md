@@ -11,7 +11,9 @@ Deployments, and more.
 - **Testing**: PHPUnit (unit tests) and Behat (behaviour tests against a fake cluster)
 - **Static Analysis**: PHPStan (level max)
 - **Linting**: PHP_CodeSniffer (PSR-12)
-- **HTTP Clients Supported**: php-http/curl-client, php-http/guzzle7-adapter, php-http/socket-client, symfony/http-client
+- **HTTP Clients Supported**: php-http/curl-client, guzzlehttp/guzzle (without adapter), php-http/socket-client,
+  symfony/http-client (the `Guzzle7` instantiator, for `php-http/guzzle7-adapter`, is deprecated and builds a native
+  Guzzle client)
 
 ## Project Structure
 - `src/`: Contains the core implementation.
